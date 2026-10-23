@@ -24,6 +24,7 @@ for (const theme of themes) {
       await expect(page.getByText('Cloudflare, Frankfurt · 12 min ago')).toBeVisible()
       await expect(page.getByText('62 ms under load')).toBeVisible()
       await expect(page.getByText('Uses about 250 MB')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Good for 4K video and calls' })).toBeVisible()
       await expect(page.getByRole('button', { name: 'Test again' })).toBeVisible()
       await shoot(page, 'result', info.outputPath(`result-${theme}.png`))
     })
@@ -76,6 +77,19 @@ for (const theme of themes) {
     await expect(page.getByRole('button', { name: 'Test again' })).toBeDisabled()
     await expect(page.getByLabel('Download 312 megabits per second')).toBeVisible()
     await shoot(page, 'offline', info.outputPath(`offline-${theme}.png`))
+  })
+}
+
+for (const theme of themes) {
+  test(`plain meaning names the limit and opens the details in ${theme}`, async ({ page }, info) => {
+    await page.goto(`/?demo=1&state=stutter&theme=${theme}`)
+    const toggle = page.getByRole('button', { name: 'Calls may stutter: latency jumps to 180 ms under load' })
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByText('Lags under load: +166 ms')).toBeVisible()
+    await expect(page.getByText('Good for 4K video', { exact: true })).toBeVisible()
+    await shoot(page, 'stutter', info.outputPath(`stutter-${theme}.png`))
   })
 }
 

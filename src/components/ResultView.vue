@@ -7,6 +7,7 @@ import { loadedMs, type View } from '../lib/model'
 const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean }>()
 defineEmits<{ test: [confirmed: boolean]; dismiss: [] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
+const details = ref(false)
 const metered = computed(() => props.view.network.metered)
 const offline = computed(() => !props.view.network.online)
 const note = computed(() => metered.value ? `${meteredLabel[metered.value]} · ${estimateText(props.view.estimate)}` : estimateText(props.view.estimate))
@@ -66,6 +67,20 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
               <p class="sub">Not measured</p>
             </template>
           </div>
+        </div>
+        <div v-if="view.meaning" class="verdict" :class="`verdict-${view.meaning.health}`">
+          <button class="verdict-toggle" :aria-expanded="details" aria-controls="meaning-lines" @click="details = !details">
+            <AppIcon :name="view.meaning.health === 'good' ? 'check' : 'alert'" :size="15"/>
+            <span class="verdict-text">{{ view.meaning.headline }}</span>
+            <AppIcon class="verdict-chevron" name="chevron" :size="14"/>
+          </button>
+          <ul v-if="details" id="meaning-lines" class="meaning-lines">
+            <li v-for="line in view.meaning.lines" :key="line.topic">
+              <span class="meaning-topic">{{ line.topic }}</span>
+              <span class="meaning-text num">{{ line.text }}</span>
+              <span class="meaning-mark" :class="`mark-${line.health}`" :aria-label="line.health"/>
+            </li>
+          </ul>
         </div>
       </section>
     </template>

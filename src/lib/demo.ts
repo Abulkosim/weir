@@ -1,6 +1,6 @@
-import { viewSchema, type Report, type View } from './model.ts'
+import { viewSchema, type Meaning, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -19,6 +19,28 @@ export function demoReport(now: number): Report {
   }
 }
 
+export const demoMeaning: Meaning = {
+  health: 'good',
+  headline: 'Good for 4K video and calls',
+  lines: [
+    { topic: 'Video', text: 'Good for 4K video', health: 'good' },
+    { topic: 'Calls', text: 'Good for video calls', health: 'good' },
+    { topic: 'Games', text: 'Fine for online games', health: 'good' },
+    { topic: 'Under load', text: 'Slows under load: +48 ms', health: 'fair' },
+  ],
+}
+
+export const demoStutter: Meaning = {
+  health: 'fair',
+  headline: 'Calls may stutter: latency jumps to 180 ms under load',
+  lines: [
+    { topic: 'Video', text: 'Good for 4K video', health: 'good' },
+    { topic: 'Calls', text: 'Calls may stutter: latency jumps to 180 ms under load', health: 'fair' },
+    { topic: 'Games', text: 'Online games may lag', health: 'fair' },
+    { topic: 'Under load', text: 'Lags under load: +166 ms', health: 'poor' },
+  ],
+}
+
 /** Live download samples that ramp up and settle, one per 100 ms. */
 export function demoSamples(count: number, target: number): number[] {
   return Array.from({ length: count }, (_, index) => {
@@ -29,9 +51,10 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now()): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null } }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
+  view.meaning = demoMeaning
   view.estimate = { upTo: false, mb: 250 }
   if (scenario === 'testing') {
     view.testing = { phase: 'download', phaseMs: 3_600, liveMbps: 297, downloadMbps: null, latencyMs: 14, loadedMs: 58, bytesUsed: 96_000_000, colo: 'FRA' }
@@ -43,6 +66,10 @@ export function createDemoView(state: string | null, now = Date.now()): View {
     view.testing = { phase: 'upload', phaseMs: 2_900, liveMbps: 39.6, downloadMbps: 312.4, latencyMs: 14, loadedMs: 51, bytesUsed: 214_000_000, colo: 'FRA' }
   }
   if (scenario === 'metered') view.network.metered = 'hotspot'
+  if (scenario === 'stutter' && view.last) {
+    view.last.download.loadedMs = 180
+    view.meaning = demoStutter
+  }
   if (scenario === 'offline') view.network = { online: false, metered: null, offlineSinceMs: new Date(now).setHours(14, 2, 0, 0) }
   if (scenario === 'failed') {
     view.failure = { error: 'stalled', atMs: now - 2 * minute }

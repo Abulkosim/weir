@@ -43,6 +43,13 @@ export const reportSchema = z.object({
 export const meteredSchema = z.enum(['hotspot', 'lowData', 'metered', 'roaming', 'overLimit'])
 export const startSchema = z.enum(['started', 'running', 'needsConfirmation', 'offline'])
 
+export const healthSchema = z.enum(['good', 'fair', 'poor'])
+export const meaningSchema = z.object({
+  health: healthSchema,
+  headline: z.string().max(120),
+  lines: z.array(z.object({ topic: z.string().max(20), text: z.string().max(120), health: healthSchema })).max(6),
+})
+
 export const viewSchema = z.object({
   revision: count,
   testing: progressSchema.nullable(),
@@ -50,6 +57,7 @@ export const viewSchema = z.object({
   failure: z.object({ error: testErrorSchema, atMs: count }).nullable(),
   estimate: z.object({ upTo: z.boolean(), mb: count }),
   network: z.object({ online: z.boolean(), metered: meteredSchema.nullable(), offlineSinceMs: count.nullable() }),
+  meaning: meaningSchema.nullable(),
 })
 
 export type TestError = z.infer<typeof testErrorSchema>
@@ -59,8 +67,9 @@ export type Speed = z.infer<typeof speedSchema>
 export type Report = z.infer<typeof reportSchema>
 export type View = z.infer<typeof viewSchema>
 export type Metered = z.infer<typeof meteredSchema>
+export type Meaning = z.infer<typeof meaningSchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null } }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {

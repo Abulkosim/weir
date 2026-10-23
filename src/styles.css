@@ -299,6 +299,78 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   font-size: 13px;
   font-weight: 500;
 }
+.verdict {
+  margin-top: 14px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.verdict-fair {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.verdict-poor {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.verdict-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 8px;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+}
+.verdict-toggle svg {
+  flex: none;
+}
+.verdict-text {
+  flex: 1;
+}
+.verdict-chevron {
+  opacity: .7;
+  transition: transform .2s var(--ease);
+}
+.verdict-toggle[aria-expanded=true] .verdict-chevron {
+  transform: rotate(180deg);
+}
+.meaning-lines {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 2px 11px 11px 34px;
+  list-style: none;
+}
+.meaning-lines li {
+  display: grid;
+  grid-template-columns: 68px 1fr 8px;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.meaning-topic {
+  color: var(--secondary);
+}
+.meaning-text {
+  color: var(--ink);
+}
+.meaning-mark {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  align-self: center;
+}
+.mark-fair {
+  background: var(--warning);
+}
+.mark-poor {
+  background: var(--danger);
+}
 .note-warning {
   color: var(--warning);
 }

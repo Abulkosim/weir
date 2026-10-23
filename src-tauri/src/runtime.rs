@@ -1,5 +1,6 @@
 use crate::core::{
     backends::cloudflare::Cloudflare,
+    meaning::{meaning, Meaning},
     network::{Network, Path},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
     stats::{data_estimate, DataEstimate},
@@ -45,6 +46,7 @@ pub struct View {
     pub failure: Option<Failure>,
     pub estimate: Estimate,
     pub network: Network,
+    pub meaning: Option<Meaning>,
 }
 
 impl Default for View {
@@ -56,6 +58,7 @@ impl Default for View {
             failure: None,
             estimate: data_estimate(&[]).into(),
             network: Network::default(),
+            meaning: None,
         }
     }
 }
@@ -95,6 +98,7 @@ impl Runtime {
             return;
         };
         update(&mut view);
+        view.meaning = view.last.as_ref().map(meaning);
         view.revision += 1;
         let _ = app.emit(STATE_EVENT, view.clone());
         crate::core::tray::update(app, &view);

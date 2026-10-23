@@ -1,6 +1,6 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { demo, desktop, invoke, listen, query } from './bridge.ts'
-import { createDemoView, demoProgress, demoReport, demoSamples } from './demo.ts'
+import { createDemoView, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
 import { emptyView, startSchema, viewSchema, type Phase, type View } from './model.ts'
 
 export function useWeir() {
@@ -59,6 +59,7 @@ export function useWeir() {
         clearInterval(simulation)
         next.last = demoReport(Date.now())
         next.last.startedAtMs = Date.now()
+        next.meaning = demoMeaning
       }
       track(next)
       view.value = next
