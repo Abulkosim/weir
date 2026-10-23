@@ -7,7 +7,7 @@ use super::{
         Probe, Reading, Stop, Throughput, Tracker,
     },
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     sync::{
         atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering},
@@ -75,7 +75,7 @@ pub struct Control {
     pub network_changed: AtomicBool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum TestError {
     Offline,
@@ -132,7 +132,7 @@ pub struct Progress {
     pub colo: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Speed {
     pub mbps: f64,
@@ -160,7 +160,7 @@ impl Speed {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IdleLatency {
     pub median_ms: f64,
@@ -180,12 +180,12 @@ impl From<Latency> for IdleLatency {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Report {
     pub started_at_ms: u64,
     pub duration_ms: u64,
-    pub provider: &'static str,
+    pub provider: String,
     pub colo: Option<String>,
     pub latency: Option<IdleLatency>,
     pub download: Speed,
@@ -571,7 +571,7 @@ pub async fn run<B: Backend>(
     Ok(Report {
         started_at_ms,
         duration_ms: millis(began),
-        provider: server.provider,
+        provider: server.provider.to_owned(),
         colo: server.colo,
         latency: latency.map(IdleLatency::from),
         download: Speed::from(&download.throughput, download.loaded_ms),

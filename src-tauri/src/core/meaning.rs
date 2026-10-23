@@ -203,7 +203,7 @@ mod tests {
         Report {
             started_at_ms: 0,
             duration_ms: 15_000,
-            provider: "Cloudflare",
+            provider: "Cloudflare".into(),
             colo: None,
             latency: Some(IdleLatency {
                 median_ms: 14.0,

@@ -1,5 +1,6 @@
 use crate::core::{
     backends::cloudflare::Cloudflare,
+    history::{Entry, History, Recovery},
     meaning::{meaning, Meaning},
     network::{Network, Path},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
@@ -7,6 +8,7 @@ use crate::core::{
 };
 use serde::Serialize;
 use std::{
+    path::PathBuf,
     sync::{atomic::Ordering, Arc, Mutex},
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -47,6 +49,8 @@ pub struct View {
     pub estimate: Estimate,
     pub network: Network,
     pub meaning: Option<Meaning>,
+    pub history_count: usize,
+    pub notice: Option<String>,
 }
 
 impl Default for View {
@@ -59,6 +63,8 @@ impl Default for View {
             estimate: data_estimate(&[]).into(),
             network: Network::default(),
             meaning: None,
+            history_count: 0,
+            notice: None,
         }
     }
 }
@@ -72,11 +78,26 @@ pub enum Start {
     Offline,
 }
 
-#[derive(Default)]
 pub struct Runtime {
     view: Mutex<View>,
     control: Mutex<Option<Arc<Control>>>,
     path: Mutex<Option<Path>>,
+    history: Mutex<History>,
+}
+
+fn notice(recovery: Recovery) -> String {
+    match recovery {
+        Recovery::Skipped(count) => format!(
+            "{count} history {} couldn’t be read and {} skipped.",
+            if count == 1 { "entry" } else { "entries" },
+            if count == 1 { "was" } else { "were" }
+        ),
+        Recovery::BackedUp(path) => format!(
+            "History couldn’t be read. It was kept as {} and a new one started.",
+            path.file_name()
+                .map_or_else(String::new, |name| name.to_string_lossy().into_owned())
+        ),
+    }
 }
 
 fn unix_ms() -> u64 {
@@ -86,6 +107,69 @@ fn unix_ms() -> u64 {
 }
 
 impl Runtime {
+    pub fn new(history_path: PathBuf) -> Self {
+        let (history, recovery) = History::load(history_path, unix_ms());
+        let mut view = View {
+            last: history.last_report().cloned(),
+            history_count: history.len(),
+            estimate: data_estimate(&history.speeds(3)).into(),
+            notice: recovery.map(notice),
+            ..View::default()
+        };
+        if let Some((at_ms, error)) = history.last_failure() {
+            if view
+                .last
+                .as_ref()
+                .is_none_or(|report| at_ms > report.started_at_ms)
+            {
+                view.failure = Some(Failure { error, at_ms });
+            }
+        }
+        view.meaning = view.last.as_ref().map(meaning);
+        Self {
+            view: Mutex::new(view),
+            control: Mutex::new(None),
+            path: Mutex::new(None),
+            history: Mutex::new(history),
+        }
+    }
+
+    pub fn recent(&self, limit: usize) -> Vec<Entry> {
+        self.history
+            .lock()
+            .map(|history| history.recent(limit))
+            .unwrap_or_default()
+    }
+
+    pub fn clear_history(&self, app: &AppHandle) -> Result<(), String> {
+        let Ok(mut history) = self.history.lock() else {
+            return Err("History is unavailable.".into());
+        };
+        history
+            .clear()
+            .map_err(|_| "Weir couldn’t clear the history.".to_owned())?;
+        drop(history);
+        self.change(app, |view| {
+            view.history_count = 0;
+            view.estimate = data_estimate(&[]).into();
+        });
+        Ok(())
+    }
+
+    fn record(&self, entry: Entry) -> (usize, Estimate, Option<String>) {
+        let Ok(mut history) = self.history.lock() else {
+            return (0, data_estimate(&[]).into(), None);
+        };
+        let saved = history.push(entry, unix_ms());
+        (
+            history.len(),
+            data_estimate(&history.speeds(3)).into(),
+            saved
+                .err()
+                .map(|_| "Weir couldn’t save this test to history.".to_owned()),
+        )
+    }
+
     pub fn view(&self) -> View {
         self.view
             .lock()
@@ -162,12 +246,26 @@ impl Runtime {
             if let Ok(mut current) = runtime.control.lock() {
                 *current = None;
             }
+            let entry = match &outcome {
+                Ok(report) => Some(Entry::Result {
+                    report: Box::new(report.clone()),
+                }),
+                Err(TestError::Cancelled) => None,
+                Err(error) => Some(Entry::Failed {
+                    at_ms: unix_ms(),
+                    error: *error,
+                }),
+            };
+            let recorded = entry.map(|entry| runtime.record(entry));
             runtime.change(&handle, |view| {
                 view.testing = None;
+                if let Some((count, estimate, problem)) = recorded {
+                    view.history_count = count;
+                    view.estimate = estimate;
+                    view.notice = problem.or(view.notice.take());
+                }
                 match outcome {
                     Ok(report) => {
-                        let up = report.upload.as_ref().map_or(0.0, |speed| speed.mbps);
-                        view.estimate = data_estimate(&[(report.download.mbps, up)]).into();
                         view.last = Some(report);
                         view.failure = None;
                     }

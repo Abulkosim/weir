@@ -1,4 +1,4 @@
-import { testErrorSchema, viewSchema, type Meaning, type Report, type View } from './model.ts'
+import { testErrorSchema, viewSchema, type Entry, type Meaning, type Report, type View } from './model.ts'
 
 export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial'] as const
 export type DemoState = (typeof demoStates)[number]
@@ -51,10 +51,11 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.meaning = demoMeaning
+  view.historyCount = 14
   view.estimate = { upTo: false, mb: 250 }
   if (scenario === 'testing') {
     view.testing = { phase: 'download', phaseMs: 3_600, liveMbps: 297, downloadMbps: null, latencyMs: 14, loadedMs: 58, bytesUsed: 96_000_000, colo: 'FRA' }
@@ -108,4 +109,23 @@ export function demoProgress(step: number): View['testing'] {
     return { phase: 'upload', phaseMs: at - 8_000, liveMbps: live, downloadMbps: 312.4, latencyMs: 14, loadedMs: index > 15 ? 48 : null, bytesUsed: 234_000_000 + Math.round(index * 500_000), colo: 'FRA' }
   }
   return null
+}
+
+/** Two weeks of tests with a slow evening and one failure. */
+export function demoHistory(now: number): Entry[] {
+  const hour = 3_600_000
+  const plan: [number, number, number, number][] = [
+    [0.2, 312, 41, 14], [5, 298, 40, 15], [21, 305, 41, 14], [27, 144, 38, 31], [46, 301, 39, 15], [52, 310, 41, 13],
+    [70, 287, 37, 16], [76, 162, 35, 28], [95, 306, 40, 14], [118, 299, 41, 15], [140, 309, 42, 14], [166, 296, 40, 15], [190, 303, 41, 14],
+  ]
+  const entries: Entry[] = plan.map(([hoursAgo, down, up, latency]) => {
+    const report = demoReport(now)
+    report.startedAtMs = now - hoursAgo * hour - 12 * 60_000
+    report.download = { ...report.download, mbps: down, p10: down * 0.95, p90: down * 1.04 }
+    report.upload = report.upload && { ...report.upload, mbps: up }
+    report.latency = report.latency && { ...report.latency, medianMs: latency }
+    return { kind: 'result', report }
+  })
+  entries.splice(4, 0, { kind: 'failed', atMs: now - 30 * hour, error: 'stalled' })
+  return entries
 }

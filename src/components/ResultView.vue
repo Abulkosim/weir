@@ -5,7 +5,7 @@ import { clock, errorCopy, estimateText, formatMbps, formatMs, meteredCopy, mete
 import { loadedMs, type View } from '../lib/model'
 
 const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean }>()
-defineEmits<{ test: [confirmed: boolean]; dismiss: [] }>()
+defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: [] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
 const details = ref(false)
 const stale = computed(() => props.view.last ? props.now - props.view.last.startedAtMs > 24 * 3_600_000 : false)
@@ -28,7 +28,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
 <template>
   <div class="view result-view">
     <template v-if="failure">
-      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span></div>
+      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button></span></div>
       <section class="card failure" role="alert">
         <span class="failure-icon"><AppIcon name="alert" :size="20"/></span>
         <h1>{{ errorCopy[failure.error].title }}</h1>
@@ -38,7 +38,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </template>
 
     <template v-else-if="report">
-      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span></div>
+      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button></span></div>
       <section class="card" aria-label="Last result">
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>

@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { demo, desktop, invoke, listen, query } from './bridge.ts'
-import { createDemoView, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
-import { emptyView, startSchema, viewSchema, type Phase, type View } from './model.ts'
+import { createDemoView, demoHistory, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
+import { emptyView, historySchema, startSchema, viewSchema, type Entry, type Phase, type View } from './model.ts'
 
 export function useWeir() {
   const view = ref<View>(demo ? createDemoView(query.get('state'), Date.now(), query.get('error')) : emptyView)
@@ -10,6 +10,7 @@ export function useWeir() {
   const now = ref(Date.now())
   const samples = ref<number[]>([])
   const confirming = ref(false)
+  const history = ref<Entry[]>(demo ? demoHistory(Date.now()) : [])
   let samplePhase: Phase | null = null
   let stopListening: (() => void) | undefined
   let simulation: ReturnType<typeof setInterval> | undefined
@@ -43,10 +44,27 @@ export function useWeir() {
       return
     }
     if (result.data.revision < view.value.revision) return
+    const historyChanged = result.data.historyCount !== view.value.historyCount
     track(result.data)
     view.value = result.data
     connectionError.value = null
     now.value = Date.now()
+    if (historyChanged) void loadHistory()
+  }
+
+  async function loadHistory(): Promise<void> {
+    if (demo || !desktop) return
+    const result = historySchema.safeParse(await invoke('get_history', { limit: 500 }).catch(() => null))
+    if (result.success) history.value = result.data
+  }
+
+  async function clearHistory(): Promise<void> {
+    if (demo) {
+      history.value = []
+      view.value = { ...view.value, revision: view.value.revision + 1, historyCount: 0 }
+      return
+    }
+    await invoke('clear_history').catch(() => { connectionError.value = 'Weir couldn’t clear the history.' })
   }
 
   function simulate(): void {
@@ -60,6 +78,8 @@ export function useWeir() {
         next.last = demoReport(Date.now())
         next.last.startedAtMs = Date.now()
         next.meaning = demoMeaning
+        next.historyCount += 1
+        history.value = [{ kind: 'result', report: next.last }, ...history.value]
       }
       track(next)
       view.value = next
@@ -99,6 +119,7 @@ export function useWeir() {
       if (destroyed) { unlisten(); return }
       stopListening = unlisten
       accept(await invoke('get_state'))
+      await loadHistory()
     } catch {
       connectionError.value = 'Weir couldn’t connect to its background service.'
     } finally {
@@ -113,5 +134,5 @@ export function useWeir() {
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, confirming, start, cancel }
+  return { view, loading, connectionError, now, samples, confirming, history, start, cancel, clearHistory }
 }

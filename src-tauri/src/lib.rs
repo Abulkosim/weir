@@ -21,7 +21,6 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_positioner::init())
         .manage(tray::Visibility::default())
-        .manage(Arc::new(Runtime::default()))
         .invoke_handler(tauri::generate_handler![
             commands::get_popover_placement,
             commands::fit_popover,
@@ -29,10 +28,14 @@ pub fn run() {
             commands::get_state,
             commands::start_test,
             commands::cancel_test,
+            commands::get_history,
+            commands::clear_history,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            let data = app.path().app_data_dir()?;
+            app.manage(Arc::new(Runtime::new(data.join("history.json"))));
             tray::setup(app.handle())?;
             let watcher = app.handle().clone();
             platform::watch_path(move |path| runtime::runtime(&watcher).on_path(&watcher, path));

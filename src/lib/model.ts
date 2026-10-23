@@ -58,7 +58,15 @@ export const viewSchema = z.object({
   estimate: z.object({ upTo: z.boolean(), mb: count }),
   network: z.object({ online: z.boolean(), metered: meteredSchema.nullable(), offlineSinceMs: count.nullable() }),
   meaning: meaningSchema.nullable(),
+  historyCount: count,
+  notice: z.string().max(300).nullable(),
 })
+
+export const entrySchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('result'), report: reportSchema }),
+  z.object({ kind: z.literal('failed'), atMs: count, error: testErrorSchema }),
+])
+export const historySchema = z.array(entrySchema).max(1_000)
 
 export type TestError = z.infer<typeof testErrorSchema>
 export type Phase = z.infer<typeof phaseSchema>
@@ -68,11 +76,16 @@ export type Report = z.infer<typeof reportSchema>
 export type View = z.infer<typeof viewSchema>
 export type Metered = z.infer<typeof meteredSchema>
 export type Meaning = z.infer<typeof meaningSchema>
+export type Entry = z.infer<typeof entrySchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {
   const values = [report.download.loadedMs, report.upload?.loadedMs ?? null].filter((value): value is number => value !== null)
   return values.length ? Math.max(...values) : null
+}
+
+export function entryTime(entry: Entry): number {
+  return entry.kind === 'result' ? entry.report.startedAtMs : entry.atMs
 }

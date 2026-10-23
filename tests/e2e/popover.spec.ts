@@ -128,6 +128,29 @@ for (const [error, title] of Object.entries(failures)) {
   })
 }
 
+for (const theme of themes) {
+  test(`history lists tests by day with a summary in ${theme}`, async ({ page }, info) => {
+    await page.goto(`/?demo=1&theme=${theme}`)
+    await page.getByRole('button', { name: 'History' }).click()
+    await expect(page.getByRole('heading', { name: 'History' })).toBeVisible()
+    await expect(page.getByText('Mbps median')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Yesterday' })).toBeVisible()
+    await expect(page.getByRole('listitem').filter({ hasText: 'Connection stalled' })).toHaveCount(1)
+    await expect(page.getByLabel('Download 312 Mbps')).toBeVisible()
+    const height = Number(await page.locator('.app-shell').getAttribute('data-fit-height'))
+    expect(height).toBeLessThanOrEqual(600)
+    await shoot(page, 'history', info.outputPath(`history-${theme}.png`))
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: 'Test again' })).toBeVisible()
+  })
+}
+
+test('history button stays hidden until there is history', async ({ page }) => {
+  await page.goto('/?demo=1&state=never')
+  await expect(page.getByRole('button', { name: 'History' })).toHaveCount(0)
+})
+
 test('a simulated run goes from Test to a settled result', async ({ page }) => {
   await page.clock.install()
   await page.goto('/?demo=1&state=never')

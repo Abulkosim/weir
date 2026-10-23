@@ -71,8 +71,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **2.4 Every failure state designed.** Failed (each validity message), cancelled, stale result (> 24 h: "Tested 2 days ago"), cap hit, "varied" range, latency not measured.
   Verify: one demo state each; e2e + screenshots light + dark.
   Done 2026-10-23: demo states `stale`, `capped`, `varied`, `partial`, `failed&error=<each>`; meta line now reads "Tested 12 min ago · Cloudflare, Frankfurt" and greys out after a day. 76 e2e.
-- [ ] **2.5 History.** `core/history.rs`: own bounded JSON file, 1 year retention, atomic writes, tolerant load. Popover list (date, down, up, latency, server), small download sparkline.
+- [x] **2.5 History.** `core/history.rs`: own bounded JSON file, 1 year retention, atomic writes, tolerant load. Popover list (date, down, up, latency, server), small download sparkline.
   Verify: unit tests for pruning, corrupt-file recovery, size bound; e2e history state.
+  Done 2026-10-23: `core/history.rs` stores results and failures (`history.json`, versioned, temp-file + rename, 366 days, 5,000 entries), skips unreadable entries with a count, moves an unreadable file aside as `history.unreadable-<ms>.json`. Last result, last failure and the data estimate now survive restarts. Popover: History page (median, range, sparkline of the last 30, rows grouped by day, failures in red), reachable from the meta line once a test exists.
 - [ ] **2.6 CSV export.** Save dialog, columns documented in README; no IP, city or SSID.
   Verify: unit test on CSV output for a fixture history; manual save once.
 - [ ] **2.7 Settings.** Versioned JSON, tolerant per-field loading, recovery note, back up before reset. Sections: Appearance (System/Light/Dark), Tray (speed text on mac), Data (show estimate before each test), Launch at login, History (export, clear), Updates, About.

@@ -2,12 +2,14 @@
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
 import DesignGallery from './components/DesignGallery.vue'
+import HistoryView from './components/HistoryView.vue'
 import ResultView from './components/ResultView.vue'
 import TestingView from './components/TestingView.vue'
 import { useWeir } from './lib/weir'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
-const { view, connectionError, now, samples, confirming, start, cancel } = useWeir()
+const { view, connectionError, now, samples, confirming, history, start, cancel } = useWeir()
+const page = ref<'overview' | 'history'>(demo && query.get('page') === 'history' ? 'history' : 'overview')
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
 const forcedTheme = demo ? query.get('theme') : null
@@ -48,6 +50,7 @@ function syncWidth(): void { viewportWidth.value = window.innerWidth }
 function onKeydown(event: KeyboardEvent): void {
   if (event.key !== 'Escape') return
   if (confirming.value) confirming.value = false
+  else if (page.value !== 'overview') page.value = 'overview'
   else if (desktop && !demo) invoke('hide_window').catch(() => {})
 }
 
@@ -90,8 +93,10 @@ onUnmounted(() => {
         <DesignGallery v-if="scenario === 'design'"/>
         <main v-else>
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
-          <TestingView v-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
-          <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false"/>
+          <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
+          <HistoryView v-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'"/>
+          <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
+          <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'"/>
         </main>
         <div v-if="!desktop || demo" class="preview-ribbon">Interface preview<span>Sample data</span></div>
       </div>

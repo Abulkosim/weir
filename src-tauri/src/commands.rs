@@ -1,5 +1,5 @@
 use crate::{
-    core::{popover::PopoverPlacement, tray},
+    core::{history::Entry, popover::PopoverPlacement, tray},
     runtime::{runtime, Start, View},
 };
 use tauri::{AppHandle, Manager, State};
@@ -41,4 +41,14 @@ pub fn start_test(app: AppHandle, confirmed: bool) -> Start {
 #[tauri::command]
 pub fn cancel_test(app: AppHandle) {
     runtime(&app).cancel();
+}
+
+#[tauri::command]
+pub fn get_history(app: AppHandle, limit: usize) -> Vec<Entry> {
+    runtime(&app).recent(limit.min(1_000))
+}
+
+#[tauri::command]
+pub fn clear_history(app: AppHandle) -> Result<(), String> {
+    runtime(&app).clear_history(&app)
 }

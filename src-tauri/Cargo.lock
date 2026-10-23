@@ -4794,6 +4794,7 @@ dependencies = [
  "tauri-plugin-autostart",
  "tauri-plugin-positioner",
  "tauri-plugin-single-instance",
+ "tempfile",
  "tokio",
  "windows",
  "windows-registry",
