@@ -1,0 +1,43 @@
+[package]
+name = "weir"
+version = "0.1.0"
+description = "Internet speed and connection checks in your menu bar"
+authors = ["abulkosim <abulkasimkattaev@gmail.com>"]
+edition = "2021"
+rust-version = "1.90"
+license = "MIT"
+repository = "https://github.com/Abulkosim/weir"
+
+[lib]
+name = "weir_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2.12.4", features = ["tray-icon", "image-png", "macos-private-api"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "time", "macros"] }
+
+[dev-dependencies]
+png = "0.18"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", default-features = false, features = ["NSView", "NSVisualEffectView", "NSWindow", "NSScreen", "NSStatusItem", "NSStatusBarButton", "NSButton", "NSControl", "NSFont", "NSFontDescriptor", "objc2-core-foundation", "NSResponder"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["NSArray", "NSGeometry", "NSString"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-registry = "0.6"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
+panic = "abort"

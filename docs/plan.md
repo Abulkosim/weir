@@ -8,7 +8,8 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - Backend: Cloudflare only in v0.1. fast.com and Ookla: no. M-Lab and macOS `networkQuality`: not planned (owner didn't pick them).
 - Background monitoring: **off** in v0.1. Full tests are manual. The OS network-path monitor (no traffic) is still used for offline and metered state.
 - Tray: **health ring**. Fills while testing; at rest shows the last result's health, dims when stale, breaks when offline. Speed text beside it on mac, off by default.
-- Look: Margin's structure and quality bar, **new palette, accent and display type**. Three directions prototyped; owner picks.
+- Look: Margin's structure and quality bar, new palette: **Tide** (cool slate neutrals, teal accent, Geist).
+- Repo public from day one.
 - History: every test, kept 1 year, CSV export in v0.1. PDF provider report later.
 - Commits: Conventional Commits with a body. No trailers, no AI attribution. Author `abulkosim <abulkasimkattaev@gmail.com>`.
 
@@ -23,10 +24,12 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 
 ## Phase 0 — Direction and skeleton
 
-- [ ] **0.1 Three visual directions.** Static HTML prototypes of the popover (result state, testing state) in light and dark: new palette, accent, display type. Screenshot via Playwright into `design/directions/`.
+- [x] **0.1 Three visual directions.** Static HTML prototypes of the popover (result state, testing state) in light and dark: new palette, accent, display type. Screenshot via Playwright into `design/directions/`.
   Verify: 3 × 2 × 2 screenshots exist and are shown to the owner 👤 who picks one.
-- [ ] **0.2 Scaffold.** Tauri 2 + Vue 3 + TS + Vite + pnpm, ported from Margin: `package.json`, `tsconfig`, `vite.config`, Playwright config, `src-tauri` with tray, single-instance, positioner, autostart, updater (inert until keys exist). App id `dev.abulkosim.weir`. LICENSE, `.gitignore`, `deny.toml`.
+  Done 2026-10-23: owner picked **Tide** (cool slate, teal accent, Geist). `design/directions/index.html` is the reference.
+- [x] **0.2 Scaffold.** Tauri 2 + Vue 3 + TS + Vite + pnpm, ported from Margin: `package.json`, `tsconfig`, `vite.config`, Playwright config, `src-tauri` with tray, single-instance, positioner, autostart, updater (inert until keys exist). App id `com.abulkosim.weir`. LICENSE, `.gitignore`, `deny.toml`.
   Verify: `pnpm tauri dev` shows a tray icon and an empty popover on mac; all checks green.
+  Done 2026-10-23: app id `com.abulkosim.weir`, dev port 1430 (1420 is taken by another local project). Popover geometry split into `core/popover.rs` with Margin's placement tests re-derived for 380×600. Dev run: popover window 380 wide placed under the tray, hides on blur. Updater plugin left out until the key exists (3.3); tray ring is Margin's renderer until 1.5.
 - [ ] **0.3 Design tokens.** Chosen direction as `src/styles.css` tokens (light + dark), `src/design/controls.css`, `components/ui/*` ported from Margin and restyled. Inter + chosen display face, tabular numbers.
   Verify: a demo page renders every control in both themes; screenshots looked at.
 - [ ] **0.4 Repo on GitHub.** Create `Abulkosim/weir`, push `main`, CI skeleton (frontend job only).

@@ -1,0 +1,222 @@
+:root {
+  font-family: "Geist Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
+  --surface: #f6f9fa;
+  --surface-translucent: rgba(246,249,250,.94);
+  --card: #fff;
+  --hover: #eaf0f2;
+  --ink: #0e1b22;
+  --secondary: #4a5b64;
+  --tertiary: #62727a;
+  --accent: #0a8f88;
+  --accent-2: #36c2d6;
+  --accent-ink: #087670;
+  --accent-soft: #dcf1ee;
+  --track: #e2eaed;
+  --line: rgba(14,27,34,.07);
+  --warning: #9a5b0b;
+  --warning-soft: #fbefdc;
+  --danger: #b4332b;
+  --danger-soft: #fbe5e2;
+  --button: #0e1b22;
+  --button-ink: #f3f8f9;
+  --shadow: 0 24px 70px -24px rgba(10,40,52,.35), 0 1px 4px rgba(10,40,52,.10);
+  --stage: #dfe7ea;
+  --focus: #0a8f88;
+  --ease: cubic-bezier(.25,.1,.25,1);
+}
+:root[data-theme=dark] {
+  color-scheme: dark;
+  --surface: #0e151a;
+  --surface-translucent: rgba(14,21,26,.95);
+  --card: #151f25;
+  --hover: #1d2a31;
+  --ink: #e7f1f3;
+  --secondary: #a7b8bf;
+  --tertiary: #8597a0;
+  --accent: #3fd6c8;
+  --accent-2: #5fb8ff;
+  --accent-ink: #5fe0d3;
+  --accent-soft: #143331;
+  --track: #22313a;
+  --line: rgba(220,240,245,.07);
+  --warning: #f0b45e;
+  --warning-soft: #3a2c17;
+  --danger: #ff8f84;
+  --danger-soft: #3d1d1a;
+  --button: #3fd6c8;
+  --button-ink: #04201d;
+  --shadow: 0 24px 80px -20px rgba(0,0,0,.7), 0 1px 4px rgba(0,0,0,.4);
+  --stage: #070c0f;
+  --focus: #3fd6c8;
+}
+* {
+  box-sizing: border-box;
+}
+html, body, #app {
+  margin: 0;
+  min-width: 280px;
+  min-height: 100%;
+  width: 100%;
+}
+body {
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.4;
+}
+button, input, select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+button:disabled {
+  cursor: default;
+  opacity: .45;
+}
+button, a, input, select {
+  outline: none;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.preview-stage {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 16px;
+  background: var(--stage);
+}
+.app-shell {
+  position: relative;
+  isolation: isolate;
+  width: 380px;
+  max-width: 100%;
+  padding-top: 8px;
+}
+.popover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-translucent);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  backdrop-filter: blur(36px);
+  -webkit-backdrop-filter: blur(36px);
+}
+.popover-arrow {
+  position: absolute;
+  z-index: 1;
+  top: 3px;
+  left: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  border-radius: 2px 0 0;
+  background: var(--surface);
+  transform: rotate(45deg);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.desktop-stage {
+  padding: 0;
+  background: transparent;
+  display: block;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.desktop-stage .app-shell {
+  width: 100%;
+  padding: 14px 6px 6px;
+}
+.desktop-stage .popover {
+  box-shadow: none;
+}
+.desktop-stage .popover-arrow {
+  top: 9px;
+}
+:root[data-platform=windows] .desktop-stage .app-shell {
+  padding: 6px;
+}
+:root[data-platform=windows] .popover {
+  border-radius: 8px;
+}
+:root[data-platform=windows] .popover-arrow {
+  display: none;
+}
+
+.popover-body {
+  padding: 14px;
+}
+.empty {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 22px 18px 18px;
+}
+.empty h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.empty p {
+  margin: 6px 0 0;
+  color: var(--secondary);
+}
+
+.preview-ribbon {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 7px;
+  font-size: 12px;
+  color: var(--tertiary);
+  background: var(--hover);
+}
+
+@media (max-width: 480px) {
+  .preview-stage {
+    padding: 0;
+    background: transparent;
+  }
+  .app-shell {
+    width: 100%;
+    padding: 8px 6px 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

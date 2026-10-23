@@ -1,0 +1,12 @@
+{
+  "bundle": { "targets": ["nsis", "msi"] },
+  "app": {
+    "windows": [{
+      "label": "main", "title": "Weir", "width": 380, "height": 600,
+      "visible": false, "resizable": false, "decorations": false,
+      "transparent": true, "shadow": true, "alwaysOnTop": true,
+      "skipTaskbar": true, "center": true,
+      "windowEffects": { "effects": ["mica", "acrylic"] }
+    }]
+  }
+}
