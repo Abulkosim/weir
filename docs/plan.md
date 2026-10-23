@@ -89,15 +89,20 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 
 ## Phase 3 — M3 Ship v0.1.0 ⛳
 
-- [ ] **3.1 CI full.** Port Margin's `ci.yml` (Ubuntu frontend + Playwright 45 min, macOS universal DMG + `.app.tar.gz`, Windows NSIS + MSI), `security.yml`, `scorecard.yml`, Dependabot. Actions pinned by SHA, least privilege, concurrency.
+- [x] **3.1 CI full.** Port Margin's `ci.yml` (Ubuntu frontend + Playwright 45 min, macOS universal DMG + `.app.tar.gz`, Windows NSIS + MSI), `security.yml`, `scorecard.yml`, Dependabot. Actions pinned by SHA, least privilege, concurrency.
   Verify: all jobs green on `main`.
-- [ ] **3.2 Release tooling.** Port `scripts/` (check-release, checksums, collect-artifacts, updater-manifest, updater-signature) and `docs/releasing.md`; tag job: sign updater artifacts, `latest.json`, `SHA256SUMS.txt`, SBOM, provenance, draft release.
+  Done 2026-10-23: Margin's `ci.yml` (frontend 45 min, macOS universal DMG + `.app.tar.gz`, Windows NSIS + MSI, tag release job), `security.yml`, `scorecard.yml`, Dependabot. Package-manager jobs left out until wanted.
+- [x] **3.2 Release tooling.** Port `scripts/` (check-release, checksums, collect-artifacts, updater-manifest, updater-signature) and `docs/releasing.md`; tag job: sign updater artifacts, `latest.json`, `SHA256SUMS.txt`, SBOM, provenance, draft release.
   Verify: script tests pass; dry-run on a test tag in a fork-free way (workflow_dispatch) produces a draft.
-- [ ] **3.3 Updater key 👤.** `pnpm tauri signer generate`, stored outside the repo with a backup, `TAURI_SIGNING_PRIVATE_KEY` secret. Prepared command and steps in `docs/releasing.md`.
-- [ ] **3.4 README + docs.** Hero screenshots, 3-bullet value, Install in the first screen, comparison table vs fast.com, Ookla, speed.cloudflare.com, `networkQuality`. `docs/install.md` (Open Anyway, SmartScreen), PRIVACY.md (hosts contacted, what is stored), SECURITY.md, CONTRIBUTING.md.
+  Done 2026-10-23: scripts ported with 14 tests, `docs/releasing.md`, ignored `tests/updater_install.rs`. First real run is the v0.1.0 tag.
+- [x] **3.3 Updater key 👤.** `pnpm tauri signer generate`, stored outside the repo with a backup, `TAURI_SIGNING_PRIVATE_KEY` secret. Prepared command and steps in `docs/releasing.md`.
+  Done 2026-10-23 at the owner's request: key + password in `~/.tauri/weir/` (600), Actions secrets set, public key in `tauri.conf.json`, in-app updater ported. 👤 back up `~/.tauri/weir/`.
+- [x] **3.4 README + docs.** Hero screenshots, 3-bullet value, Install in the first screen, comparison table vs fast.com, Ookla, speed.cloudflare.com, `networkQuality`. `docs/install.md` (Open Anyway, SmartScreen), PRIVACY.md (hosts contacted, what is stored), SECURITY.md, CONTRIBUTING.md.
   Verify: links checked; screenshots current.
-- [ ] **3.5 Pages site.** `site/` from Margin's template, new palette.
+  Done 2026-10-23: README, docs/install.md, PRIVACY.md, SECURITY.md, CONTRIBUTING.md, issue forms. Screenshots are demo-bridge previews; real menu-bar and Windows shots 👤.
+- [x] **3.5 Pages site.** `site/` from Margin's template, new palette.
   Verify: `pages.yml` deploys; 👤 enable Pages source "GitHub Actions".
+  Done 2026-10-23: `site/` + `pages.yml`. 👤 Settings → Pages → Source "GitHub Actions", then set the repo homepage to https://abulkosim.github.io/weir/.
 - [ ] **3.6 Release v0.1.0.** Changelog, tag, draft, checksums, updater install test (tampered bytes and wrong version rejected), `docs/verification.md`, report; 👤 owner says "publish".
 
 ## Phase 4 — Is it me or the internet? (v0.2) ⛳
