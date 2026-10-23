@@ -7,7 +7,7 @@ import TestingView from './components/TestingView.vue'
 import { useWeir } from './lib/weir'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
-const { view, connectionError, now, samples, start, cancel } = useWeir()
+const { view, connectionError, now, samples, confirming, start, cancel } = useWeir()
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
 const forcedTheme = demo ? query.get('theme') : null
@@ -46,7 +46,9 @@ function scheduleMeasure(): void {
 function syncTheme(event: MediaQueryListEvent): void { systemDark.value = event.matches }
 function syncWidth(): void { viewportWidth.value = window.innerWidth }
 function onKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && desktop && !demo) invoke('hide_window').catch(() => {})
+  if (event.key !== 'Escape') return
+  if (confirming.value) confirming.value = false
+  else if (desktop && !demo) invoke('hide_window').catch(() => {})
 }
 
 onMounted(async () => {
@@ -89,7 +91,7 @@ onUnmounted(() => {
         <main v-else>
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
           <TestingView v-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
-          <ResultView v-else :view="view" :now="now" @test="start"/>
+          <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false"/>
         </main>
         <div v-if="!desktop || demo" class="preview-ribbon">Interface preview<span>Sample data</span></div>
       </div>

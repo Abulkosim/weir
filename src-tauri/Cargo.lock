@@ -4779,6 +4779,7 @@ dependencies = [
 name = "weir"
 version = "0.1.0"
 dependencies = [
+ "block2",
  "bytes",
  "futures-util",
  "objc2",
@@ -4794,6 +4795,7 @@ dependencies = [
  "tauri-plugin-positioner",
  "tauri-plugin-single-instance",
  "tokio",
+ "windows",
  "windows-registry",
  "wiremock",
 ]

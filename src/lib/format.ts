@@ -1,4 +1,4 @@
-import type { TestError } from './model.ts'
+import type { Metered, TestError } from './model.ts'
 
 export function formatMbps(value: number): string {
   if (!Number.isFinite(value) || value < 0) return '–'
@@ -67,4 +67,20 @@ export const errorCopy: Record<TestError, { title: string; detail: string }> = {
   dropped: { title: 'Connection kept dropping', detail: 'More than half the connections failed.' },
   networkChanged: { title: 'Network changed during the test', detail: 'Test again on the new network.' },
   cancelled: { title: 'Cancelled', detail: 'No result was saved.' },
+}
+
+export const meteredCopy: Record<Metered, string> = {
+  hotspot: 'You’re on a hotspot. Test anyway?',
+  lowData: 'Low Data Mode is on. Test anyway?',
+  metered: 'This connection is metered. Test anyway?',
+  roaming: 'You’re roaming. Test anyway?',
+  overLimit: 'You’re over your data limit. Test anyway?',
+}
+
+export const meteredLabel: Record<Metered, string> = {
+  hotspot: 'Hotspot',
+  lowData: 'Low Data Mode',
+  metered: 'Metered connection',
+  roaming: 'Roaming',
+  overLimit: 'Over data limit',
 }

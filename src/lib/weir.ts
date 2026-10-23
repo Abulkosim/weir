@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { demo, desktop, invoke, listen, query } from './bridge.ts'
 import { createDemoView, demoProgress, demoReport, demoSamples } from './demo.ts'
-import { emptyView, viewSchema, type Phase, type View } from './model.ts'
+import { emptyView, startSchema, viewSchema, type Phase, type View } from './model.ts'
 
 export function useWeir() {
   const view = ref<View>(demo ? createDemoView(query.get('state')) : emptyView)
@@ -9,6 +9,7 @@ export function useWeir() {
   const connectionError = ref<string | null>(null)
   const now = ref(Date.now())
   const samples = ref<number[]>([])
+  const confirming = ref(false)
   let samplePhase: Phase | null = null
   let stopListening: (() => void) | undefined
   let simulation: ReturnType<typeof setInterval> | undefined
@@ -64,11 +65,17 @@ export function useWeir() {
     }, 100)
   }
 
-  async function start(): Promise<void> {
+  async function start(confirmed = false): Promise<void> {
     if (view.value.testing) return
+    if (view.value.network.metered && !confirmed) {
+      confirming.value = true
+      return
+    }
+    confirming.value = false
     if (demo) return simulate()
     try {
-      await invoke('start_test')
+      const result = startSchema.safeParse(await invoke('start_test', { confirmed }))
+      if (result.success && result.data === 'needsConfirmation') confirming.value = true
     } catch {
       connectionError.value = 'Weir couldn’t start the test.'
     }
@@ -105,5 +112,5 @@ export function useWeir() {
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, start, cancel }
+  return { view, loading, connectionError, now, samples, confirming, start, cancel }
 }

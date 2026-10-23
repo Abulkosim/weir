@@ -1,6 +1,6 @@
 import { viewSchema, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -29,7 +29,7 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now()): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 } }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null } }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.estimate = { upTo: false, mb: 250 }
@@ -42,6 +42,7 @@ export function createDemoView(state: string | null, now = Date.now()): View {
   if (scenario === 'testing-upload') {
     view.testing = { phase: 'upload', phaseMs: 2_900, liveMbps: 39.6, downloadMbps: 312.4, latencyMs: 14, loadedMs: 51, bytesUsed: 214_000_000, colo: 'FRA' }
   }
+  if (scenario === 'metered') view.network.metered = 'hotspot'
   if (scenario === 'failed') {
     view.failure = { error: 'stalled', atMs: now - 2 * minute }
     if (view.last) view.last = { ...view.last, startedAtMs: now - 3 * 60 * minute }

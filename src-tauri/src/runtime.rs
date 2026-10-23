@@ -1,5 +1,6 @@
 use crate::core::{
     backends::cloudflare::Cloudflare,
+    network::{Network, Path},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
     stats::{data_estimate, DataEstimate},
 };
@@ -43,6 +44,7 @@ pub struct View {
     pub last: Option<Report>,
     pub failure: Option<Failure>,
     pub estimate: Estimate,
+    pub network: Network,
 }
 
 impl Default for View {
@@ -53,14 +55,25 @@ impl Default for View {
             last: None,
             failure: None,
             estimate: data_estimate(&[]).into(),
+            network: Network::default(),
         }
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Start {
+    Started,
+    Running,
+    NeedsConfirmation,
+    Offline,
 }
 
 #[derive(Default)]
 pub struct Runtime {
     view: Mutex<View>,
     control: Mutex<Option<Arc<Control>>>,
+    path: Mutex<Option<Path>>,
 }
 
 fn unix_ms() -> u64 {
@@ -93,15 +106,40 @@ impl Runtime {
         }
     }
 
-    /// Starts a test unless one is running. Returns false when one already is.
-    pub fn start(self: &Arc<Self>, app: &AppHandle) -> bool {
+    /// The OS reported a new network path. A different network mid-test aborts it.
+    pub fn on_path(&self, app: &AppHandle, path: Path) {
+        let previous = self
+            .path
+            .lock()
+            .ok()
+            .and_then(|mut current| current.replace(path));
+        if previous.is_some_and(|previous| previous.identity() != path.identity()) {
+            if let Some(control) = self.control.lock().ok().and_then(|control| control.clone()) {
+                control.network_changed.store(true, Ordering::Relaxed);
+            }
+        }
+        let next = self.view().network.next(&path, unix_ms());
+        if next != self.view().network {
+            self.change(app, |view| view.network = next);
+        }
+    }
+
+    /// Starts a test unless one is running. A metered connection needs `confirmed`.
+    pub fn start(self: &Arc<Self>, app: &AppHandle, confirmed: bool) -> Start {
+        let network = self.view().network;
+        if !network.online {
+            return Start::Offline;
+        }
+        if network.metered.is_some() && !confirmed {
+            return Start::NeedsConfirmation;
+        }
         let control = Arc::new(Control::default());
         {
             let Ok(mut current) = self.control.lock() else {
-                return false;
+                return Start::Running;
             };
             if current.is_some() {
-                return false;
+                return Start::Running;
             }
             *current = Some(control.clone());
         }
@@ -139,7 +177,7 @@ impl Runtime {
                 }
             });
         });
-        true
+        Start::Started
     }
 }
 

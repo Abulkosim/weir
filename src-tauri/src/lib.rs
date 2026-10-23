@@ -1,6 +1,7 @@
 mod activity;
 mod commands;
 pub mod core;
+mod platform;
 mod runtime;
 
 use crate::core::tray;
@@ -33,6 +34,8 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             tray::setup(app.handle())?;
+            let watcher = app.handle().clone();
+            platform::watch_path(move |path| runtime::runtime(&watcher).on_path(&watcher, path));
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 loop {

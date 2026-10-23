@@ -59,8 +59,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 
 ## Phase 2 — M2 Real: everything v0.1 needs
 
-- [ ] **2.1 Metered guard.** `core/metered.rs`: macOS `nw_path_monitor` (expensive, constrained, satisfied) via a small `extern "C"` binding; Windows `GetInternetConnectionProfile().GetConnectionCost()` (Unknown = metered). Test button asks first with the data estimate.
+- [x] **2.1 Metered guard.** `core/metered.rs`: macOS `nw_path_monitor` (expensive, constrained, satisfied) via a small `extern "C"` binding; Windows `GetInternetConnectionProfile().GetConnectionCost()` (Unknown = metered). Test button asks first with the data estimate.
   Verify: unit tests on the decision table; e2e for the metered confirm state; manual check on this Mac's hotspot (no test run) 👤-free.
+  Done 2026-10-23: `core/network.rs` decision table (hotspot, Low Data Mode, metered/unknown cost, roaming, over limit), `platform/macos.rs` via Network.framework `nw_path_monitor` (~60 lines, no crate), `platform/windows.rs` via `ConnectionProfile.GetConnectionCost` + `NetworkStatusChanged` (compiles in CI only). Rust refuses `start_test` on a metered link without `confirmed`. On this Mac the watcher reports `metered=Hotspot` (no test run). A change of interface or online state mid-test aborts it.
 - [ ] **2.2 Offline state.** Path unsatisfied → "No internet since 14:02", Test disabled, tray ring broken. Network change during a test aborts it.
   Verify: unit test on transitions; e2e for offline.
 - [ ] **2.3 Plain meaning.** Headline sentence and per-topic lines from method.md rules under the result.

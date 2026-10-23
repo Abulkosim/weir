@@ -33,12 +33,14 @@ wiremock = "0.6.5"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-util", "time", "test-util"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6"
 objc2 = "0.6"
 objc2-app-kit = { version = "0.3", default-features = false, features = ["NSView", "NSVisualEffectView", "NSWindow", "NSScreen", "NSStatusItem", "NSStatusBarButton", "NSButton", "NSControl", "NSFont", "NSFontDescriptor", "objc2-core-foundation", "NSResponder"] }
 objc2-foundation = { version = "0.3", default-features = false, features = ["NSArray", "NSGeometry", "NSString", "NSProcessInfo"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6"
+windows = { version = "0.62", features = ["Foundation", "Networking_Connectivity"] }
 
 [profile.release]
 codegen-units = 1

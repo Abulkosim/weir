@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
-import { clock, errorCopy, estimateText, formatMbps, formatMs, relativeAge, server } from '../lib/format'
+import { clock, errorCopy, estimateText, formatMbps, formatMs, meteredCopy, meteredLabel, relativeAge, server } from '../lib/format'
 import { loadedMs, type View } from '../lib/model'
 
-const props = defineProps<{ view: View; now: number; busy?: boolean }>()
-defineEmits<{ test: [] }>()
+const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean }>()
+defineEmits<{ test: [confirmed: boolean]; dismiss: [] }>()
+const notNow = ref<HTMLButtonElement | null>(null)
+const metered = computed(() => props.view.network.metered)
+const note = computed(() => metered.value ? `${meteredLabel[metered.value]} · ${estimateText(props.view.estimate)}` : estimateText(props.view.estimate))
+watch(() => props.confirming, async open => {
+  if (!open) return
+  await nextTick()
+  notNow.value?.focus()
+})
 
 const report = computed(() => props.view.last)
 const failure = computed(() => props.view.failure)
@@ -69,9 +77,17 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
       </section>
     </template>
 
-    <footer class="foot">
-      <span class="note num">{{ estimateText(view.estimate) }}</span>
-      <button class="button button-primary" :disabled="busy" @click="$emit('test')"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button>
+    <section v-if="confirming && metered" class="confirm" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-detail">
+      <p id="confirm-title" class="confirm-title"><AppIcon name="alert" :size="15"/>{{ meteredCopy[metered] }}</p>
+      <p id="confirm-detail" class="confirm-detail num">{{ estimateText(view.estimate) }} of your data.</p>
+      <div class="confirm-actions">
+        <button ref="notNow" class="button" @click="$emit('dismiss')">Not now</button>
+        <button class="button button-primary" @click="$emit('test', true)">Test anyway</button>
+      </div>
+    </section>
+    <footer v-else class="foot">
+      <span class="note num" :class="{ 'note-warning': metered }">{{ note }}</span>
+      <button class="button button-primary" :disabled="busy" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button>
     </footer>
   </div>
 </template>

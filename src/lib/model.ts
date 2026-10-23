@@ -40,12 +40,16 @@ export const reportSchema = z.object({
   bytesUsed: count,
 })
 
+export const meteredSchema = z.enum(['hotspot', 'lowData', 'metered', 'roaming', 'overLimit'])
+export const startSchema = z.enum(['started', 'running', 'needsConfirmation', 'offline'])
+
 export const viewSchema = z.object({
   revision: count,
   testing: progressSchema.nullable(),
   last: reportSchema.nullable(),
   failure: z.object({ error: testErrorSchema, atMs: count }).nullable(),
   estimate: z.object({ upTo: z.boolean(), mb: count }),
+  network: z.object({ online: z.boolean(), metered: meteredSchema.nullable(), offlineSinceMs: count.nullable() }),
 })
 
 export type TestError = z.infer<typeof testErrorSchema>
@@ -54,8 +58,9 @@ export type Progress = z.infer<typeof progressSchema>
 export type Speed = z.infer<typeof speedSchema>
 export type Report = z.infer<typeof reportSchema>
 export type View = z.infer<typeof viewSchema>
+export type Metered = z.infer<typeof meteredSchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 } }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null } }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {

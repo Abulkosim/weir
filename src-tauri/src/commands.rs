@@ -1,6 +1,6 @@
 use crate::{
     core::{popover::PopoverPlacement, tray},
-    runtime::{runtime, View},
+    runtime::{runtime, Start, View},
 };
 use tauri::{AppHandle, Manager, State};
 
@@ -34,8 +34,8 @@ pub fn get_state(app: AppHandle) -> View {
 }
 
 #[tauri::command]
-pub fn start_test(app: AppHandle) -> bool {
-    runtime(&app).start(&app)
+pub fn start_test(app: AppHandle, confirmed: bool) -> Start {
+    runtime(&app).start(&app, confirmed)
 }
 
 #[tauri::command]
