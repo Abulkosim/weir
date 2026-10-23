@@ -257,6 +257,21 @@ fn place(app: &AppHandle, window: &tauri::WebviewWindow) {
     fit_backdrop(window);
 }
 
+/// Placeholder until the health ring lands: progress while testing, unknown at rest.
+pub fn update(app: &AppHandle, view: &crate::runtime::View) {
+    let tooltip = match (&view.testing, &view.last) {
+        (Some(_), _) => "Weir · Testing".to_owned(),
+        (None, Some(report)) => format!("Weir · Download {:.0} Mbps", report.download.mbps),
+        (None, None) => "Weir · Not tested yet".to_owned(),
+    };
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        if let Some(tray) = handle.tray_by_id(TRAY_ID) {
+            let _ = tray.set_tooltip(Some(&tooltip));
+        }
+    });
+}
+
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     let show_item = MenuItem::with_id(app, "show", "Open Weir", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit Weir", true, None::<&str>)?;

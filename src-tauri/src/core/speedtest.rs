@@ -189,14 +189,15 @@ pub struct Report {
     pub colo: Option<String>,
     pub latency: Option<IdleLatency>,
     pub download: Speed,
-    pub upload: Result<Speed, TestError>,
+    pub upload: Option<Speed>,
+    pub upload_error: Option<TestError>,
     pub bytes_used: u64,
 }
 
 impl Report {
     /// Latency under load: the worse of the download and upload medians.
     pub fn loaded_ms(&self) -> Option<f64> {
-        let upload = self.upload.as_ref().ok().and_then(|speed| speed.loaded_ms);
+        let upload = self.upload.as_ref().and_then(|speed| speed.loaded_ms);
         match (self.download.loaded_ms, upload) {
             (Some(down), Some(up)) => Some(down.max(up)),
             (down, up) => down.or(up),
@@ -574,7 +575,8 @@ pub async fn run<B: Backend>(
         colo: server.colo,
         latency: latency.map(IdleLatency::from),
         download: Speed::from(&download.throughput, download.loaded_ms),
-        upload,
+        upload_error: upload.as_ref().err().copied(),
+        upload: upload.ok(),
         bytes_used: phases.used.load(Ordering::Relaxed),
     })
 }

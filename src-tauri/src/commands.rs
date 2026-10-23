@@ -1,4 +1,7 @@
-use crate::core::{popover::PopoverPlacement, tray};
+use crate::{
+    core::{popover::PopoverPlacement, tray},
+    runtime::{runtime, View},
+};
 use tauri::{AppHandle, Manager, State};
 
 #[tauri::command]
@@ -23,4 +26,19 @@ pub fn hide_window(app: AppHandle) -> Result<(), String> {
         .ok_or("Window is unavailable.")?
         .hide()
         .map_err(|_| "Could not close the popover.".into())
+}
+
+#[tauri::command]
+pub fn get_state(app: AppHandle) -> View {
+    runtime(&app).view()
+}
+
+#[tauri::command]
+pub fn start_test(app: AppHandle) -> bool {
+    runtime(&app).start(&app)
+}
+
+#[tauri::command]
+pub fn cancel_test(app: AppHandle) {
+    runtime(&app).cancel();
 }

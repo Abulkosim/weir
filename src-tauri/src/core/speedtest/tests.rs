@@ -146,6 +146,7 @@ async fn full_test_reports_every_metric() {
         report.download.mbps
     );
     let upload = report.upload.as_ref().unwrap();
+    assert_eq!(report.upload_error, None);
     assert!(close(upload.mbps, 40.0, 0.1), "{}", upload.mbps);
     assert!(!upload.rough);
     let latency = report.latency.as_ref().unwrap();
@@ -238,7 +239,8 @@ async fn refused_upload_keeps_the_download_and_says_why() {
         .await
         .unwrap();
     assert!(close(report.download.mbps, 300.0, 0.05));
-    assert_eq!(report.upload, Err(TestError::Refused));
+    assert_eq!(report.upload, None);
+    assert_eq!(report.upload_error, Some(TestError::Refused));
 }
 
 #[tokio::test(start_paused = true)]

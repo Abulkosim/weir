@@ -2,8 +2,12 @@
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
 import DesignGallery from './components/DesignGallery.vue'
+import ResultView from './components/ResultView.vue'
+import TestingView from './components/TestingView.vue'
+import { useWeir } from './lib/weir'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
+const { view, connectionError, now, samples, start, cancel } = useWeir()
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
 const forcedTheme = demo ? query.get('theme') : null
@@ -82,11 +86,10 @@ onUnmounted(() => {
       <div v-if="!desktop || demo || arrowX !== null" class="popover-arrow" :style="arrowX === null ? undefined : { left: `${arrowX - 6}px` }" aria-hidden="true"/>
       <div ref="popover" class="popover">
         <DesignGallery v-if="scenario === 'design'"/>
-        <main v-else class="popover-body">
-          <section class="empty" aria-labelledby="empty-title">
-            <h1 id="empty-title">Not tested yet</h1>
-            <p>Test download, upload and latency against Cloudflare.</p>
-          </section>
+        <main v-else>
+          <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
+          <TestingView v-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
+          <ResultView v-else :view="view" :now="now" @test="start"/>
         </main>
         <div v-if="!desktop || demo" class="preview-ribbon">Interface preview<span>Sample data</span></div>
       </div>

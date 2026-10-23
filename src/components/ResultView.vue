@@ -1,0 +1,77 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import AppIcon from './AppIcon.vue'
+import { clock, errorCopy, estimateText, formatMbps, formatMs, relativeAge, server } from '../lib/format'
+import { loadedMs, type View } from '../lib/model'
+
+const props = defineProps<{ view: View; now: number; busy?: boolean }>()
+defineEmits<{ test: [] }>()
+
+const report = computed(() => props.view.last)
+const failure = computed(() => props.view.failure)
+const loaded = computed(() => report.value ? loadedMs(report.value) : null)
+const downloadLabel = computed(() => report.value ? `Download ${formatMbps(report.value.download.mbps)} megabits per second` : '')
+const varied = computed(() => report.value?.download.varied ? `Varied ${formatMbps(report.value.download.p10)}–${formatMbps(report.value.download.p90)} Mbps` : null)
+</script>
+
+<template>
+  <div class="view result-view">
+    <template v-if="failure">
+      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span></div>
+      <section class="card failure" role="alert">
+        <span class="failure-icon"><AppIcon name="alert" :size="20"/></span>
+        <h1>{{ errorCopy[failure.error].title }}</h1>
+        <p>{{ errorCopy[failure.error].detail }}</p>
+        <p v-if="report" class="previous num">Last result {{ formatMbps(report.download.mbps) }} Mbps down · {{ relativeAge(report.startedAtMs, now) }}</p>
+      </section>
+    </template>
+
+    <template v-else-if="report">
+      <div class="meta"><span class="where"><span class="dot"/>{{ server(report.provider, report.colo) }} · {{ relativeAge(report.startedAtMs, now) }}</span></div>
+      <section class="card" aria-label="Last result">
+        <h1 class="sr-only">Last result</h1>
+        <p class="label" aria-hidden="true">Download</p>
+        <p class="hero num" :aria-label="downloadLabel"><span class="big" aria-hidden="true">{{ formatMbps(report.download.mbps) }}</span><span class="unit" aria-hidden="true">Mbps</span></p>
+        <p v-if="varied" class="hint num">{{ varied }}</p>
+        <p v-if="report.download.capped" class="hint">Stopped at the data limit, speed may be higher</p>
+        <div class="stats">
+          <div class="stat">
+            <p class="label">Upload</p>
+            <template v-if="report.upload">
+              <p class="value num">{{ formatMbps(report.upload.mbps) }}<small>Mbps</small></p>
+              <p v-if="report.upload.rough" class="sub">Rough estimate</p>
+            </template>
+            <template v-else>
+              <p class="value num wait">–</p>
+              <p class="sub">{{ report.uploadError ? errorCopy[report.uploadError].title : 'Not measured' }}</p>
+            </template>
+          </div>
+          <div class="stat">
+            <p class="label">Latency</p>
+            <template v-if="report.latency">
+              <p class="value num">{{ formatMs(report.latency.medianMs) }}<small>ms</small></p>
+              <p class="sub num">{{ loaded === null ? 'Not measured under load' : `${formatMs(loaded)} ms under load` }}</p>
+            </template>
+            <template v-else>
+              <p class="value num wait">–</p>
+              <p class="sub">Not measured</p>
+            </template>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template v-else>
+      <section class="card never">
+        <span class="never-mark" aria-hidden="true"><AppIcon name="weir" :size="22"/></span>
+        <h1>Not tested yet</h1>
+        <p>Measures download, upload and latency against Cloudflare. Takes about 20 seconds.</p>
+      </section>
+    </template>
+
+    <footer class="foot">
+      <span class="note num">{{ estimateText(view.estimate) }}</span>
+      <button class="button button-primary" :disabled="busy" @click="$emit('test')"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button>
+    </footer>
+  </div>
+</template>

@@ -1,8 +1,10 @@
 mod commands;
 pub mod core;
+mod runtime;
 
 use crate::core::tray;
-use std::time::Instant;
+use runtime::Runtime;
+use std::{sync::Arc, time::Instant};
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 
@@ -17,10 +19,14 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_positioner::init())
         .manage(tray::Visibility::default())
+        .manage(Arc::new(Runtime::default()))
         .invoke_handler(tauri::generate_handler![
             commands::get_popover_placement,
             commands::fit_popover,
             commands::hide_window,
+            commands::get_state,
+            commands::start_test,
+            commands::cancel_test,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
