@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weir — Internet speed in your menu bar</title>
+<meta name="description" content="Free, open-source menu bar and system tray app for macOS and Windows. Test download, upload and latency in one click, see what the numbers mean, and keep a local history.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f9fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e151a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://abulkosim.github.io/weir/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Weir">
+<meta property="og:title" content="Weir — Internet speed in your menu bar">
+<meta property="og:description" content="Test download, upload and latency in one click, see what the numbers mean, and keep a local history. macOS and Windows. Free and open source.">
+<meta property="og:url" content="https://abulkosim.github.io/weir/">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f6f9fa;
+  --shot: #dfe7ea;
+  --card: #fff;
+  --ink: #0e1b22;
+  --secondary: #4a5b64;
+  --tertiary: #62727a;
+  --accent: #0a8f88;
+  --accent-ink: #087670;
+  --accent-soft: #dcf1ee;
+  --line: rgba(14,27,34,.07);
+  --button: #0e1b22;
+  --button-ink: #f3f8f9;
+  --focus: #0a8f88;
+  --shadow: 0 24px 70px -24px rgba(10,40,52,.35), 0 1px 4px rgba(10,40,52,.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0e151a;
+    --shot: #070c0f;
+    --card: #151f25;
+    --ink: #e7f1f3;
+    --secondary: #a7b8bf;
+    --tertiary: #8597a0;
+    --accent: #3fd6c8;
+    --accent-ink: #5fe0d3;
+    --accent-soft: #143331;
+    --line: rgba(220,240,245,.07);
+    --button: #3fd6c8;
+    --button-ink: #04201d;
+    --focus: #3fd6c8;
+    --shadow: 0 24px 80px -20px rgba(0,0,0,.7), 0 1px 4px rgba(0,0,0,.4);
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.55 Geist, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Inter, Roboto, "Helvetica Neue", sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+a:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+header.top { padding: 22px 0; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 650; font-size: 19px; letter-spacing: -.01em; text-decoration: none; }
+.brand svg { color: var(--accent); }
+.hero { display: grid; grid-template-columns: 1fr minmax(0, 400px); gap: 56px; align-items: center; padding-top: 48px; padding-bottom: 72px; }
+h1 { font-size: clamp(34px, 5.2vw, 52px); line-height: 1.06; letter-spacing: -.035em; font-weight: 700; margin: 0 0 18px; text-wrap: balance; }
+.lede { font-size: 18px; color: var(--secondary); margin: 0 0 30px; max-width: 30em; text-wrap: pretty; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 600; font-size: 15px; text-decoration: none; transition: background-color .18s ease, transform .18s ease; }
+.btn svg { flex: none; }
+.btn-primary { background: var(--button); color: var(--button-ink); }
+.btn-primary:hover { background: color-mix(in srgb, var(--button) 88%, var(--page)); }
+.btn-secondary { background: var(--accent-soft); color: var(--ink); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--accent-soft) 80%, var(--accent)); }
+.btn:active { transform: translateY(1px); }
+.meta { font-size: 14px; color: var(--tertiary); margin: 0; }
+.meta a { color: var(--accent-ink); text-decoration: none; }
+.meta a:hover { text-decoration: underline; }
+.shot { margin: 0; padding: 28px 28px 0; background: var(--shot); border-radius: 28px; box-shadow: var(--shadow); overflow: hidden; }
+.shot img { display: block; width: 100%; max-width: 380px; height: auto; margin: 0 auto; }
+section { padding: 56px 0; border-top: 1px solid var(--line); }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 22px; }
+.features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; list-style: none; padding: 0; margin: 0; }
+.features h3 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; margin: 0 0 6px; }
+.features p { font-size: 15px; color: var(--secondary); margin: 0; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+.prose p { margin: 0 0 14px; color: var(--secondary); max-width: 34em; }
+.prose p:last-child { margin-bottom: 0; }
+.prose strong { color: var(--ink); font-weight: 600; }
+.prose a { color: var(--accent-ink); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+code { font: 14px/1 ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; background: var(--accent-soft); color: var(--ink); padding: 2px 6px; border-radius: 5px; overflow-wrap: anywhere; }
+.hosts { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 8px; }
+.hosts li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; color: var(--secondary); font-size: 15px; }
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; font-size: 14px; color: var(--tertiary); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: center; }
+footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+footer a { text-decoration: none; color: var(--secondary); }
+footer a:hover { color: var(--ink); }
+@media (max-width: 900px) {
+  .features { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 24px; padding-bottom: 56px; }
+  .shot { max-width: 380px; margin: 0 auto; width: 100%; }
+  .shot { padding: 20px 20px 0; border-radius: 22px; }
+  .cols { grid-template-columns: 1fr; gap: 40px; }
+  section { padding: 44px 0; }
+}
+@media (max-width: 480px) {
+  .wrap { padding: 0 16px; }
+  .features { grid-template-columns: 1fr; gap: 24px; }
+  .actions .btn { flex: 1 1 100%; justify-content: center; }
+  .lede { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Weir home">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12.75" r="8.25" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="38.88 51.84" transform="rotate(135 12 12.75)"/><circle cx="12" cy="12.75" r="2" fill="currentColor"/></svg>
+      Weir
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div>
+      <h1>Internet speed, in your menu bar</h1>
+      <p class="lede">Test download, upload and latency in one click from the macOS menu bar or the Windows system tray, and see what the numbers mean for video, calls and games.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://github.com/Abulkosim/weir/releases/latest">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>
+          Download for macOS
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/Abulkosim/weir/releases/latest">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>
+          Download for Windows
+        </a>
+      </div>
+      <p class="meta">Free and open source · MIT · <a href="https://github.com/Abulkosim/weir">GitHub</a></p>
+    </div>
+    <figure class="shot">
+      <picture>
+        <source srcset="overview-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="overview-light.png" width="420" height="409" loading="lazy" alt="Weir popover with sample results: download 312 Mbps, upload 41 Mbps, latency 14 ms, and the line Good for 4K video and calls">
+      </picture>
+    </figure>
+  </div>
+
+  <section aria-labelledby="what">
+    <div class="wrap">
+      <h2 id="what">What it does</h2>
+      <ul class="features">
+        <li>
+          <h3>One-click test</h3>
+          <p>Download, upload, latency at rest and under load, and jitter. A test takes 12 to 20 seconds.</p>
+        </li>
+        <li>
+          <h3>Plain meaning</h3>
+          <p>Each result says what it is good for, such as “Good for 4K video and calls”, and what may stutter.</p>
+        </li>
+        <li>
+          <h3>Data use shown</h3>
+          <p>The estimate is shown before every test. On a hotspot or metered connection, Weir asks first.</p>
+        </li>
+        <li>
+          <h3>Local history</h3>
+          <p>Every test is kept for a year on your computer. Export it as CSV.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="how">
+    <div class="wrap cols">
+      <div class="prose">
+        <h2 id="how">How it works</h2>
+        <p>Weir tests against Cloudflare's speed test servers, the same ones <code>speed.cloudflare.com</code> uses, at the nearest data centre. Each result shows the server and when it ran.</p>
+        <p><strong>Steady numbers, not peaks.</strong> Weir uses several connections, skips the ramp-up, and reports the speed the link holds. If a test stalls or is cut short, Weir says so and shows no number.</p>
+        <p>Weir measures your connection. It does not change or speed it up.</p>
+      </div>
+      <div class="prose">
+        <h2>Privacy</h2>
+        <p>No accounts, telemetry, analytics, or ads. Weir connects only to:</p>
+        <ul class="hosts">
+          <li><code>speed.cloudflare.com</code> when you run a test</li>
+          <li><code>github.com</code> update checks, daily unless turned off</li>
+        </ul>
+        <p>History stays on your computer and never includes your IP address, location, or Wi-Fi name. Details in <a href="https://github.com/Abulkosim/weir/blob/main/PRIVACY.md">PRIVACY.md</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="install">
+    <div class="wrap cols">
+      <div class="prose">
+        <h2 id="install">Install</h2>
+        <p>Builds don't carry an Apple or Microsoft publisher signature yet, so the system warns on first launch.</p>
+        <p><a href="https://github.com/Abulkosim/weir/blob/main/docs/install.md">Full install notes</a></p>
+      </div>
+      <div class="prose">
+        <p><strong>macOS 12+.</strong> Open the universal <code>.dmg</code> and move Weir to Applications. If macOS blocks it, go to System Settings → Privacy &amp; Security → <strong>Open Anyway</strong>.</p>
+        <p><strong>Windows x64.</strong> Run the <code>-setup.exe</code>. If SmartScreen warns, choose More info → <strong>Run anyway</strong>.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Weir is independent and not affiliated with Cloudflare.</span>
+    <nav aria-label="Project links">
+      <a href="https://github.com/Abulkosim/weir">GitHub</a>
+      <a href="https://github.com/Abulkosim/weir/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/Abulkosim/weir/blob/main/PRIVACY.md">Privacy</a>
+      <a href="https://github.com/Abulkosim/weir/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/Abulkosim/weir/issues">Issues</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>
