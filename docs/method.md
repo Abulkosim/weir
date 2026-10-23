@@ -65,7 +65,7 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 ### 4. Upload (5–8 s, ≤ 190 MB)
 
 - 300 ms pause after download so queues drain.
-- **Streams:** 4 (6 when idle latency > 100 ms). `POST __up`, body `clamp(stream_rate × 1 s, 256 kB, 25 MB)` from one pre-generated buffer.
+- **Streams:** 4 (6 when idle latency > 100 ms). `POST __up`, body `clamp(stream_rate × 0.5 s, 256 kB, 25 MB)` from one static zero buffer. Half-second requests leave at least 3 completed requests per stream inside the steady window.
 - **Live gauge:** bytes written to the sockets, 1 s moving average.
 - **Result:** bytes written to the socket overstate delivery (send buffers hold MBs), so the result comes from completed requests. Per stream, requests that started inside the steady window: Σ bytes ÷ Σ (response TTFB − server time). Total = sum over streams. `cf-meta-upload-bytes` cross-checks the count.
 - Warm-up and stop rules are the same as download, applied to the socket counter, which is good enough to see the plateau. Fewer than 3 completed requests per stream inside the steady window → the result falls back to the counter mean and is marked "rough".
