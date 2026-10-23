@@ -21,7 +21,7 @@ for (const theme of themes) {
     test('result shows every metric with server and age', async ({ page }, info) => {
       await page.goto(`/?demo=1&state=result&theme=${theme}`)
       await expect(page.getByLabel('Download 312 megabits per second')).toBeVisible()
-      await expect(page.getByText('Cloudflare, Frankfurt · 12 min ago')).toBeVisible()
+      await expect(page.getByText('Tested 12 min ago · Cloudflare, Frankfurt')).toBeVisible()
       await expect(page.getByText('62 ms under load')).toBeVisible()
       await expect(page.getByText('Uses about 250 MB')).toBeVisible()
       await expect(page.getByRole('button', { name: 'Good for 4K video and calls' })).toBeVisible()
@@ -90,6 +90,41 @@ for (const theme of themes) {
     await expect(page.getByText('Lags under load: +166 ms')).toBeVisible()
     await expect(page.getByText('Good for 4K video', { exact: true })).toBeVisible()
     await shoot(page, 'stutter', info.outputPath(`stutter-${theme}.png`))
+  })
+}
+
+const edges = [
+  { state: 'stale', text: 'Tested 2 days ago · Cloudflare, Frankfurt', also: 'Over a day old. Test again for a current number.' },
+  { state: 'capped', text: 'Stopped at the data limit, speed may be higher', also: 'Uses about 480 MB' },
+  { state: 'varied', text: 'Varied 52–118 Mbps', also: 'Download 86 megabits per second' },
+  { state: 'partial', text: 'Connection stalled', also: 'Not measured' },
+] as const
+
+for (const theme of themes) {
+  for (const edge of edges) {
+    test(`${edge.state} result is labelled in ${theme}`, async ({ page }, info) => {
+      await page.goto(`/?demo=1&state=${edge.state}&theme=${theme}`)
+      await expect(page.getByText(edge.text, { exact: true })).toBeVisible()
+      await expect(page.getByText(edge.also, { exact: true }).or(page.getByLabel(edge.also)).first()).toBeVisible()
+      await shoot(page, edge.state, info.outputPath(`${edge.state}-${theme}.png`))
+    })
+  }
+}
+
+const failures = {
+  offline: 'No internet',
+  refused: 'Cloudflare refused the test',
+  serverError: 'Cloudflare server error',
+  stalled: 'Connection stalled',
+  tooShort: 'Test too short to measure',
+  dropped: 'Connection kept dropping',
+  networkChanged: 'Network changed during the test',
+} as const
+
+for (const [error, title] of Object.entries(failures)) {
+  test(`failure ${error} has its own message`, async ({ page }) => {
+    await page.goto(`/?demo=1&state=failed&error=${error}`)
+    await expect(page.getByRole('alert').getByRole('heading')).toHaveText(title)
   })
 }
 

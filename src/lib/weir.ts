@@ -4,7 +4,7 @@ import { createDemoView, demoMeaning, demoProgress, demoReport, demoSamples } fr
 import { emptyView, startSchema, viewSchema, type Phase, type View } from './model.ts'
 
 export function useWeir() {
-  const view = ref<View>(demo ? createDemoView(query.get('state')) : emptyView)
+  const view = ref<View>(demo ? createDemoView(query.get('state'), Date.now(), query.get('error')) : emptyView)
   const loading = ref(desktop && !demo)
   const connectionError = ref<string | null>(null)
   const now = ref(Date.now())

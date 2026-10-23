@@ -1,6 +1,6 @@
-import { viewSchema, type Meaning, type Report, type View } from './model.ts'
+import { testErrorSchema, viewSchema, type Meaning, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -49,7 +49,7 @@ export function demoSamples(count: number, target: number): number[] {
   })
 }
 
-export function createDemoView(state: string | null, now = Date.now()): View {
+export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
   const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null }
   if (scenario === 'never') return viewSchema.parse(view)
@@ -71,8 +71,22 @@ export function createDemoView(state: string | null, now = Date.now()): View {
     view.meaning = demoStutter
   }
   if (scenario === 'offline') view.network = { online: false, metered: null, offlineSinceMs: new Date(now).setHours(14, 2, 0, 0) }
+  if (scenario === 'stale' && view.last) view.last.startedAtMs = now - 2 * 24 * 60 * minute - 5 * minute
+  if (scenario === 'capped' && view.last) {
+    view.last.download = { ...view.last.download, mbps: 942.6, p10: 918, p90: 960, capped: true }
+    view.estimate = { upTo: false, mb: 480 }
+  }
+  if (scenario === 'varied' && view.last) view.last.download = { ...view.last.download, mbps: 86.4, p10: 52, p90: 118, varied: true }
+  if (scenario === 'partial' && view.last) {
+    view.last.latency = null
+    view.last.upload = null
+    view.last.uploadError = 'stalled'
+    view.last.download.loadedMs = null
+    view.meaning = { health: 'fair', headline: 'Upload not measured', lines: [{ topic: 'Video', text: 'Good for 4K video', health: 'good' }, { topic: 'Calls', text: 'Upload not measured', health: 'fair' }] }
+  }
   if (scenario === 'failed') {
-    view.failure = { error: 'stalled', atMs: now - 2 * minute }
+    const parsed = testErrorSchema.safeParse(error)
+    view.failure = { error: parsed.success ? parsed.data : 'stalled', atMs: now - 2 * minute }
     if (view.last) view.last = { ...view.last, startedAtMs: now - 3 * 60 * minute }
   }
   return viewSchema.parse(view)

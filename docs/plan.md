@@ -68,8 +68,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **2.3 Plain meaning.** Headline sentence and per-topic lines from method.md rules under the result.
   Verify: unit tests per threshold boundary; e2e for good, calls-stutter and slow results.
   Done 2026-10-23: rules in Rust (`core/meaning.rs`, next to health so tray and popover agree), sent as `view.meaning`. Headline picks the worst activity problem (video, calls, games) before the technical "under load" line. Popover: coloured verdict that expands into Video / Calls / Games / Under load lines.
-- [ ] **2.4 Every failure state designed.** Failed (each validity message), cancelled, stale result (> 24 h: "Tested 2 days ago"), cap hit, "varied" range, latency not measured.
+- [x] **2.4 Every failure state designed.** Failed (each validity message), cancelled, stale result (> 24 h: "Tested 2 days ago"), cap hit, "varied" range, latency not measured.
   Verify: one demo state each; e2e + screenshots light + dark.
+  Done 2026-10-23: demo states `stale`, `capped`, `varied`, `partial`, `failed&error=<each>`; meta line now reads "Tested 12 min ago · Cloudflare, Frankfurt" and greys out after a day. 76 e2e.
 - [ ] **2.5 History.** `core/history.rs`: own bounded JSON file, 1 year retention, atomic writes, tolerant load. Popover list (date, down, up, latency, server), small download sparkline.
   Verify: unit tests for pruning, corrupt-file recovery, size bound; e2e history state.
 - [ ] **2.6 CSV export.** Save dialog, columns documented in README; no IP, city or SSID.

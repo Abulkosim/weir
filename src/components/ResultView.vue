@@ -8,6 +8,7 @@ const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?
 defineEmits<{ test: [confirmed: boolean]; dismiss: [] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
 const details = ref(false)
+const stale = computed(() => props.view.last ? props.now - props.view.last.startedAtMs > 24 * 3_600_000 : false)
 const metered = computed(() => props.view.network.metered)
 const offline = computed(() => !props.view.network.online)
 const note = computed(() => metered.value ? `${meteredLabel[metered.value]} · ${estimateText(props.view.estimate)}` : estimateText(props.view.estimate))
@@ -37,13 +38,14 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </template>
 
     <template v-else-if="report">
-      <div class="meta"><span class="where"><span class="dot"/>{{ server(report.provider, report.colo) }} · {{ relativeAge(report.startedAtMs, now) }}</span></div>
+      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span></div>
       <section class="card" aria-label="Last result">
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>
         <p class="hero num" :aria-label="downloadLabel"><span class="big" aria-hidden="true">{{ formatMbps(report.download.mbps) }}</span><span class="unit" aria-hidden="true">Mbps</span></p>
         <p v-if="varied" class="hint num">{{ varied }}</p>
         <p v-if="report.download.capped" class="hint">Stopped at the data limit, speed may be higher</p>
+        <p v-if="stale" class="hint">Over a day old. Test again for a current number.</p>
         <div class="stats">
           <div class="stat">
             <p class="label">Upload</p>
