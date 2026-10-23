@@ -1,0 +1,49 @@
+name: Numbers look wrong
+description: Weir's result differs a lot from another speed test on the same connection.
+labels: [bug, measurement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste IP addresses, your location, Wi-Fi names, or your `history.json`. Redact screenshots.
+        Different tests use different servers and methods, so some difference is normal. See [docs/method.md](https://github.com/Abulkosim/weir/blob/main/docs/method.md#comparing-with-other-tests).
+  - type: input
+    id: version
+    attributes:
+      label: Weir version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Operating system and architecture
+      placeholder: macOS 15, Apple Silicon / Windows 11, x64
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection type
+      options: [Wi-Fi, Wired (Ethernet), Phone hotspot or cellular, VPN on, Not sure]
+    validations:
+      required: true
+  - type: input
+    id: plan
+    attributes:
+      label: Plan speed, if known
+      placeholder: 300 Mbps down / 50 Mbps up
+  - type: textarea
+    id: weir
+    attributes:
+      label: What Weir shows
+      description: Download, upload, latency, and the server line, for example "Cloudflare, Frankfurt".
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: What the other test shows
+      description: Which test (speed.cloudflare.com, fast.com, Speedtest by Ookla, networkQuality), its numbers, and how soon before or after Weir's test.
+    validations:
+      required: true

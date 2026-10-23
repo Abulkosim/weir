@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a broken state, a failed test, or a platform or install issue.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste IP addresses, your location, Wi-Fi names, or your `history.json`. Redact screenshots.
+        If the numbers look wrong, use the **Numbers look wrong** template instead.
+  - type: input
+    id: version
+    attributes:
+      label: Weir version
+      description: Shown in Settings → Updates.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Operating system and architecture
+      placeholder: macOS 15, Apple Silicon / Windows 11, x64, 150% scaling
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection type
+      options: [Wi-Fi, Wired (Ethernet), Phone hotspot or cellular, VPN on, Not sure]
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Running a test, Result or meaning, History or CSV export, Settings, Tray icon or popover, Updates, Installation]
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include steps, expected behavior, and the exact visible message, for example "Connection stalled".
+    validations:
+      required: true
