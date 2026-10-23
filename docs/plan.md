@@ -39,8 +39,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 
 ## Phase 1 — M1 Alive: a real test from the tray
 
-- [ ] **1.1 Measurement math.** `core/stats.rs`: median, percentiles, mean |Δ| jitter, warm-up detection, stop rule, steady-window mean, upload per-request rate, validity rules, data estimate, plain-meaning rules. Pure functions.
+- [x] **1.1 Measurement math.** `core/stats.rs`: median, percentiles, mean |Δ| jitter, warm-up detection, stop rule, steady-window mean, upload per-request rate, validity rules, data estimate. Pure functions. (Plain-meaning rules are 2.3.)
   Verify: unit tests on recorded sample fixtures (steady, slow ramp, stall, cap hit, spiky, too short) — each gives the expected number or the expected failure.
+  Done 2026-10-23: 18 tests. Fixtures are synthetic shapes (`scripts/make-throughput-fixtures.py`) until real recordings exist (1.6). Steady 300 Mbps converges at ~5.3 s within 1 %; spiky link reports its mean, not the peak, and is marked varied; stall fails at ~5.5 s; gigabit hits the 380 MB cap at ~3.6 s. Caps became 380/190 MB so the shown ceiling, with header overhead, is honestly 600 MB.
 - [ ] **1.2 Backend trait + Cloudflare client.** `core/backends/{mod,cloudflare}.rs`: trace/colo, latency probe with `Server-Timing` subtraction, download and upload streams, HTTP/1.1, caps, cancel. Base URL injectable.
   Verify: wiremock tests for success, slow, stalled, cut-off mid-body, 403, 429 with `Retry-After`, 5xx; no response header besides `colo` reaches the result struct.
 - [ ] **1.3 Test runner.** `core/speedtest.rs`: sequence pre-flight → idle → download (+ loaded probes) → upload, progress events at 10 Hz, cancel, network-change abort, result or typed failure.
