@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weir directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&family=Instrument+Sans:wght@400..700&family=Instrument+Serif&family=Inter:opsz,wght@14..32,400..700&display=block" rel="stylesheet">
+<style>
+:root { color-scheme: light; }
+html, body { margin: 0; }
+body { background: var(--stage); min-height: 100vh; display: flex; justify-content: center; padding: 40px 32px 48px; box-sizing: border-box; }
+* { box-sizing: border-box; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+
+/* ---------- Direction: Tide (cool slate, teal) ---------- */
+[data-d=tide] {
+  --ui: "Geist", Inter, system-ui, sans-serif;
+  --num: "Geist", Inter, system-ui, sans-serif;
+  --num-weight: 600; --num-track: -0.045em; --num-width: normal;
+  --stage: #dfe7ea;
+  --surface: rgba(246,249,250,.94); --card: #ffffff; --hover: #eaf0f2;
+  --ink: #0e1b22; --secondary: #4a5b64; --tertiary: #6a7a82;
+  --accent: #0a8f88; --accent-2: #36c2d6; --accent-ink: #087670; --accent-soft: #dcf1ee;
+  --track: #e2eaed; --line: rgba(14,27,34,.07);
+  --button: #0e1b22; --button-ink: #f3f8f9;
+  --shadow: 0 24px 70px -24px rgba(10,40,52,.35), 0 1px 4px rgba(10,40,52,.10);
+}
+[data-d=tide][data-t=dark] {
+  color-scheme: dark;
+  --stage: #070c0f;
+  --surface: rgba(14,21,26,.95); --card: #151f25; --hover: #1d2a31;
+  --ink: #e7f1f3; --secondary: #a7b8bf; --tertiary: #8597a0;
+  --accent: #3fd6c8; --accent-2: #5fb8ff; --accent-ink: #5fe0d3; --accent-soft: #143331;
+  --track: #22313a; --line: rgba(220,240,245,.07);
+  --button: #3fd6c8; --button-ink: #04201d;
+  --shadow: 0 24px 80px -20px rgba(0,0,0,.7), 0 1px 4px rgba(0,0,0,.4);
+}
+
+/* ---------- Direction: Signal (warm paper, vivid orange, condensed numerals) ---------- */
+[data-d=signal] {
+  --ui: "Instrument Sans", Inter, system-ui, sans-serif;
+  --num: "Archivo", Inter, system-ui, sans-serif;
+  --num-weight: 700; --num-track: -0.02em; --num-width: 72;
+  --stage: #e6e1d8;
+  --surface: rgba(246,244,239,.95); --card: #fdfcf9; --hover: #eeebe4;
+  --ink: #171614; --secondary: #57534b; --tertiary: #7a756b;
+  --accent: #ff5017; --accent-2: #ffa31a; --accent-ink: #d63d07; --accent-soft: #ffe7dc;
+  --track: #ebe7df; --line: rgba(23,22,20,.08);
+  --button: #171614; --button-ink: #fdfcf9;
+  --shadow: 0 24px 70px -24px rgba(60,40,20,.35), 0 1px 4px rgba(60,40,20,.10);
+}
+[data-d=signal][data-t=dark] {
+  color-scheme: dark;
+  --stage: #0b0a09;
+  --surface: rgba(20,19,17,.95); --card: #1d1c19; --hover: #282622;
+  --ink: #f3f0e9; --secondary: #b8b2a6; --tertiary: #989184;
+  --accent: #ff6a35; --accent-2: #ffb547; --accent-ink: #ff875c; --accent-soft: #3a2117;
+  --track: #2c2a26; --line: rgba(243,240,233,.07);
+  --button: #f3f0e9; --button-ink: #171614;
+  --shadow: 0 24px 80px -20px rgba(0,0,0,.7), 0 1px 4px rgba(0,0,0,.4);
+}
+
+/* ---------- Direction: Editorial (neutral grey, ultramarine, serif numerals) ---------- */
+[data-d=editorial] {
+  --ui: Inter, system-ui, sans-serif;
+  --num: "Instrument Serif", Georgia, serif;
+  --num-weight: 400; --num-track: -0.02em; --num-width: normal;
+  --stage: #e3e3e8;
+  --surface: rgba(247,247,249,.94); --card: #ffffff; --hover: #eeeef3;
+  --ink: #17171c; --secondary: #52525e; --tertiary: #71717d;
+  --accent: #3b4cff; --accent-2: #9b6bff; --accent-ink: #2f3ee0; --accent-soft: #e7e9ff;
+  --track: #e6e6ee; --line: rgba(23,23,28,.07);
+  --button: #3b4cff; --button-ink: #ffffff;
+  --shadow: 0 24px 70px -24px rgba(30,30,70,.35), 0 1px 4px rgba(30,30,70,.10);
+}
+[data-d=editorial][data-t=dark] {
+  color-scheme: dark;
+  --stage: #08080b;
+  --surface: rgba(18,18,22,.95); --card: #1b1b21; --hover: #25252d;
+  --ink: #eeeef3; --secondary: #b2b2be; --tertiary: #91919e;
+  --accent: #8e9aff; --accent-2: #c3a2ff; --accent-ink: #a8b1ff; --accent-soft: #232750;
+  --track: #2a2a33; --line: rgba(238,238,243,.07);
+  --button: #8e9aff; --button-ink: #10133a;
+  --shadow: 0 24px 80px -20px rgba(0,0,0,.7), 0 1px 4px rgba(0,0,0,.4);
+}
+
+/* ---------- Shared structure (Margin's quality bar) ---------- */
+.pop {
+  width: 340px; font-family: var(--ui); font-size: 14px; color: var(--ink);
+  background: var(--surface); border-radius: 12px; box-shadow: var(--shadow);
+  padding: 14px; position: relative; -webkit-font-smoothing: antialiased;
+}
+.num { font-family: var(--num); font-weight: var(--num-weight); letter-spacing: var(--num-track); font-variant-numeric: tabular-nums; font-stretch: calc(var(--num-width) * 1%); font-variation-settings: "wdth" var(--num-width); }
+[data-d=tide] .num, [data-d=editorial] .num { font-variation-settings: normal; }
+.meta { display: flex; align-items: center; justify-content: space-between; color: var(--tertiary); font-size: 12.5px; padding: 0 4px 10px; }
+.meta .where { display: flex; align-items: center; gap: 6px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.icons { display: flex; gap: 2px; }
+.icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; color: var(--secondary); }
+.icon:hover { background: var(--hover); }
+.icon svg { width: 16px; height: 16px; }
+
+.card { background: var(--card); border-radius: 10px; padding: 16px 16px 14px; }
+.label { font-size: 12.5px; color: var(--secondary); display: flex; align-items: center; gap: 6px; }
+.hero { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 0; }
+.hero .big { font-size: 64px; line-height: 1; }
+[data-d=signal] .hero .big { font-size: 76px; }
+[data-d=editorial] .hero .big { font-size: 76px; }
+.hero .unit { font-size: 15px; color: var(--secondary); font-weight: 500; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.stat .v { font-size: 22px; line-height: 1.15; margin-top: 2px; }
+[data-d=signal] .stat .v { font-size: 26px; }
+[data-d=editorial] .stat .v { font-size: 26px; }
+.stat .v small { font-family: var(--ui); font-size: 12.5px; color: var(--secondary); font-weight: 500; letter-spacing: 0; margin-left: 3px; }
+.stat .sub { font-size: 12.5px; color: var(--tertiary); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.verdict { margin-top: 14px; background: var(--accent-soft); color: var(--accent-ink); border-radius: 8px; padding: 9px 11px; font-size: 13px; font-weight: 500; display: flex; gap: 8px; align-items: center; }
+.verdict svg { width: 15px; height: 15px; flex: none; }
+[data-d=signal] .verdict { background: var(--hover); color: var(--ink); }
+[data-d=signal] .verdict svg { color: var(--accent); }
+[data-d=editorial] .stat .v { font-family: var(--ui); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; }
+
+.history { margin-top: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.history .t { font-size: 12.5px; color: var(--secondary); }
+.history .t b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.foot { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px 0; }
+.foot .note { font-size: 12.5px; color: var(--tertiary); }
+.btn { height: 34px; padding: 0 16px; border-radius: 8px; background: var(--button); color: var(--button-ink); font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 7px; }
+.btn svg { width: 14px; height: 14px; }
+.btn.ghost { background: var(--hover); color: var(--ink); }
+
+/* testing */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+.step { font-size: 11.5px; color: var(--tertiary); }
+.step i { display: block; height: 3px; border-radius: 2px; background: var(--track); margin-bottom: 6px; overflow: hidden; }
+.step i b { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+.step.on { color: var(--ink); font-weight: 500; }
+.chart { margin-top: 12px; height: 70px; }
+.chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.wait { color: var(--tertiary); }
+
+.caption { font-family: Inter, system-ui; font-size: 11px; color: var(--tertiary); text-align: center; margin-top: 14px; letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const p = new URLSearchParams(location.search);
+const d = p.get('d') || 'tide', t = p.get('t') || 'light', s = p.get('s') || 'result';
+document.documentElement.dataset.d = d;
+document.documentElement.dataset.t = t;
+document.body.dataset.d = d; document.body.dataset.t = t;
+
+const ic = {
+  history: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12.5 5.5 8l3 2.5L14 4"/></svg>',
+  gear: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.1"/><path d="M8 1.6v1.6M8 12.8v1.6M14.4 8h-1.6M3.2 8H1.6M12.5 3.5l-1.1 1.1M4.6 11.4l-1.1 1.1M12.5 12.5l-1.1-1.1M4.6 4.6 3.5 3.5"/></svg>',
+  check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="m5.4 8.2 1.8 1.8 3.4-3.6"/></svg>',
+  play: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 3.2v9.6c0 .5.5.8.9.5l7.4-4.8a.6.6 0 0 0 0-1L5.4 2.7c-.4-.3-.9 0-.9.5Z"/></svg>',
+};
+
+function spark(values, w = 120, h = 28) {
+  const min = Math.min(...values) * 0.9, max = Math.max(...values) * 1.03;
+  const pts = values.map((v, i) => [i / (values.length - 1) * w, h - (v - min) / (max - min) * h]);
+  const path = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+  const last = pts[pts.length - 1];
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible"><path d="${path}" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6" fill="var(--accent)"/></svg>`;
+}
+
+function live(values, total = 60, w = 284, h = 70) {
+  const max = 340;
+  const pts = values.map((v, i) => [i / (total - 1) * w, h - v / max * h]);
+  const line = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+  const last = pts[pts.length - 1];
+  const area = line + ` L ${last[0].toFixed(1)} ${h} L 0 ${h} Z`;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient>
+      <linearGradient id="s" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="var(--accent-2)"/><stop offset="1" stop-color="var(--accent)"/></linearGradient>
+    </defs>
+    <line x1="0" x2="${w}" y1="${h}" y2="${h}" stroke="var(--line)" />
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${line}" fill="none" stroke="url(#s)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="3.5" fill="var(--accent)"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="8" fill="var(--accent)" opacity=".18"/>
+  </svg>`;
+}
+
+const ramp = [];
+for (let i = 0; i < 36; i++) {
+  const base = 300 * (1 - Math.exp(-i / 4.2));
+  ramp.push(Math.max(4, base + Math.sin(i * 1.7) * 9 + Math.cos(i * 0.9) * 6));
+}
+
+const names = { tide: 'Tide', signal: 'Signal', editorial: 'Editorial' };
+const result = `
+  <div class="meta">
+    <span class="where"><span class="dot"></span>Cloudflare, Frankfurt · 12 min ago</span>
+    <span class="icons"><button class="icon" aria-label="History">${ic.history}</button><button class="icon" aria-label="Settings">${ic.gear}</button></span>
+  </div>
+  <div class="card">
+    <div class="label">Download</div>
+    <div class="hero"><span class="big num">312</span><span class="unit">Mbps</span></div>
+    <div class="stats">
+      <div class="stat"><div class="label">Upload</div><div class="v num">41<small>Mbps</small></div></div>
+      <div class="stat"><div class="label">Latency</div><div class="v num">14<small>ms</small></div><div class="sub">62 ms under load</div></div>
+    </div>
+    <div class="verdict">${ic.check}Good for 4K video and calls</div>
+  </div>
+  <div class="card history">
+    <div class="t">Last 12 tests<br><b>280–330 Mbps</b></div>
+    ${spark([288, 301, 296, 315, 290, 309, 322, 284, 305, 318, 300, 312])}
+  </div>
+  <div class="foot">
+    <span class="note">Uses about 250 MB</span>
+    <button class="btn">${ic.play}Test again</button>
+  </div>`;
+
+const testing = `
+  <div class="meta">
+    <span class="where"><span class="dot"></span>Cloudflare, Frankfurt</span>
+    <span class="icons"><button class="icon" aria-label="History">${ic.history}</button><button class="icon" aria-label="Settings">${ic.gear}</button></span>
+  </div>
+  <div class="card">
+    <div class="steps">
+      <div class="step"><i><b style="width:100%"></b></i>Latency</div>
+      <div class="step on"><i><b style="width:58%"></b></i>Download</div>
+      <div class="step"><i></i>Upload</div>
+    </div>
+    <div class="label">Download</div>
+    <div class="hero"><span class="big num">297</span><span class="unit">Mbps</span></div>
+    <div class="chart">${live(ramp)}</div>
+    <div class="stats">
+      <div class="stat"><div class="label">Upload</div><div class="v num wait">–</div><div class="sub">Next</div></div>
+      <div class="stat"><div class="label">Latency</div><div class="v num">14<small>ms</small></div><div class="sub">58 ms under load</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="note">Used 96 MB so far</span>
+    <button class="btn ghost">Cancel</button>
+  </div>`;
+
+document.getElementById('root').innerHTML = `<div><div class="pop">${s === 'testing' ? testing : result}</div><div class="caption">${names[d]} · ${t}</div></div>`;
+</script>
+</body>
+</html>
