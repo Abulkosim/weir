@@ -3,6 +3,7 @@ mod commands;
 pub mod core;
 mod platform;
 mod runtime;
+mod updates;
 
 use crate::core::tray;
 use runtime::Runtime;
@@ -21,6 +22,8 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(updates::Updates::default())
         .manage(tray::Visibility::default())
         .invoke_handler(tauri::generate_handler![
             commands::get_popover_placement,
@@ -33,6 +36,9 @@ pub fn run() {
             commands::clear_history,
             commands::export_history,
             commands::save_settings,
+            updates::get_update_status,
+            updates::check_for_update,
+            updates::install_update,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
@@ -46,7 +52,10 @@ pub fn run() {
                     let _ = runtime.save_settings(app.handle(), settings);
                 }
             }
-            app.manage(runtime);
+            app.manage(runtime.clone());
+            let wake = Arc::new(tokio::sync::Notify::new());
+            app.manage(wake.clone());
+            updates::start_background_checks(app.handle().clone(), runtime, wake);
             tray::setup(app.handle())?;
             let watcher = app.handle().clone();
             platform::watch_path(move |path| runtime::runtime(&watcher).on_path(&watcher, path));

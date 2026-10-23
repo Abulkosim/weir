@@ -4,7 +4,7 @@ import AppIcon from './AppIcon.vue'
 import { clock, errorCopy, estimateText, formatMbps, formatMs, meteredCopy, meteredLabel, relativeAge, server } from '../lib/format'
 import { loadedMs, type View } from '../lib/model'
 
-const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean }>()
+const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean; updateAvailable?: boolean }>()
 defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: []; settings: [] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
 const details = ref(false)
@@ -28,7 +28,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
 <template>
   <div class="view result-view">
     <template v-if="failure">
-      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button" aria-label="Settings" @click="$emit('settings')"><AppIcon name="settings" :size="16"/></button></span></div>
+      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
       <section class="card failure" role="alert">
         <span class="failure-icon"><AppIcon name="alert" :size="20"/></span>
         <h1>{{ errorCopy[failure.error].title }}</h1>
@@ -38,7 +38,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </template>
 
     <template v-else-if="report">
-      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button" aria-label="Settings" @click="$emit('settings')"><AppIcon name="settings" :size="16"/></button></span></div>
+      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
       <section class="card" aria-label="Last result">
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>
@@ -88,7 +88,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </template>
 
     <template v-else>
-      <div class="meta"><span class="where"><span class="dot"/>Cloudflare speed test</span><span class="meta-actions"><button class="icon-button" aria-label="Settings" @click="$emit('settings')"><AppIcon name="settings" :size="16"/></button></span></div>
+      <div class="meta"><span class="where"><span class="dot"/>Cloudflare speed test</span><span class="meta-actions"><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
       <section class="card never">
         <span class="never-mark" aria-hidden="true"><AppIcon name="weir" :size="22"/></span>
         <h1>Not tested yet</h1>

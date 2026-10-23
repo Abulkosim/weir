@@ -26,6 +26,8 @@ pub struct Settings {
     /// macOS: show the last download speed beside the tray icon.
     pub tray_speed: bool,
     pub autostart: bool,
+    /// Check GitHub for a new release once a day. Never installs on its own.
+    pub auto_check_updates: bool,
 }
 
 impl Default for Settings {
@@ -34,6 +36,7 @@ impl Default for Settings {
             theme: Theme::System,
             tray_speed: false,
             autostart: false,
+            auto_check_updates: true,
         }
     }
 }
@@ -71,6 +74,13 @@ impl Settings {
                 "autostart",
                 defaults.autostart,
                 "Launch at login",
+                notes,
+            ),
+            auto_check_updates: field(
+                map,
+                "autoCheckUpdates",
+                defaults.auto_check_updates,
+                "Update checks",
                 notes,
             ),
         }
@@ -209,6 +219,7 @@ mod tests {
             theme: Theme::Dark,
             tray_speed: true,
             autostart: true,
+            auto_check_updates: false,
         };
         store.save(&settings).unwrap();
         let (_, loaded, notes) = Store::load(path, 2);

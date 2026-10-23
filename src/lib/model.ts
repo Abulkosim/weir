@@ -54,8 +54,9 @@ export const settingsSchema = z.object({
   theme: z.enum(['system', 'light', 'dark']),
   traySpeed: z.boolean(),
   autostart: z.boolean(),
+  autoCheckUpdates: z.boolean(),
 })
-export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false }
+export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true }
 
 export const viewSchema = z.object({
   revision: count,

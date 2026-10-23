@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogOverlay, AlertDialogPortal, AlertDialogRoot, AlertDialogTitle } from 'reka-ui'
-import { version } from '../../package.json'
 import type { Settings } from '../lib/model'
 import AppIcon from './AppIcon.vue'
 import AppSwitch from './ui/AppSwitch.vue'
+import UpdateSettings from './settings/UpdateSettings.vue'
+import type { UpdateState } from '../lib/updater'
 
-const props = defineProps<{ settings: Settings; historyCount: number; busy?: boolean }>()
-const emit = defineEmits<{ back: []; save: [settings: Settings]; export: []; clear: [] }>()
+const props = defineProps<{ settings: Settings; historyCount: number; busy?: boolean; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
+const emit = defineEmits<{ back: []; save: [settings: Settings]; export: []; clear: []; checkUpdate: []; installUpdate: [] }>()
 const confirmClear = ref(false)
 const isMac = navigator.userAgent.includes('Mac')
 const themes: { id: Settings['theme']; label: string; icon: 'system' | 'sun' | 'moon' }[] = [
@@ -65,10 +66,12 @@ function patch(change: Partial<Settings>): void {
         </div>
       </section>
 
+      <UpdateSettings :state="updateState" :busy="updateBusy" :demo="demo" :auto-check="settings.autoCheckUpdates" :settings-busy="Boolean(busy)" @check="$emit('checkUpdate')" @install="$emit('installUpdate')" @auto-check="patch({ autoCheckUpdates: $event })"/>
+
       <section class="settings-section about">
         <h2>About</h2>
         <p>Tests run against Cloudflare’s speed test servers. Weir has no accounts, ads or tracking, and history never leaves this computer.</p>
-        <p class="settings-footnote num">Weir {{ version }} · github.com/Abulkosim/weir</p>
+        <p class="settings-footnote num">github.com/Abulkosim/weir</p>
       </section>
     </div>
 

@@ -180,6 +180,13 @@ test('clearing history asks first', async ({ page }) => {
   await expect(page.getByText('0 tests')).toBeVisible()
 })
 
+test('an available update shows a dot and an install button in Settings', async ({ page }, info) => {
+  await page.goto('/?demo=1&update=update-available')
+  await page.getByRole('button', { name: 'Settings, update available' }).click()
+  await expect(page.getByText('Check for updates once a day', { exact: false }).or(page.getByText(/0\.9\.0/)).first()).toBeVisible()
+  await page.locator('.settings-content').screenshot({ path: info.outputPath('update-available.png') })
+})
+
 test('history button stays hidden until there is history', async ({ page }) => {
   await page.goto('/?demo=1&state=never')
   await expect(page.getByRole('button', { name: 'History' })).toHaveCount(0)

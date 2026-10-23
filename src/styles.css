@@ -500,6 +500,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: var(--warning);
   font-size: 12.5px;
 }
+.settings-button {
+  position: relative;
+}
+.update-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--surface);
+}
 .meta-actions {
   display: flex;
   gap: 2px;

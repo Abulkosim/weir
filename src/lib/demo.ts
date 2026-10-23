@@ -1,3 +1,4 @@
+import type { UpdateState } from './updater.ts'
 import { testErrorSchema, viewSchema, type Entry, type Meaning, type Report, type View } from './model.ts'
 
 export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial'] as const
@@ -51,7 +52,7 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true } }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true } }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.meaning = demoMeaning
@@ -128,4 +129,8 @@ export function demoHistory(now: number): Entry[] {
   })
   entries.splice(4, 0, { kind: 'failed', atMs: now - 30 * hour, error: 'stalled' })
   return entries
+}
+
+export function createDemoUpdateState(scenario: string | null): UpdateState {
+  return scenario === 'update-available' ? { kind: 'available', version: '0.9.0' } : { kind: 'idle' }
 }

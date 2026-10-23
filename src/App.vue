@@ -7,9 +7,12 @@ import SettingsPanel from './components/SettingsPanel.vue'
 import ResultView from './components/ResultView.vue'
 import TestingView from './components/TestingView.vue'
 import { useWeir } from './lib/weir'
+import { useUpdater } from './lib/updater'
+import { createDemoUpdateState } from './lib/demo'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
 const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory, clearHistory, saveSettings } = useWeir()
+const updater = useUpdater({ demo, desktop, initial: demo ? createDemoUpdateState(query.get('update')) : undefined })
 const requested = demo ? query.get('page') : null
 const page = ref<'overview' | 'history' | 'settings'>(requested === 'history' || requested === 'settings' ? requested : 'overview')
 const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -115,9 +118,9 @@ onUnmounted(() => {
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
           <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
           <HistoryView v-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
-          <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @clear="clearHistory"/>
+          <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" :update-state="updater.state.value" :update-busy="updater.busy.value" :demo="demo" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @clear="clearHistory" @check-update="updater.check" @install-update="updater.install"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
-          <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'"/>
+          <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'"/>
           </div>
         </main>
         <Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition>
