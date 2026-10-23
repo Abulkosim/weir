@@ -93,7 +93,6 @@ impl Runtime {
         }
     }
 
-
     /// Starts a test unless one is running. Returns false when one already is.
     pub fn start(self: &Arc<Self>, app: &AppHandle) -> bool {
         let control = Arc::new(Control::default());
