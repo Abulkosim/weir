@@ -20,3 +20,10 @@ test('fit height rounds up and never exceeds the full popover', () => {
   assert.equal(fitHeight(14, 6, 300.2), 321)
   assert.equal(fitHeight(14, 6, 2000), POPOVER_HEIGHT)
 })
+
+test('tween easing stays within the start and end values', async () => {
+  const { easeOut } = await import('../../src/lib/tween.ts')
+  assert.equal(easeOut(0), 0)
+  assert.equal(easeOut(1), 1)
+  assert.ok(easeOut(0.5) > 0.5 && easeOut(0.5) < 1)
+})

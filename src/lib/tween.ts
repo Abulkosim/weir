@@ -18,8 +18,9 @@ export function useTween(source: () => number | null, duration = 420): Ref<numbe
     }
     const from = shown.value
     const started = performance.now()
-    const step = (time: number) => {
-      const t = Math.min(1, (time - started) / duration)
+    // rAF timestamps can trail performance.now() in throttled windows and iframes, so read one clock and clamp.
+    const step = () => {
+      const t = Math.min(1, Math.max(0, (performance.now() - started) / duration))
       shown.value = from + (target - from) * easeOut(t)
       if (t < 1) frame = requestAnimationFrame(step)
     }
