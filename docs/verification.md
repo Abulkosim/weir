@@ -4,7 +4,7 @@ What was actually checked, newest release on top. Date, command, platform and ou
 
 ## v0.1.0 (draft)
 
-Verified 2026-10-23 on macOS 26.6.2 against the draft built from tag `v0.1.0`.
+Verified 2026-10-23 on macOS 26.6.2 against the draft built from tag `v0.1.0` (`e53489b`).
 
 - Local before tagging: `pnpm typecheck`, 18 unit tests, 138 Chromium/WebKit browser cases (incl. axe on 8 views × 2 themes), 14 release-script tests, 80 Rust tests, `cargo fmt --check`, strict Clippy. `node scripts/check-release.mjs v0.1.0` passed.
 - [Main CI](https://github.com/Abulkosim/weir/actions/runs/40006765027) green on all jobs, including Windows x64. The [tag build](https://github.com/Abulkosim/weir/actions/runs/40010701946) built, signed and prepared the draft. Earlier main runs needed two fixes: the Ubuntu apt mirror stalled for 40 minutes (cancelled, re-run), and Linux WebKit needed the axe and fit checks to wait for a settled page.
