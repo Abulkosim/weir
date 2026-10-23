@@ -31,6 +31,7 @@ const popover = ref<HTMLElement | null>(null)
 const scroller = ref<HTMLElement | null>(null)
 const content = ref<HTMLElement | null>(null)
 const framed = desktop && !demo || demo && query.get('frame') === '1'
+const embedded = demo && query.get('embed') === '1'
 const measured = ref(0)
 let frame = 0
 let observer: ResizeObserver | undefined
@@ -54,6 +55,7 @@ function measure(): void {
   if (height === measured.value) return
   measured.value = height
   if (desktop && !demo) invoke('fit_popover', { height }).catch(() => {})
+  if (embedded) window.parent.postMessage({ weirHeight: height }, '*')
 }
 
 function scheduleMeasure(): void {
@@ -108,7 +110,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="preview-stage" :class="{ 'desktop-stage': framed }">
+  <div class="preview-stage" :class="{ 'desktop-stage': framed, 'embed-stage': embedded }">
     <div ref="shell" class="app-shell" :data-fit-height="measured">
       <div v-if="!desktop || demo || arrowX !== null" class="popover-arrow" :style="arrowX === null ? undefined : { left: `${arrowX - 6}px` }" aria-hidden="true"/>
       <div ref="popover" class="popover">

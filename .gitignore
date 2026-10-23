@@ -17,3 +17,4 @@ design/directions/shots/sheet.html
 !.env.example
 **/auth.json
 **/.credentials.json
+site/app/
