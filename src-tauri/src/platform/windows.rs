@@ -46,7 +46,6 @@ pub fn watch(on_change: impl Fn(Path) + Send + Sync + 'static) {
         notify(read());
         Ok(())
     });
-    if let Ok(token) = NetworkInformation::NetworkStatusChanged(&handler) {
-        std::mem::forget(token);
-    }
+    // The registration lasts for the life of the app, so the token is never used.
+    let _ = NetworkInformation::NetworkStatusChanged(&handler);
 }
