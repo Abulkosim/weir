@@ -8,7 +8,7 @@ use crate::core::tray;
 use runtime::Runtime;
 use std::{sync::Arc, time::Instant};
 use tauri::{Manager, WindowEvent};
-use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 pub fn run() {
     tauri::Builder::default()
@@ -32,12 +32,21 @@ pub fn run() {
             commands::get_history,
             commands::clear_history,
             commands::export_history,
+            commands::save_settings,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             let data = app.path().app_data_dir()?;
-            app.manage(Arc::new(Runtime::new(data.join("history.json"))));
+            let runtime = Arc::new(Runtime::new(data));
+            if let Ok(enabled) = app.autolaunch().is_enabled() {
+                let mut settings = runtime.view().settings;
+                if settings.autostart != enabled {
+                    settings.autostart = enabled;
+                    let _ = runtime.save_settings(app.handle(), settings);
+                }
+            }
+            app.manage(runtime);
             tray::setup(app.handle())?;
             let watcher = app.handle().clone();
             platform::watch_path(move |path| runtime::runtime(&watcher).on_path(&watcher, path));

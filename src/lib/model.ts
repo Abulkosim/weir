@@ -50,6 +50,13 @@ export const meaningSchema = z.object({
   lines: z.array(z.object({ topic: z.string().max(20), text: z.string().max(120), health: healthSchema })).max(6),
 })
 
+export const settingsSchema = z.object({
+  theme: z.enum(['system', 'light', 'dark']),
+  traySpeed: z.boolean(),
+  autostart: z.boolean(),
+})
+export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false }
+
 export const viewSchema = z.object({
   revision: count,
   testing: progressSchema.nullable(),
@@ -60,6 +67,7 @@ export const viewSchema = z.object({
   meaning: meaningSchema.nullable(),
   historyCount: count,
   notice: z.string().max(300).nullable(),
+  settings: settingsSchema,
 })
 
 export const entrySchema = z.discriminatedUnion('kind', [
@@ -77,8 +85,9 @@ export type View = z.infer<typeof viewSchema>
 export type Metered = z.infer<typeof meteredSchema>
 export type Meaning = z.infer<typeof meaningSchema>
 export type Entry = z.infer<typeof entrySchema>
+export type Settings = z.infer<typeof settingsSchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { ...defaultSettings } }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {

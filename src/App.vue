@@ -3,18 +3,23 @@ import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
 import DesignGallery from './components/DesignGallery.vue'
 import HistoryView from './components/HistoryView.vue'
+import SettingsPanel from './components/SettingsPanel.vue'
 import ResultView from './components/ResultView.vue'
 import TestingView from './components/TestingView.vue'
 import { useWeir } from './lib/weir'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
-const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory } = useWeir()
-const page = ref<'overview' | 'history'>(demo && query.get('page') === 'history' ? 'history' : 'overview')
+const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory, clearHistory, saveSettings } = useWeir()
+const requested = demo ? query.get('page') : null
+const page = ref<'overview' | 'history' | 'settings'>(requested === 'history' || requested === 'settings' ? requested : 'overview')
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
 const forcedTheme = demo ? query.get('theme') : null
 const scenario = demo ? query.get('state') : null
-const dark = computed(() => forcedTheme ? forcedTheme === 'dark' : systemDark.value)
+const dark = computed(() => {
+  const theme = forcedTheme ?? view.value.settings.theme
+  return theme === 'system' ? systemDark.value : theme === 'dark'
+})
 const placement = ref<PopoverPlacement>({ revision: 0, arrowX: null })
 const viewportWidth = ref(window.innerWidth)
 const arrowX = computed(() => !desktop || demo || isWindows ? null : arrowOffset(placement.value.arrowX, viewportWidth.value))
@@ -48,6 +53,12 @@ function scheduleMeasure(): void {
 function syncTheme(event: MediaQueryListEvent): void { systemDark.value = event.matches }
 function syncWidth(): void { viewportWidth.value = window.innerWidth }
 function onKeydown(event: KeyboardEvent): void {
+  if ((event.metaKey || event.ctrlKey) && event.key === ',') {
+    event.preventDefault()
+    page.value = 'settings'
+    return
+  }
+  if (event.defaultPrevented || document.querySelector('[role="alertdialog"][data-state="open"]')) return
   if (event.key !== 'Escape') return
   if (confirming.value) confirming.value = false
   else if (page.value !== 'overview') page.value = 'overview'
@@ -95,8 +106,9 @@ onUnmounted(() => {
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
           <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
           <HistoryView v-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
+          <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @clear="clearHistory"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
-          <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'"/>
+          <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'"/>
         </main>
         <Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition>
         <div v-if="!desktop || demo" class="preview-ribbon">Interface preview<span>Sample data</span></div>

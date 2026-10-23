@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { demo, desktop, invoke, listen, query } from './bridge.ts'
 import { createDemoView, demoHistory, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
-import { emptyView, historySchema, startSchema, viewSchema, type Entry, type Phase, type View } from './model.ts'
+import { emptyView, historySchema, startSchema, viewSchema, type Entry, type Phase, type Settings, type View } from './model.ts'
 
 export function useWeir() {
   const view = ref<View>(demo ? createDemoView(query.get('state'), Date.now(), query.get('error')) : emptyView)
@@ -73,6 +73,18 @@ export function useWeir() {
       if (typeof saved === 'string') say(`Saved ${saved}`)
     } catch (error) {
       say(typeof error === 'string' ? error : 'Weir couldn’t export the history.')
+    }
+  }
+
+  async function saveSettings(settings: Settings): Promise<void> {
+    if (demo) {
+      view.value = { ...view.value, revision: view.value.revision + 1, settings }
+      return
+    }
+    try {
+      accept(await invoke('save_settings', { settings }))
+    } catch (error) {
+      say(typeof error === 'string' ? error : 'Weir couldn’t save settings.')
     }
   }
 
@@ -153,5 +165,5 @@ export function useWeir() {
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory }
+  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, saveSettings }
 }

@@ -1,9 +1,10 @@
 use crate::{
-    core::{export::csv, history::Entry, popover::PopoverPlacement, tray},
+    core::{export::csv, history::Entry, popover::PopoverPlacement, settings::Settings, tray},
     runtime::{runtime, Start, View},
 };
 use std::sync::atomic::Ordering;
 use tauri::{AppHandle, Manager, State};
+use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_dialog::DialogExt;
 
 #[tauri::command]
@@ -84,4 +85,21 @@ pub async fn export_history(app: AppHandle) -> Result<Option<String>, String> {
         path.file_name()
             .map_or(name, |file| file.to_string_lossy().into_owned()),
     ))
+}
+
+#[tauri::command]
+pub fn save_settings(app: AppHandle, settings: Settings) -> Result<View, String> {
+    let runtime = runtime(&app);
+    let current = runtime.view().settings;
+    if current.autostart != settings.autostart {
+        let launcher = app.autolaunch();
+        let changed = if settings.autostart {
+            launcher.enable()
+        } else {
+            launcher.disable()
+        };
+        changed.map_err(|_| "Weir couldn’t change launch at login.".to_owned())?;
+    }
+    runtime.save_settings(&app, settings)?;
+    Ok(runtime.view())
 }

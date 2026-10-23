@@ -77,8 +77,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **2.6 CSV export.** Save dialog, columns documented in README; no IP, city or SSID.
   Verify: unit test on CSV output for a fixture history; manual save once.
   Done 2026-10-23: `core/export.rs`, 12 columns, local time with the UTC offset written out, failed tests as rows with the reason. Native save dialog from Rust (`tauri-plugin-dialog`, no JS permission); the popover stays open while it shows. Manual save from the real app still pending (needs a real test first, see 1.6).
-- [ ] **2.7 Settings.** Versioned JSON, tolerant per-field loading, recovery note, back up before reset. Sections: Appearance (System/Light/Dark), Tray (speed text on mac), Data (show estimate before each test), Launch at login, History (export, clear), Updates, About.
+- [x] **2.7 Settings.** Versioned JSON, tolerant per-field loading, recovery note, back up before reset. Sections: Appearance (System/Light/Dark), Tray (speed text on mac), Data (show estimate before each test), Launch at login, History (export, clear), Updates, About.
   Verify: unit tests for migration and one bad field; e2e for settings in both themes.
+  Done 2026-10-23: `core/settings.rs` (`settings.json`, version 1, per-field recovery with a note per reset field, unreadable file moved aside, newer-version file never overwritten). Sections: Appearance, Tray & startup (speed text on mac uses monospaced digits; launch at login synced with the OS on start), History (count, export, clear with confirmation), About. ⌘/Ctrl+, opens Settings. "Show estimate" and Updates dropped for now: the estimate is always shown; Updates arrive with the updater key (3.3).
 - [ ] **2.8 Windows popover.** Mica on Win11 else solid, 8 px radius, tray anchoring, DPI 125/150/200 %.
   Verify: CI Windows build green; manual VM check 👤.
 - [ ] **2.9 Accessibility pass.** Full keyboard path, focus ring, screen-reader labels on numbers ("Download 312 megabits per second"), `prefers-reduced-motion`.

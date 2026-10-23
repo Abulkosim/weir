@@ -5,6 +5,7 @@ pub mod meaning;
 pub mod network;
 pub mod popover;
 pub mod ring;
+pub mod settings;
 pub mod speedtest;
 pub mod stats;
 pub mod tray;

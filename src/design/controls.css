@@ -188,7 +188,7 @@
   padding: 2px;
   border: 0;
   border-radius: 12px;
-  background: var(--track);
+  background: color-mix(in srgb, var(--tertiary) 72%, var(--track));
   transition: background-color .18s;
 }
 

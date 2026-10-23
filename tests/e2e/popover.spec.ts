@@ -152,6 +152,34 @@ test('export confirms the saved file name', async ({ page }) => {
   await expect(page.getByRole('status').filter({ hasText: /Saved weir-history-\d{4}-\d{2}-\d{2}\.csv/ })).toBeVisible()
 })
 
+for (const theme of themes) {
+  test(`settings save each change and switch the theme in ${theme}`, async ({ page }, info) => {
+    await page.goto(`/?demo=1&state=result`)
+    await page.emulateMedia({ colorScheme: theme })
+    await page.getByRole('button', { name: 'Settings' }).click()
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+    await expect(page.getByText('14 tests')).toBeVisible()
+    await shoot(page, 'settings', info.outputPath(`settings-${theme}.png`))
+    const other = theme === 'light' ? 'Dark' : 'Light'
+    await page.getByRole('button', { name: other }).click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', other.toLowerCase())
+    await page.getByRole('switch', { name: 'Launch at login' }).click()
+    await expect(page.getByRole('switch', { name: 'Launch at login' })).toHaveAttribute('aria-checked', 'false')
+  })
+}
+
+test('clearing history asks first', async ({ page }) => {
+  await page.goto('/?demo=1&page=settings')
+  await page.getByRole('button', { name: 'Clear…' }).click()
+  const dialog = page.getByRole('alertdialog')
+  await expect(dialog).toContainText('Deletes all 14 saved tests.')
+  await dialog.getByRole('button', { name: 'Keep history' }).click()
+  await expect(page.getByText('14 tests')).toBeVisible()
+  await page.getByRole('button', { name: 'Clear…' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Clear history' }).click()
+  await expect(page.getByText('0 tests')).toBeVisible()
+})
+
 test('history button stays hidden until there is history', async ({ page }) => {
   await page.goto('/?demo=1&state=never')
   await expect(page.getByRole('button', { name: 'History' })).toHaveCount(0)

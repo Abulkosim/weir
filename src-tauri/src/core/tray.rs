@@ -24,6 +24,35 @@ pub const TRAY_ID: &str = "weir";
 struct Presentation {
     pixels: Vec<u8>,
     tooltip: String,
+    #[cfg(target_os = "macos")]
+    title: Option<String>,
+}
+
+/// Speed text beside the icon (macOS only), from the last result.
+pub fn title(view: &View, glyph: Glyph) -> Option<String> {
+    let report = view.last.as_ref()?;
+    (view.settings.tray_speed && matches!(glyph, Glyph::Result { .. }))
+        .then(|| format!("{:.0}", report.download.mbps))
+}
+
+#[cfg(target_os = "macos")]
+fn set_tabular_title(tray: &tauri::tray::TrayIcon, title: Option<&str>) -> bool {
+    use objc2::MainThreadMarker;
+    use objc2_app_kit::{NSFont, NSFontWeightRegular};
+
+    if tray.set_title(title).is_err() {
+        return false;
+    }
+    let _ = tray.with_inner_tray_icon(|tray| {
+        let mtm = MainThreadMarker::new()?;
+        let button = tray.ns_status_item()?.button(mtm)?;
+        let size = NSFont::menuBarFontOfSize(0.0).pointSize();
+        let font =
+            NSFont::monospacedDigitSystemFontOfSize_weight(size, unsafe { NSFontWeightRegular });
+        button.setFont(Some(&font));
+        Some(())
+    });
+    true
 }
 
 #[derive(Default)]
@@ -328,6 +357,8 @@ pub fn update(app: &AppHandle, view: &View) {
     let size = icon_size(app);
     let pixels = glyph_rgba(size, glyph, icon_style());
     let tooltip = tooltip(view, glyph);
+    #[cfg(target_os = "macos")]
+    let title = title(view, glyph);
     let handle = app.clone();
     let _ = app.run_on_main_thread(move || {
         let Some(tray) = handle.tray_by_id(TRAY_ID) else {
@@ -349,6 +380,10 @@ pub fn update(app: &AppHandle, view: &View) {
         }
         if shown.tooltip != tooltip && tray.set_tooltip(Some(&tooltip)).is_ok() {
             shown.tooltip = tooltip;
+        }
+        #[cfg(target_os = "macos")]
+        if shown.title != title && set_tabular_title(&tray, title.as_deref()) {
+            shown.title = title;
         }
     });
 }
@@ -502,5 +537,22 @@ mod tests {
         assert!(matches!(glyph(&view, now), Glyph::Result { .. }));
         view.network.online = false;
         assert_eq!(glyph(&view, now), Glyph::Offline);
+    }
+
+    #[test]
+    fn speed_text_only_when_enabled_and_showing_a_result() {
+        let mut view = View {
+            last: Some(report(0)),
+            ..View::default()
+        };
+        let shown = Glyph::Result {
+            health: crate::core::meaning::Health::Good,
+            stale: false,
+        };
+        assert_eq!(title(&view, shown), None);
+        view.settings.tray_speed = true;
+        assert_eq!(title(&view, shown).as_deref(), Some("300"));
+        assert_eq!(title(&view, Glyph::Offline), None);
+        assert_eq!(title(&view, Glyph::Testing(0.5)), None);
     }
 }

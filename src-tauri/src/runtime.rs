@@ -3,6 +3,7 @@ use crate::core::{
     history::{Entry, History, Recovery},
     meaning::{meaning, Meaning},
     network::{Network, Path},
+    settings::{Settings, Store},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
     stats::{data_estimate, DataEstimate},
 };
@@ -51,6 +52,7 @@ pub struct View {
     pub meaning: Option<Meaning>,
     pub history_count: usize,
     pub notice: Option<String>,
+    pub settings: Settings,
 }
 
 impl Default for View {
@@ -65,6 +67,7 @@ impl Default for View {
             meaning: None,
             history_count: 0,
             notice: None,
+            settings: Settings::default(),
         }
     }
 }
@@ -83,6 +86,7 @@ pub struct Runtime {
     control: Mutex<Option<Arc<Control>>>,
     path: Mutex<Option<Path>>,
     history: Mutex<History>,
+    store: Store,
 }
 
 fn notice(recovery: Recovery) -> String {
@@ -107,13 +111,16 @@ fn unix_ms() -> u64 {
 }
 
 impl Runtime {
-    pub fn new(history_path: PathBuf) -> Self {
-        let (history, recovery) = History::load(history_path, unix_ms());
+    pub fn new(data: PathBuf) -> Self {
+        let (history, recovery) = History::load(data.join("history.json"), unix_ms());
+        let (store, settings, mut notes) = Store::load(data.join("settings.json"), unix_ms());
+        notes.extend(recovery.map(notice));
         let mut view = View {
             last: history.last_report().cloned(),
             history_count: history.len(),
             estimate: data_estimate(&history.speeds(3)).into(),
-            notice: recovery.map(notice),
+            notice: (!notes.is_empty()).then(|| notes.join(" ")),
+            settings,
             ..View::default()
         };
         if let Some((at_ms, error)) = history.last_failure() {
@@ -131,7 +138,14 @@ impl Runtime {
             control: Mutex::new(None),
             path: Mutex::new(None),
             history: Mutex::new(history),
+            store,
         }
+    }
+
+    pub fn save_settings(&self, app: &AppHandle, settings: Settings) -> Result<(), String> {
+        let saved = self.store.save(&settings);
+        self.change(app, |view| view.settings = settings);
+        saved.map_err(|_| "Weir couldn’t save settings.".to_owned())
     }
 
     pub fn all_entries(&self) -> Vec<Entry> {

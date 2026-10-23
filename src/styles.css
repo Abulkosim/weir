@@ -625,6 +625,169 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   opacity: 0;
   transform: translate(-50%, 6px);
 }
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.settings-autosave {
+  font-size: 12.5px;
+  color: var(--tertiary);
+  white-space: nowrap;
+}
+.settings-content {
+  min-height: 0;
+  padding: 4px 4px 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--track) transparent;
+}
+.settings-section {
+  padding-bottom: 18px;
+}
+.settings-section h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--secondary);
+}
+.theme-options {
+  display: flex;
+  gap: 7px;
+}
+.theme-option {
+  position: relative;
+  width: 33.333%;
+  padding: 8px 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--card);
+  transition: background-color .15s var(--ease), border-color .15s var(--ease);
+}
+.theme-option:hover {
+  background: var(--hover);
+}
+.theme-option.selected {
+  border-color: var(--accent);
+  background: var(--card);
+}
+.theme-option > span:nth-child(2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--secondary);
+}
+.theme-thumbnail {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: 44px;
+  padding: 10px 9px 9px;
+  border: 1px solid rgba(0,0,0,.03);
+  border-radius: 4px;
+  background: #f1f5f6;
+}
+.theme-thumbnail span {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #0a8f8840;
+}
+.theme-thumbnail span:first-child {
+  width: 40%;
+  height: 5px;
+  background: #0e1b2280;
+}
+.theme-thumbnail span:nth-child(2) {
+  width: 83%;
+}
+.thumbnail-dark {
+  border-color: rgba(255,255,255,.04);
+  background: #151f25;
+}
+.thumbnail-dark span {
+  background: #3fd6c855;
+}
+.thumbnail-dark span:first-child {
+  background: #e7f1f399;
+}
+.thumbnail-system {
+  background: linear-gradient(90deg, #f1f5f6 50%, #151f25 50%);
+}
+.thumbnail-system span {
+  background: linear-gradient(90deg, #0a8f8840 60%, #3fd6c855 60%);
+}
+.theme-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--card);
+  box-shadow: 0 0 0 3px var(--card);
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  margin-top: 6px;
+}
+.setting-label {
+  font-size: 13.5px;
+}
+.setting-row p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--tertiary);
+}
+.about p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--secondary);
+}
+.about .settings-footnote {
+  margin-top: 8px;
+  color: var(--tertiary);
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.confirm-dialog {
+  width: 100%;
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.confirm-dialog h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.confirm-dialog p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--secondary);
+}
 .connection-error {
   margin: 12px 12px 0;
   padding: 8px 10px;
