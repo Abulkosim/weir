@@ -220,3 +220,67 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     transition-duration: .01ms !important;
   }
 }
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  color: var(--secondary);
+  flex-shrink: 0;
+  transition: background-color .15s var(--ease), color .15s var(--ease);
+}
+.icon-button:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--secondary);
+  padding: 4px 0;
+  white-space: nowrap;
+}
+.text-button:hover {
+  color: var(--ink);
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 34px;
+  border-radius: 8px;
+  padding: 0 14px;
+  background: var(--hover);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color .15s var(--ease);
+}
+.button:hover {
+  background: var(--track);
+}
+.button-primary {
+  background: var(--button);
+  color: var(--button-ink);
+}
+.button-primary:hover {
+  background: color-mix(in srgb, var(--button), var(--ink) 10%);
+}
+.button-small {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+.button-danger {
+  background: var(--danger);
+  color: var(--surface);
+}
+.button-danger:hover {
+  background: color-mix(in srgb, var(--danger), #000 8%);
+}

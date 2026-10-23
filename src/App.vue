@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
+import DesignGallery from './components/DesignGallery.vue'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
 const forcedTheme = demo ? query.get('theme') : null
+const scenario = demo ? query.get('state') : null
 const dark = computed(() => forcedTheme ? forcedTheme === 'dark' : systemDark.value)
 const placement = ref<PopoverPlacement>({ revision: 0, arrowX: null })
 const viewportWidth = ref(window.innerWidth)
@@ -79,7 +81,8 @@ onUnmounted(() => {
     <div ref="shell" class="app-shell" :data-fit-height="measured">
       <div v-if="!desktop || demo || arrowX !== null" class="popover-arrow" :style="arrowX === null ? undefined : { left: `${arrowX - 6}px` }" aria-hidden="true"/>
       <div ref="popover" class="popover">
-        <main class="popover-body">
+        <DesignGallery v-if="scenario === 'design'"/>
+        <main v-else class="popover-body">
           <section class="empty" aria-labelledby="empty-title">
             <h1 id="empty-title">Not tested yet</h1>
             <p>Test download, upload and latency against Cloudflare.</p>

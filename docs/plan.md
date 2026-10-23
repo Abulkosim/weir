@@ -30,10 +30,12 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **0.2 Scaffold.** Tauri 2 + Vue 3 + TS + Vite + pnpm, ported from Margin: `package.json`, `tsconfig`, `vite.config`, Playwright config, `src-tauri` with tray, single-instance, positioner, autostart, updater (inert until keys exist). App id `com.abulkosim.weir`. LICENSE, `.gitignore`, `deny.toml`.
   Verify: `pnpm tauri dev` shows a tray icon and an empty popover on mac; all checks green.
   Done 2026-10-23: app id `com.abulkosim.weir`, dev port 1430 (1420 is taken by another local project). Popover geometry split into `core/popover.rs` with Margin's placement tests re-derived for 380×600. Dev run: popover window 380 wide placed under the tray, hides on blur. Updater plugin left out until the key exists (3.3); tray ring is Margin's renderer until 1.5.
-- [ ] **0.3 Design tokens.** Chosen direction as `src/styles.css` tokens (light + dark), `src/design/controls.css`, `components/ui/*` ported from Margin and restyled. Inter + chosen display face, tabular numbers.
+- [x] **0.3 Design tokens.** Chosen direction as `src/styles.css` tokens (light + dark), `src/design/controls.css`, `components/ui/*` ported from Margin and restyled. Inter + chosen display face, tabular numbers.
   Verify: a demo page renders every control in both themes; screenshots looked at.
-- [ ] **0.4 Repo on GitHub.** Create `Abulkosim/weir`, push `main`, CI skeleton (frontend job only).
+  Done 2026-10-23: Tide tokens in `src/styles.css` (light + dark), Geist Variable bundled via `@fontsource-variable/geist` (no runtime font fetch), Margin's switch/select/tooltip ported, Weir icon set. `?demo=1&state=design` gallery; `tests/unit/contrast.test.ts` asserts AA for every text token on surface and card in both themes.
+- [x] **0.4 Repo on GitHub.** Create `Abulkosim/weir`, push `main`, CI skeleton (frontend job only).
   Verify: CI green on `main`.
+  Done 2026-10-23: public repo, `ci.yml` runs frontend + Playwright on Ubuntu and Rust fmt/clippy/test on macOS and Windows; Dependabot on.
 
 ## Phase 1 — M1 Alive: a real test from the tray
 
