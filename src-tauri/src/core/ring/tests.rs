@@ -1,7 +1,7 @@
 use super::*;
 
 const SIZES: [u32; 3] = [16, 22, 32];
-const GLYPHS: [(&str, Glyph); 8] = [
+const GLYPHS: [(&str, Glyph); 9] = [
     ("unknown", Glyph::Unknown),
     ("testing", Glyph::Testing(0.4)),
     (
@@ -34,6 +34,7 @@ const GLYPHS: [(&str, Glyph); 8] = [
     ),
     ("failed", Glyph::Failed),
     ("done", Glyph::Testing(1.0)),
+    ("offline", Glyph::Offline),
 ];
 
 struct Case {
@@ -176,6 +177,17 @@ fn health_shows_as_fill_and_poor_adds_a_centre_dot() {
     assert_ne!(
         glyph_rgba(32, Glyph::Unknown, IconStyle::Template),
         glyph_rgba(32, Glyph::Testing(0.0), IconStyle::Template)
+    );
+}
+
+#[test]
+fn offline_is_crossed_out() {
+    assert_eq!(alpha_at(32, Glyph::Offline, 0.5, 0.5), 255);
+    assert_eq!(alpha_at(32, Glyph::Offline, 0.38, 0.38), 0);
+    assert_eq!(alpha_at(32, Glyph::Offline, 0.7, 0.3), 255);
+    assert_ne!(
+        glyph_rgba(32, Glyph::Offline, IconStyle::Template),
+        glyph_rgba(32, Glyph::Failed, IconStyle::Template)
     );
 }
 

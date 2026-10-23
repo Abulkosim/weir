@@ -8,6 +8,7 @@ const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?
 defineEmits<{ test: [confirmed: boolean]; dismiss: [] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
 const metered = computed(() => props.view.network.metered)
+const offline = computed(() => !props.view.network.online)
 const note = computed(() => metered.value ? `${meteredLabel[metered.value]} · ${estimateText(props.view.estimate)}` : estimateText(props.view.estimate))
 watch(() => props.confirming, async open => {
   if (!open) return
@@ -77,7 +78,8 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
       </section>
     </template>
 
-    <section v-if="confirming && metered" class="confirm" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-detail">
+    <p v-if="offline" class="offline-pill" role="status"><AppIcon name="offline" :size="15"/><span class="num">{{ view.network.offlineSinceMs ? `No internet since ${clock(view.network.offlineSinceMs)}` : 'No internet' }}</span></p>
+    <section v-if="confirming && metered && !offline" class="confirm" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-detail">
       <p id="confirm-title" class="confirm-title"><AppIcon name="alert" :size="15"/>{{ meteredCopy[metered] }}</p>
       <p id="confirm-detail" class="confirm-detail num">{{ estimateText(view.estimate) }} of your data.</p>
       <div class="confirm-actions">
@@ -87,7 +89,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </section>
     <footer v-else class="foot">
       <span class="note num" :class="{ 'note-warning': metered }">{{ note }}</span>
-      <button class="button button-primary" :disabled="busy" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button>
+      <button class="button button-primary" :disabled="busy || offline" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button>
     </footer>
   </div>
 </template>

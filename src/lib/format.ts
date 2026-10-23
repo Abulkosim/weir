@@ -30,7 +30,7 @@ export function relativeAge(at: number, now: number): string {
 }
 
 export function clock(at: number): string {
-  return new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return new Date(at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
 const cities: Record<string, string> = {

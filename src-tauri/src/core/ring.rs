@@ -20,6 +20,8 @@ pub enum Glyph {
     Result { health: Health, stale: bool },
     /// Last test failed: empty gauge with a centre dot.
     Failed,
+    /// No internet: empty gauge crossed by a slash.
+    Offline,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -73,7 +75,7 @@ fn fill(glyph: Glyph) -> Option<f64> {
             Health::Fair => 2.0 / 3.0,
             Health::Poor => 1.0 / 3.0,
         }),
-        Glyph::Failed => Some(0.0),
+        Glyph::Failed | Glyph::Offline => Some(0.0),
     }
 }
 
@@ -91,6 +93,14 @@ fn part_at(dx: f64, dy: f64, size: f64, glyph: Glyph) -> Option<Part> {
     );
     if mark && radius <= DOT * size {
         return Some(Part::Mark);
+    }
+    if glyph == Glyph::Offline {
+        let half = OUTER * size * 0.92;
+        let along_slash = ((dx - dy) / 2.0).clamp(-half / 2.0_f64.sqrt(), half / 2.0_f64.sqrt());
+        let distance = (dx - along_slash).hypot(dy + along_slash);
+        if distance <= STROKE * size * 0.45 {
+            return Some(Part::Mark);
+        }
     }
     let turn = (dy.atan2(dx) + FRAC_PI_2).rem_euclid(TAU) / TAU;
     let along = (turn - START).rem_euclid(1.0);
@@ -126,7 +136,7 @@ fn color(part: Part, glyph: Glyph, style: IconStyle) -> ([u8; 3], f64) {
     };
     let rgb = match (part, glyph) {
         (Part::Track, _) => palette.track,
-        (_, Glyph::Unknown | Glyph::Failed) => palette.neutral,
+        (_, Glyph::Unknown | Glyph::Failed | Glyph::Offline) => palette.neutral,
         (_, Glyph::Testing(_)) => palette.progress,
         (_, Glyph::Result { stale: true, .. }) => palette.neutral,
         (_, Glyph::Result { health, .. }) => match health {

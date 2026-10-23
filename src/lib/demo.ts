@@ -1,6 +1,6 @@
 import { viewSchema, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -43,6 +43,7 @@ export function createDemoView(state: string | null, now = Date.now()): View {
     view.testing = { phase: 'upload', phaseMs: 2_900, liveMbps: 39.6, downloadMbps: 312.4, latencyMs: 14, loadedMs: 51, bytesUsed: 214_000_000, colo: 'FRA' }
   }
   if (scenario === 'metered') view.network.metered = 'hotspot'
+  if (scenario === 'offline') view.network = { online: false, metered: null, offlineSinceMs: new Date(now).setHours(14, 2, 0, 0) }
   if (scenario === 'failed') {
     view.failure = { error: 'stalled', atMs: now - 2 * minute }
     if (view.last) view.last = { ...view.last, startedAtMs: now - 3 * 60 * minute }

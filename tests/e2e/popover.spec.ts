@@ -69,6 +69,16 @@ for (const theme of themes) {
   })
 }
 
+for (const theme of themes) {
+  test(`offline keeps the last result and disables Test in ${theme}`, async ({ page }, info) => {
+    await page.goto(`/?demo=1&state=offline&theme=${theme}`)
+    await expect(page.getByRole('status')).toContainText('No internet since')
+    await expect(page.getByRole('button', { name: 'Test again' })).toBeDisabled()
+    await expect(page.getByLabel('Download 312 megabits per second')).toBeVisible()
+    await shoot(page, 'offline', info.outputPath(`offline-${theme}.png`))
+  })
+}
+
 test('a simulated run goes from Test to a settled result', async ({ page }) => {
   await page.clock.install()
   await page.goto('/?demo=1&state=never')

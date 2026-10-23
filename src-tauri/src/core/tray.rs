@@ -286,6 +286,9 @@ pub fn glyph(view: &View, now_ms: u64) -> Glyph {
     if let Some(progress) = &view.testing {
         return Glyph::Testing(progress_fraction(progress));
     }
+    if !view.network.online {
+        return Glyph::Offline;
+    }
     let failed_last = view.failure.as_ref().is_some_and(|failure| {
         view.last
             .as_ref()
@@ -304,6 +307,7 @@ pub fn glyph(view: &View, now_ms: u64) -> Glyph {
 fn tooltip(view: &View, glyph: Glyph) -> String {
     match (glyph, &view.last) {
         (Glyph::Testing(_), _) => "Weir · Testing".into(),
+        (Glyph::Offline, _) => "Weir · No internet".into(),
         (Glyph::Failed, _) => "Weir · Last test failed".into(),
         (Glyph::Result { stale, .. }, Some(report)) => format!(
             "Weir · Download {:.0} Mbps{}",
@@ -494,5 +498,7 @@ mod tests {
         assert_eq!(glyph(&view, now), Glyph::Failed);
         view.last = Some(report(now));
         assert!(matches!(glyph(&view, now), Glyph::Result { .. }));
+        view.network.online = false;
+        assert_eq!(glyph(&view, now), Glyph::Offline);
     }
 }
