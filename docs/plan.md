@@ -80,10 +80,12 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **2.7 Settings.** Versioned JSON, tolerant per-field loading, recovery note, back up before reset. Sections: Appearance (System/Light/Dark), Tray (speed text on mac), Data (show estimate before each test), Launch at login, History (export, clear), Updates, About.
   Verify: unit tests for migration and one bad field; e2e for settings in both themes.
   Done 2026-10-23: `core/settings.rs` (`settings.json`, version 1, per-field recovery with a note per reset field, unreadable file moved aside, newer-version file never overwritten). Sections: Appearance, Tray & startup (speed text on mac uses monospaced digits; launch at login synced with the OS on start), History (count, export, clear with confirmation), About. ⌘/Ctrl+, opens Settings. "Show estimate" and Updates dropped for now: the estimate is always shown; Updates arrive with the updater key (3.3).
-- [ ] **2.8 Windows popover.** Mica on Win11 else solid, 8 px radius, tray anchoring, DPI 125/150/200 %.
+- [x] **2.8 Windows popover.** Mica on Win11 else solid, 8 px radius, tray anchoring, DPI 125/150/200 %.
   Verify: CI Windows build green; manual VM check 👤.
-- [ ] **2.9 Accessibility pass.** Full keyboard path, focus ring, screen-reader labels on numbers ("Download 312 megabits per second"), `prefers-reduced-motion`.
+  Done 2026-10-23 (CI part): Mica/Acrylic window effects, 8 px radius, no arrow, 6 px frame with a matching height cap, tray placement scaled per monitor (placement tests at 100/125/150/200 %). Windows Rust jobs green. Real Windows look and DPI check in a VM still 👤.
+- [x] **2.9 Accessibility pass.** Full keyboard path, focus ring, screen-reader labels on numbers ("Download 312 megabits per second"), `prefers-reduced-motion`.
   Verify: e2e keyboard walk; axe check has no serious issues.
+  Done 2026-10-23: `tests/e2e/accessibility.spec.ts` runs axe on 8 views × 2 themes × 2 engines (no serious/critical), a keyboard walk of the result view and a focus-ring check. Fixed: preview ribbon contrast, `aria-label` on non-interactive text (now visually hidden text), History list roles. The result details now show data used ("Used 238 MB").
 
 ## Phase 3 — M3 Ship v0.1.0 ⛳
 

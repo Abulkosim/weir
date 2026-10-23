@@ -84,15 +84,15 @@ function time(at: number): string {
         </svg>
       </section>
 
-      <div class="history-list" role="list" aria-label="Tests">
+      <div class="history-list">
         <section v-for="group in groups" :key="group.label" class="history-day">
           <h2>{{ group.label }}</h2>
           <ul>
-            <li v-for="entry in group.entries" :key="entryTime(entry)" class="history-row num" role="listitem">
+            <li v-for="entry in group.entries" :key="entryTime(entry)" class="history-row num">
               <span class="history-time">{{ time(entryTime(entry)) }}</span>
               <template v-if="entry.kind === 'result'">
-                <span class="history-metric" :aria-label="`Download ${formatMbps(entry.report.download.mbps)} Mbps`"><AppIcon name="download" :size="12"/>{{ formatMbps(entry.report.download.mbps) }}</span>
-                <span class="history-metric" :aria-label="entry.report.upload ? `Upload ${formatMbps(entry.report.upload.mbps)} Mbps` : 'Upload not measured'"><AppIcon name="upload" :size="12"/>{{ entry.report.upload ? formatMbps(entry.report.upload.mbps) : '–' }}</span>
+                <span class="history-metric"><span class="sr-only">{{ `Download ${formatMbps(entry.report.download.mbps)} Mbps` }}</span><span aria-hidden="true" class="history-metric-shown"><AppIcon name="download" :size="12"/>{{ formatMbps(entry.report.download.mbps) }}</span></span>
+                <span class="history-metric"><span class="sr-only">{{ entry.report.upload ? `Upload ${formatMbps(entry.report.upload.mbps)} Mbps` : 'Upload not measured' }}</span><span aria-hidden="true" class="history-metric-shown"><AppIcon name="upload" :size="12"/>{{ entry.report.upload ? formatMbps(entry.report.upload.mbps) : '–' }}</span></span>
                 <span class="history-latency">{{ entry.report.latency ? `${formatMs(entry.report.latency.medianMs)} ms` : '–' }}</span>
               </template>
               <span v-else class="history-failed">{{ errorCopy[entry.error].title }}</span>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
-import { clock, errorCopy, estimateText, formatMbps, formatMs, meteredCopy, meteredLabel, relativeAge, server } from '../lib/format'
+import { clock, errorCopy, estimateText, formatMb, formatMbps, formatMs, meteredCopy, meteredLabel, relativeAge, server } from '../lib/format'
 import { loadedMs, type View } from '../lib/model'
 
 const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean; updateAvailable?: boolean }>()
@@ -42,7 +42,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
       <section class="card" aria-label="Last result">
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>
-        <p class="hero num" :aria-label="downloadLabel"><span class="big" aria-hidden="true">{{ formatMbps(report.download.mbps) }}</span><span class="unit" aria-hidden="true">Mbps</span></p>
+        <p class="hero num"><span class="sr-only">{{ downloadLabel }}</span><span class="big" aria-hidden="true">{{ formatMbps(report.download.mbps) }}</span><span class="unit" aria-hidden="true">Mbps</span></p>
         <p v-if="varied" class="hint num">{{ varied }}</p>
         <p v-if="report.download.capped" class="hint">Stopped at the data limit, speed may be higher</p>
         <p v-if="stale" class="hint">Over a day old. Test again for a current number.</p>
@@ -80,8 +80,9 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
             <li v-for="line in view.meaning.lines" :key="line.topic">
               <span class="meaning-topic">{{ line.topic }}</span>
               <span class="meaning-text num">{{ line.text }}</span>
-              <span class="meaning-mark" :class="`mark-${line.health}`" :aria-label="line.health"/>
+              <span class="meaning-mark" :class="`mark-${line.health}`"  role="img" :aria-label="line.health"/>
             </li>
+            <li class="meaning-data"><span class="meaning-topic">Data</span><span class="meaning-text num">Used {{ formatMb(report.bytesUsed) }}</span><span/></li>
           </ul>
         </div>
       </section>

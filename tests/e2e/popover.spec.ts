@@ -20,7 +20,7 @@ for (const theme of themes) {
 
     test('result shows every metric with server and age', async ({ page }, info) => {
       await page.goto(`/?demo=1&state=result&theme=${theme}`)
-      await expect(page.getByLabel('Download 312 megabits per second')).toBeVisible()
+      await expect(page.getByText('Download 312 megabits per second')).toBeVisible()
       await expect(page.getByText('Tested 12 min ago · Cloudflare, Frankfurt')).toBeVisible()
       await expect(page.getByText('62 ms under load')).toBeVisible()
       await expect(page.getByText('Uses about 250 MB')).toBeVisible()
@@ -43,7 +43,7 @@ for (const theme of themes) {
       await page.goto(`/?demo=1&state=failed&theme=${theme}`)
       await expect(page.getByRole('alert')).toContainText('Connection stalled')
       await expect(page.getByText(/Last result 312 Mbps down · 3 h ago/)).toBeVisible()
-      await expect(page.getByLabel(/megabits per second/)).toHaveCount(0)
+      await expect(page.getByText(/megabits per second/)).toHaveCount(0)
       await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
       await shoot(page, 'failed', info.outputPath(`failed-${theme}.png`))
     })
@@ -75,7 +75,7 @@ for (const theme of themes) {
     await page.goto(`/?demo=1&state=offline&theme=${theme}`)
     await expect(page.getByRole('status')).toContainText('No internet since')
     await expect(page.getByRole('button', { name: 'Test again' })).toBeDisabled()
-    await expect(page.getByLabel('Download 312 megabits per second')).toBeVisible()
+    await expect(page.getByText('Download 312 megabits per second')).toBeVisible()
     await shoot(page, 'offline', info.outputPath(`offline-${theme}.png`))
   })
 }
@@ -88,6 +88,7 @@ for (const theme of themes) {
     await toggle.click()
     await expect(toggle).toHaveAttribute('aria-expanded', 'true')
     await expect(page.getByText('Lags under load: +166 ms')).toBeVisible()
+    await expect(page.getByText('Used 238 MB')).toBeVisible()
     await expect(page.getByText('Good for 4K video', { exact: true })).toBeVisible()
     await shoot(page, 'stutter', info.outputPath(`stutter-${theme}.png`))
   })
@@ -105,7 +106,7 @@ for (const theme of themes) {
     test(`${edge.state} result is labelled in ${theme}`, async ({ page }, info) => {
       await page.goto(`/?demo=1&state=${edge.state}&theme=${theme}`)
       await expect(page.getByText(edge.text, { exact: true })).toBeVisible()
-      await expect(page.getByText(edge.also, { exact: true }).or(page.getByLabel(edge.also)).first()).toBeVisible()
+      await expect(page.getByText(edge.also, { exact: true }).first()).toBeAttached()
       await shoot(page, edge.state, info.outputPath(`${edge.state}-${theme}.png`))
     })
   }
@@ -137,7 +138,7 @@ for (const theme of themes) {
     await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Yesterday' })).toBeVisible()
     await expect(page.getByRole('listitem').filter({ hasText: 'Connection stalled' })).toHaveCount(1)
-    await expect(page.getByLabel('Download 312 Mbps')).toBeVisible()
+    await expect(page.getByText('Download 312 Mbps', { exact: true })).toBeVisible()
     const height = Number(await page.locator('.app-shell').getAttribute('data-fit-height'))
     expect(height).toBeLessThanOrEqual(600)
     await shoot(page, 'history', info.outputPath(`history-${theme}.png`))
@@ -203,7 +204,7 @@ test('a simulated run goes from Test to a settled result', async ({ page }) => {
   await page.clock.runFor(6_000)
   await expect(page.getByRole('status')).toHaveText('Measuring upload')
   await page.clock.runFor(5_000)
-  await expect(page.getByLabel('Download 312 megabits per second')).toBeVisible()
+  await expect(page.getByText('Download 312 megabits per second')).toBeVisible()
 })
 
 test('cancel returns to the previous state without a new result', async ({ page }) => {

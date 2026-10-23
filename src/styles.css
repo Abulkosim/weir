@@ -607,6 +607,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   gap: 4px;
   font-weight: 500;
 }
+.history-metric-shown {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 .history-metric svg {
   color: var(--tertiary);
 }
@@ -808,7 +813,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   margin-top: 2px;
   padding: 7px;
   font-size: 12px;
-  color: var(--tertiary);
+  color: var(--secondary);
   background: var(--hover);
 }
 
