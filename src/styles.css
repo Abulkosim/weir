@@ -603,6 +603,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   grid-column: 2 / -1;
   color: var(--danger);
 }
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 44px;
+  z-index: 5;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 12.5px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: 0 8px 24px -8px rgba(0,0,0,.4);
+}
+.toast-enter-active, .toast-leave-active {
+  transition: opacity .2s var(--ease), transform .2s var(--ease);
+}
+.toast-enter-from, .toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 6px);
+}
 .connection-error {
   margin: 12px 12px 0;
   padding: 8px 10px;

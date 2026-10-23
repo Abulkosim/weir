@@ -5,7 +5,7 @@ import { errorCopy, formatMbps, formatMs } from '../lib/format'
 import { entryTime, type Entry } from '../lib/model'
 
 const props = defineProps<{ entries: Entry[]; now: number }>()
-defineEmits<{ back: [] }>()
+defineEmits<{ back: []; export: [] }>()
 
 const results = computed(() => props.entries.flatMap(entry => entry.kind === 'result' ? [entry.report] : []))
 const recent = computed(() => results.value.slice(0, 30).reverse())
@@ -63,6 +63,7 @@ function time(at: number): string {
     <header class="page-header">
       <button class="icon-button" aria-label="Back" @click="$emit('back')"><AppIcon name="back" :size="17"/></button>
       <h1>History</h1>
+      <button v-if="entries.length" class="button button-small" @click="$emit('export')"><AppIcon name="export" :size="13"/>Export CSV</button>
     </header>
 
     <section v-if="!entries.length" class="card never">

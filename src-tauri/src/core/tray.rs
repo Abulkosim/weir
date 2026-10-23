@@ -29,6 +29,8 @@ struct Presentation {
 #[derive(Default)]
 pub struct Visibility {
     presentation: Mutex<Presentation>,
+    /// Set while a native dialog is open so losing focus does not hide the popover.
+    pub keep_open: std::sync::atomic::AtomicBool,
     pub last_blur: Mutex<Option<Instant>>,
     pub placement: Mutex<PopoverPlacement>,
     content_height: Mutex<Option<f64>>,

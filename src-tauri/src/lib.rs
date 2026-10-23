@@ -20,6 +20,7 @@ pub fn run() {
             Some(vec!["--background"]),
         ))
         .plugin(tauri_plugin_positioner::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(tray::Visibility::default())
         .invoke_handler(tauri::generate_handler![
             commands::get_popover_placement,
@@ -30,6 +31,7 @@ pub fn run() {
             commands::cancel_test,
             commands::get_history,
             commands::clear_history,
+            commands::export_history,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
@@ -53,12 +55,14 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             WindowEvent::Focused(false) => {
-                if let Ok(mut last_blur) = window
-                    .app_handle()
-                    .state::<tray::Visibility>()
-                    .last_blur
-                    .lock()
+                let visibility = window.app_handle().state::<tray::Visibility>();
+                if visibility
+                    .keep_open
+                    .load(std::sync::atomic::Ordering::Relaxed)
                 {
+                    return;
+                }
+                if let Ok(mut last_blur) = visibility.last_blur.lock() {
                     *last_blur = Some(Instant::now());
                 }
                 let _ = window.hide();

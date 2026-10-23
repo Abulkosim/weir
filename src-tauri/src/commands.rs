@@ -1,8 +1,10 @@
 use crate::{
-    core::{history::Entry, popover::PopoverPlacement, tray},
+    core::{export::csv, history::Entry, popover::PopoverPlacement, tray},
     runtime::{runtime, Start, View},
 };
+use std::sync::atomic::Ordering;
 use tauri::{AppHandle, Manager, State};
+use tauri_plugin_dialog::DialogExt;
 
 #[tauri::command]
 pub fn get_popover_placement(
@@ -51,4 +53,35 @@ pub fn get_history(app: AppHandle, limit: usize) -> Vec<Entry> {
 #[tauri::command]
 pub fn clear_history(app: AppHandle) -> Result<(), String> {
     runtime(&app).clear_history(&app)
+}
+
+/// Asks where to save, writes the CSV, and returns the file name, or `None` if cancelled.
+#[tauri::command]
+pub async fn export_history(app: AppHandle) -> Result<Option<String>, String> {
+    let entries = runtime(&app).all_entries();
+    let name = format!(
+        "weir-history-{}.csv",
+        chrono::Local::now().format("%Y-%m-%d")
+    );
+    let visibility = app.state::<tray::Visibility>();
+    visibility.keep_open.store(true, Ordering::Relaxed);
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+    app.dialog()
+        .file()
+        .set_file_name(&name)
+        .add_filter("CSV", &["csv"])
+        .save_file(move |path| {
+            let _ = sender.send(path);
+        });
+    let chosen = receiver.await.ok().flatten();
+    visibility.keep_open.store(false, Ordering::Relaxed);
+    tray::show(&app);
+    let Some(path) = chosen.and_then(|path| path.into_path().ok()) else {
+        return Ok(None);
+    };
+    std::fs::write(&path, csv(&entries)).map_err(|_| "Weir couldn’t write the file.".to_owned())?;
+    Ok(Some(
+        path.file_name()
+            .map_or(name, |file| file.to_string_lossy().into_owned()),
+    ))
 }

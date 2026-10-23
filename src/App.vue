@@ -8,7 +8,7 @@ import TestingView from './components/TestingView.vue'
 import { useWeir } from './lib/weir'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
-const { view, connectionError, now, samples, confirming, history, start, cancel } = useWeir()
+const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory } = useWeir()
 const page = ref<'overview' | 'history'>(demo && query.get('page') === 'history' ? 'history' : 'overview')
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
@@ -94,10 +94,11 @@ onUnmounted(() => {
         <main v-else>
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
           <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
-          <HistoryView v-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'"/>
+          <HistoryView v-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
           <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'"/>
         </main>
+        <Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition>
         <div v-if="!desktop || demo" class="preview-ribbon">Interface preview<span>Sample data</span></div>
       </div>
     </div>

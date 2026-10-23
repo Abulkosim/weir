@@ -134,6 +134,13 @@ impl Runtime {
         }
     }
 
+    pub fn all_entries(&self) -> Vec<Entry> {
+        self.history
+            .lock()
+            .map(|history| history.entries().to_vec())
+            .unwrap_or_default()
+    }
+
     pub fn recent(&self, limit: usize) -> Vec<Entry> {
         self.history
             .lock()

@@ -74,8 +74,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **2.5 History.** `core/history.rs`: own bounded JSON file, 1 year retention, atomic writes, tolerant load. Popover list (date, down, up, latency, server), small download sparkline.
   Verify: unit tests for pruning, corrupt-file recovery, size bound; e2e history state.
   Done 2026-10-23: `core/history.rs` stores results and failures (`history.json`, versioned, temp-file + rename, 366 days, 5,000 entries), skips unreadable entries with a count, moves an unreadable file aside as `history.unreadable-<ms>.json`. Last result, last failure and the data estimate now survive restarts. Popover: History page (median, range, sparkline of the last 30, rows grouped by day, failures in red), reachable from the meta line once a test exists.
-- [ ] **2.6 CSV export.** Save dialog, columns documented in README; no IP, city or SSID.
+- [x] **2.6 CSV export.** Save dialog, columns documented in README; no IP, city or SSID.
   Verify: unit test on CSV output for a fixture history; manual save once.
+  Done 2026-10-23: `core/export.rs`, 12 columns, local time with the UTC offset written out, failed tests as rows with the reason. Native save dialog from Rust (`tauri-plugin-dialog`, no JS permission); the popover stays open while it shows. Manual save from the real app still pending (needs a real test first, see 1.6).
 - [ ] **2.7 Settings.** Versioned JSON, tolerant per-field loading, recovery note, back up before reset. Sections: Appearance (System/Light/Dark), Tray (speed text on mac), Data (show estimate before each test), Launch at login, History (export, clear), Updates, About.
   Verify: unit tests for migration and one bad field; e2e for settings in both themes.
 - [ ] **2.8 Windows popover.** Mica on Win11 else solid, 8 px radius, tray anchoring, DPI 125/150/200 %.

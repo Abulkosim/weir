@@ -10,6 +10,8 @@ export function useWeir() {
   const now = ref(Date.now())
   const samples = ref<number[]>([])
   const confirming = ref(false)
+  const message = ref<string | null>(null)
+  let messageTimer: ReturnType<typeof setTimeout> | undefined
   const history = ref<Entry[]>(demo ? demoHistory(Date.now()) : [])
   let samplePhase: Phase | null = null
   let stopListening: (() => void) | undefined
@@ -56,6 +58,22 @@ export function useWeir() {
     if (demo || !desktop) return
     const result = historySchema.safeParse(await invoke('get_history', { limit: 500 }).catch(() => null))
     if (result.success) history.value = result.data
+  }
+
+  function say(text: string): void {
+    clearTimeout(messageTimer)
+    message.value = text
+    messageTimer = setTimeout(() => { message.value = null }, 4_000)
+  }
+
+  async function exportHistory(): Promise<void> {
+    if (demo) return say(`Saved weir-history-${new Date().toISOString().slice(0, 10)}.csv`)
+    try {
+      const saved = await invoke('export_history')
+      if (typeof saved === 'string') say(`Saved ${saved}`)
+    } catch (error) {
+      say(typeof error === 'string' ? error : 'Weir couldn’t export the history.')
+    }
   }
 
   async function clearHistory(): Promise<void> {
@@ -131,8 +149,9 @@ export function useWeir() {
     destroyed = true
     clearInterval(clock)
     clearInterval(simulation)
+    clearTimeout(messageTimer)
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, confirming, history, start, cancel, clearHistory }
+  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory }
 }

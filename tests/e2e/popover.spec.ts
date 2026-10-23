@@ -146,6 +146,12 @@ for (const theme of themes) {
   })
 }
 
+test('export confirms the saved file name', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await page.getByRole('button', { name: 'Export CSV' }).click()
+  await expect(page.getByRole('status').filter({ hasText: /Saved weir-history-\d{4}-\d{2}-\d{2}\.csv/ })).toBeVisible()
+})
+
 test('history button stays hidden until there is history', async ({ page }) => {
   await page.goto('/?demo=1&state=never')
   await expect(page.getByRole('button', { name: 'History' })).toHaveCount(0)
