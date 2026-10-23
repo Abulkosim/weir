@@ -47,10 +47,10 @@ fn client() -> Result<Client, BackendError> {
 }
 
 fn transport(error: reqwest::Error) -> BackendError {
-    if error.is_timeout() {
-        BackendError::Timeout
-    } else if error.is_connect() {
+    if error.is_connect() {
         BackendError::Offline
+    } else if error.is_timeout() {
+        BackendError::Timeout
     } else {
         BackendError::Interrupted
     }

@@ -57,7 +57,12 @@ async fn unreachable_server_is_offline() {
     let backend = Cloudflare::with_base(&format!("http://{address}"));
     assert_eq!(backend.server().await, Err(BackendError::Offline));
     let connection = backend.connect().unwrap();
-    assert_eq!(connection.probe().await, Err(BackendError::Offline));
+    // Windows takes about 2 s to refuse a local port, which races the probe timeout.
+    let probe = connection.probe().await;
+    assert!(
+        matches!(probe, Err(BackendError::Offline | BackendError::Timeout)),
+        "{probe:?}"
+    );
 }
 
 #[tokio::test]
