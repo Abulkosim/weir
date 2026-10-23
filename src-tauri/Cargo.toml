@@ -31,6 +31,7 @@ futures-util = { version = "0.3", default-features = false, features = ["std"] }
 bytes = "1"
 
 [dev-dependencies]
+tauri = { version = "2.12.4", features = ["test"] }
 png = "0.18"
 tempfile = "3"
 wiremock = "0.6.5"
