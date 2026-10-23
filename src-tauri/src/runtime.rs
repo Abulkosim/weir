@@ -107,6 +107,7 @@ impl Runtime {
         }
         let runtime = self.clone();
         let handle = app.clone();
+        crate::activity::begin(app);
         tauri::async_runtime::spawn(async move {
             let outcome = speedtest::run(
                 &Cloudflare::default(),
@@ -115,6 +116,7 @@ impl Runtime {
                 |progress| runtime.change(&handle, |view| view.testing = Some(progress)),
             )
             .await;
+            crate::activity::end(&handle);
             if let Ok(mut current) = runtime.control.lock() {
                 *current = None;
             }

@@ -1,7 +1,10 @@
 use super::{
+    meaning::health,
     popover::{popover_height, Bounds, PopoverPlacement},
-    ring::{ring_rgba, IconStyle},
+    ring::{glyph_rgba, Glyph, IconStyle},
+    speedtest::{Phase, Progress},
 };
+use crate::runtime::View;
 use std::{sync::Mutex, time::Instant};
 use tauri::{
     image::Image,
@@ -18,7 +21,14 @@ use {
 pub const TRAY_ID: &str = "weir";
 
 #[derive(Default)]
+struct Presentation {
+    pixels: Vec<u8>,
+    tooltip: String,
+}
+
+#[derive(Default)]
 pub struct Visibility {
+    presentation: Mutex<Presentation>,
     pub last_blur: Mutex<Option<Instant>>,
     pub placement: Mutex<PopoverPlacement>,
     content_height: Mutex<Option<f64>>,
@@ -257,17 +267,82 @@ fn place(app: &AppHandle, window: &tauri::WebviewWindow) {
     fit_backdrop(window);
 }
 
-/// Placeholder until the health ring lands: progress while testing, unknown at rest.
-pub fn update(app: &AppHandle, view: &crate::runtime::View) {
-    let tooltip = match (&view.testing, &view.last) {
-        (Some(_), _) => "Weir · Testing".to_owned(),
-        (None, Some(report)) => format!("Weir · Download {:.0} Mbps", report.download.mbps),
-        (None, None) => "Weir · Not tested yet".to_owned(),
+const STALE_MS: u64 = 24 * 60 * 60 * 1000;
+
+/// Overall progress through the three phases, 0–1.
+pub fn progress_fraction(progress: &Progress) -> f64 {
+    let ms = progress.phase_ms as f64;
+    let (start, share, span) = match progress.phase {
+        Phase::Connecting => (0.0, 0.0, 1.0),
+        Phase::Latency => (0.0, 0.1, 1_500.0),
+        Phase::Download => (0.1, 0.5, 10_000.0),
+        Phase::Upload => (0.6, 0.4, 8_000.0),
     };
+    let fraction = start + share * (ms / span).min(1.0);
+    (fraction * 36.0).round() / 36.0
+}
+
+pub fn glyph(view: &View, now_ms: u64) -> Glyph {
+    if let Some(progress) = &view.testing {
+        return Glyph::Testing(progress_fraction(progress));
+    }
+    let failed_last = view.failure.as_ref().is_some_and(|failure| {
+        view.last
+            .as_ref()
+            .is_none_or(|report| failure.at_ms > report.started_at_ms)
+    });
+    match &view.last {
+        _ if failed_last => Glyph::Failed,
+        Some(report) => Glyph::Result {
+            health: health(report),
+            stale: now_ms.saturating_sub(report.started_at_ms) > STALE_MS,
+        },
+        None => Glyph::Unknown,
+    }
+}
+
+fn tooltip(view: &View, glyph: Glyph) -> String {
+    match (glyph, &view.last) {
+        (Glyph::Testing(_), _) => "Weir · Testing".into(),
+        (Glyph::Failed, _) => "Weir · Last test failed".into(),
+        (Glyph::Result { stale, .. }, Some(report)) => format!(
+            "Weir · Download {:.0} Mbps{}",
+            report.download.mbps,
+            if stale { " · over a day ago" } else { "" }
+        ),
+        _ => "Weir · Not tested yet".into(),
+    }
+}
+
+pub fn update(app: &AppHandle, view: &View) {
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |time| time.as_millis() as u64);
+    let glyph = glyph(view, now_ms);
+    let size = icon_size(app);
+    let pixels = glyph_rgba(size, glyph, icon_style());
+    let tooltip = tooltip(view, glyph);
     let handle = app.clone();
     let _ = app.run_on_main_thread(move || {
-        if let Some(tray) = handle.tray_by_id(TRAY_ID) {
-            let _ = tray.set_tooltip(Some(&tooltip));
+        let Some(tray) = handle.tray_by_id(TRAY_ID) else {
+            return;
+        };
+        let visibility = handle.state::<Visibility>();
+        let Ok(mut shown) = visibility.presentation.lock() else {
+            return;
+        };
+        if shown.pixels != pixels
+            && tray
+                .set_icon_with_as_template(
+                    Some(Image::new_owned(pixels.clone(), size, size)),
+                    cfg!(target_os = "macos"),
+                )
+                .is_ok()
+        {
+            shown.pixels = pixels;
+        }
+        if shown.tooltip != tooltip && tray.set_tooltip(Some(&tooltip)).is_ok() {
+            shown.tooltip = tooltip;
         }
     });
 }
@@ -280,7 +355,7 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     let size = icon_size(app);
     TrayIconBuilder::with_id(TRAY_ID)
         .icon(Image::new_owned(
-            ring_rgba(size, None, false, icon_style()),
+            glyph_rgba(size, Glyph::Unknown, icon_style()),
             size,
             size,
         ))
@@ -320,4 +395,104 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
         })
         .build(app)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        core::speedtest::{IdleLatency, Report, Speed},
+        runtime::Failure,
+    };
+
+    fn progress(phase: Phase, phase_ms: u64) -> Progress {
+        Progress {
+            phase,
+            phase_ms,
+            live_mbps: None,
+            download_mbps: None,
+            latency_ms: None,
+            loaded_ms: None,
+            bytes_used: 0,
+            colo: None,
+        }
+    }
+
+    fn report(started_at_ms: u64) -> Report {
+        let speed = |mbps| Speed {
+            mbps,
+            p10: mbps,
+            p90: mbps,
+            varied: false,
+            capped: false,
+            ramped_slowly: false,
+            rough: false,
+            loaded_ms: Some(40.0),
+        };
+        Report {
+            started_at_ms,
+            duration_ms: 15_000,
+            provider: "Cloudflare",
+            colo: None,
+            latency: Some(IdleLatency {
+                median_ms: 12.0,
+                jitter_ms: Some(1.0),
+                answered: 19,
+                sent: 19,
+            }),
+            download: speed(300.0),
+            upload: Some(speed(40.0)),
+            upload_error: None,
+            bytes_used: 0,
+        }
+    }
+
+    #[test]
+    fn progress_moves_forward_through_the_phases() {
+        let steps = [
+            progress(Phase::Connecting, 300),
+            progress(Phase::Latency, 750),
+            progress(Phase::Download, 0),
+            progress(Phase::Download, 5_000),
+            progress(Phase::Upload, 0),
+            progress(Phase::Upload, 8_000),
+        ];
+        let fractions: Vec<f64> = steps.iter().map(progress_fraction).collect();
+        assert!(
+            fractions.windows(2).all(|pair| pair[0] <= pair[1]),
+            "{fractions:?}"
+        );
+        assert_eq!(fractions[0], 0.0);
+        assert_eq!(fractions[5], 1.0);
+    }
+
+    #[test]
+    fn glyph_follows_testing_then_result_then_age() {
+        let now = 10 * STALE_MS;
+        let mut view = View::default();
+        assert_eq!(glyph(&view, now), Glyph::Unknown);
+        view.testing = Some(progress(Phase::Download, 5_000));
+        assert!(matches!(glyph(&view, now), Glyph::Testing(_)));
+        view.testing = None;
+        view.last = Some(report(now - 60_000));
+        assert_eq!(
+            glyph(&view, now),
+            Glyph::Result {
+                health: crate::core::meaning::Health::Good,
+                stale: false
+            }
+        );
+        view.last = Some(report(now - STALE_MS - 1));
+        assert!(matches!(
+            glyph(&view, now),
+            Glyph::Result { stale: true, .. }
+        ));
+        view.failure = Some(Failure {
+            error: crate::core::speedtest::TestError::Stalled,
+            at_ms: now - 1_000,
+        });
+        assert_eq!(glyph(&view, now), Glyph::Failed);
+        view.last = Some(report(now));
+        assert!(matches!(glyph(&view, now), Glyph::Result { .. }));
+    }
 }

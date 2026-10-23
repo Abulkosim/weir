@@ -51,8 +51,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **1.4 IPC + popover.** Commands `start_test`, `cancel_test`, `last_result`; progress events; Zod schemas for every payload. Popover: result card (download, upload, latency · under load, jitter, server, time), Test button, live gauge while running, numbers counting up. `fit_popover` + ResizeObserver from Margin.
   Verify: e2e in demo bridge for never-tested, testing, result; light + dark screenshots looked at.
   Done 2026-10-23: `runtime.rs` holds the view (testing progress, last report, failure, data estimate) and emits `state_changed`; Zod `viewSchema` validates every payload. Views: never tested, testing (latency/download/upload with steps, live chart, counting hero), result, failed. Demo bridge simulates a full run (`?demo=1&state=never`, press Test). 34 e2e on Chromium + WebKit. Not yet exercised against the real network (metered link here; see 1.6).
-- [ ] **1.5 Tray ring.** Template ring on mac (alpha only), themed on Windows by taskbar setting; fills with progress while testing; health at rest. Rendered in Rust like Margin's `ring.rs`.
+- [x] **1.5 Tray ring.** Template ring on mac (alpha only), themed on Windows by taskbar setting; fills with progress while testing; health at rest. Rendered in Rust like Margin's `ring.rs`.
   Verify: contact sheet at 16/22/32 px light + dark in `docs/images/tray/`; contrast ≥ 3:1 asserted in a test.
+  Done 2026-10-23: 270° gauge open at the bottom (matches the app icon). Never tested = thin track; testing = fills through latency → download → upload; result = full/⅔/⅓ for good/fair/poor (`core/meaning.rs`), poor and failed add a centre dot, stale (> 24 h) dims. Min contrast 3.8:1. Tray refreshes every 10 min so age shows; macOS holds a user-initiated activity during a test so App Nap can't slow its timers.
 - [ ] **1.6 Real check 👤.** One test on the owner's Mac on an unmetered link, compared with speed.cloudflare.com back to back, 3 runs each.
   Verify: results in `docs/verification.md` (numbers and colo only); within ~10 % at ≤ 300 Mbps, or the gap explained.
 

@@ -1,3 +1,4 @@
+mod activity;
 mod commands;
 pub mod core;
 mod runtime;
@@ -32,6 +33,13 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             tray::setup(app.handle())?;
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(600)).await;
+                    tray::update(&handle, &runtime::runtime(&handle).view());
+                }
+            });
             if !std::env::args().any(|argument| argument == "--background") {
                 tray::show(app.handle());
             }
