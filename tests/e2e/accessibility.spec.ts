@@ -17,10 +17,13 @@ for (const theme of ['light', 'dark'] as const) {
     test(`${view.name} has no serious accessibility issues in ${theme}`, async ({ page }) => {
       await page.goto(`${view.url}&theme=${theme}`)
       await page.evaluate(() => document.fonts.ready)
-      await page.waitForTimeout(300)
-      const results = await new AxeBuilder({ page }).include('.popover').analyze()
-      const serious = results.violations.filter(violation => violation.impact === 'serious' || violation.impact === 'critical')
-      expect(serious.map(violation => `${violation.id}: ${violation.nodes.map(node => node.target.join(' ')).join(', ')}`)).toEqual([])
+      // The dev server injects styles after first paint, so poll until the page has settled.
+      await expect.poll(async () => {
+        const results = await new AxeBuilder({ page }).include('.popover').analyze()
+        return results.violations
+          .filter(violation => violation.impact === 'serious' || violation.impact === 'critical')
+          .map(violation => `${violation.id}: ${violation.nodes.map(node => node.target.join(' ')).join(', ')}`)
+      }, { timeout: 10_000 }).toEqual([])
     })
   }
 }

@@ -225,7 +225,7 @@ for (const state of ['result', 'stutter', 'never', 'testing'] as const) {
     await page.setViewportSize({ width: 380, height: fitted })
     await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBe(fitted)
     const main = page.locator('.popover > main')
-    expect(await main.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1)
+    await expect.poll(() => main.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1)
     const button = page.getByRole('button', { name: /^(Test|Test again|Cancel)$/ })
     await expect(button).toBeInViewport({ ratio: 1 })
   })
