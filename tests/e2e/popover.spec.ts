@@ -206,6 +206,34 @@ test('cancel returns to the previous state without a new result', async ({ page 
   await expect(page.getByText('12 min ago')).toBeVisible()
 })
 
+for (const state of ['result', 'stutter', 'never', 'testing'] as const) {
+  test(`a short native window grows to fit the ${state} view instead of clipping it`, async ({ page }) => {
+    await page.setViewportSize({ width: 380, height: 200 })
+    await page.goto(`/?demo=1&frame=1&state=${state}`)
+    const shell = page.locator('.app-shell')
+    await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBeGreaterThan(200)
+    const fitted = Number(await shell.getAttribute('data-fit-height'))
+    expect(fitted).toBeLessThanOrEqual(600)
+    await page.setViewportSize({ width: 380, height: fitted })
+    await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBe(fitted)
+    const main = page.locator('.popover > main')
+    expect(await main.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1)
+    const button = page.getByRole('button', { name: /^(Test|Test again|Cancel)$/ })
+    await expect(button).toBeInViewport({ ratio: 1 })
+  })
+}
+
+test('history taller than the popover scrolls inside it', async ({ page }) => {
+  await page.setViewportSize({ width: 380, height: 600 })
+  await page.goto('/?demo=1&frame=1&page=history')
+  const shell = page.locator('.app-shell')
+  await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBe(600)
+  const main = page.locator('.popover > main')
+  expect(await main.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true)
+  await main.evaluate(element => element.scrollTo(0, element.scrollHeight))
+  await expect(page.getByRole('heading', { name: 'History' })).toBeInViewport()
+})
+
 test('shell reports a fitted height within the popover bounds', async ({ page }) => {
   await page.goto('/?demo=1')
   const shell = page.locator('.app-shell')

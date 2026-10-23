@@ -25,6 +25,9 @@ const viewportWidth = ref(window.innerWidth)
 const arrowX = computed(() => !desktop || demo || isWindows ? null : arrowOffset(placement.value.arrowX, viewportWidth.value))
 const shell = ref<HTMLElement | null>(null)
 const popover = ref<HTMLElement | null>(null)
+const scroller = ref<HTMLElement | null>(null)
+const content = ref<HTMLElement | null>(null)
+const framed = desktop && !demo || demo && query.get('frame') === '1'
 const measured = ref(0)
 let frame = 0
 let observer: ResizeObserver | undefined
@@ -40,7 +43,11 @@ function measure(): void {
   frame = 0
   if (!shell.value || !popover.value) return
   const style = getComputedStyle(shell.value)
-  const height = fitHeight(parseFloat(style.paddingTop), parseFloat(style.paddingBottom), popover.value.offsetHeight)
+  // Natural height: the popover chrome plus the full content, even while the window
+  // is still shorter than that content and the scroller is clipping it.
+  const chrome = popover.value.offsetHeight - (scroller.value?.clientHeight ?? 0)
+  const natural = chrome + (content.value?.offsetHeight ?? scroller.value?.scrollHeight ?? 0)
+  const height = fitHeight(parseFloat(style.paddingTop), parseFloat(style.paddingBottom), natural)
   if (height === measured.value) return
   measured.value = height
   if (desktop && !demo) invoke('fit_popover', { height }).catch(() => {})
@@ -72,6 +79,7 @@ onMounted(async () => {
   if (typeof ResizeObserver === 'function' && popover.value) {
     observer = new ResizeObserver(scheduleMeasure)
     observer.observe(popover.value)
+    if (content.value) observer.observe(content.value)
   }
   scheduleMeasure()
   if (!desktop || demo) return
@@ -97,18 +105,20 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="preview-stage" :class="{ 'desktop-stage': desktop && !demo }">
+  <div class="preview-stage" :class="{ 'desktop-stage': framed }">
     <div ref="shell" class="app-shell" :data-fit-height="measured">
       <div v-if="!desktop || demo || arrowX !== null" class="popover-arrow" :style="arrowX === null ? undefined : { left: `${arrowX - 6}px` }" aria-hidden="true"/>
       <div ref="popover" class="popover">
         <DesignGallery v-if="scenario === 'design'"/>
-        <main v-else>
+        <main v-else ref="scroller">
+          <div ref="content">
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
           <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
           <HistoryView v-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
           <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @clear="clearHistory"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
           <ResultView v-else :view="view" :now="now" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'"/>
+          </div>
         </main>
         <Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition>
         <div v-if="!desktop || demo" class="preview-ribbon">Interface preview<span>Sample data</span></div>
