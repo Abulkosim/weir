@@ -106,12 +106,19 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **3.6 Release v0.1.0.** Changelog, tag, draft, checksums, updater install test (tampered bytes and wrong version rejected), `docs/verification.md`, report; 👤 owner says "publish".
   Done 2026-10-24 00:11 UTC: published after the owner said "publish". Evidence in `docs/verification.md`. Still 👤: real DMG launch, Windows VM, speed.cloudflare.com comparison (1.6).
 
-## Phase 4 — Is it me or the internet? (v0.2) ⛳
+## Phase 4 — Is it me or the internet? (v0.2.0) ⛳
 
-- [ ] **4.1 Diagnose.** `core/diagnose.rs`: Wi-Fi (RSSI, noise, rate; never SSID) → router (gateway ping: ICMP DGRAM on mac, `IcmpSendEcho2` on Windows, TCP connect fallback) → DNS (configured server query + system lookup) → internet (`cp.cloudflare.com/generate_204`). Each step one plain sentence: "Your Wi-Fi is fine. The problem is past your router."
-- [ ] **4.2 Designed states:** Wi-Fi weak, router unreachable, DNS slow, captive portal.
-- [ ] **4.3 Light background checks (opt-in).** Every 60 s ±10 % on power, 2–5 min on battery, < 1 KB/min, event-driven on path change. Outage timeline "No internet 14:02–14:09". Notification "Connection lost / back", off by default.
-- [ ] **4.4 Slow-hours chart** from history (by hour of day).
+- [ ] **4.1 Diagnosis core.** `core/diagnose.rs`: pure verdict from four step results (Wi-Fi signal, router round trip, DNS lookup, internet reach) into one plain sentence plus per-step lines. Thresholds: Wi-Fi good ≥ −64 dBm, weak ≤ −75 dBm (Teams bands); router slow ≥ 50 ms or ≥ 2 of 5 probes lost; DNS slow ≥ 300 ms; internet down when no answer in 3 s.
+  Verify: unit tests per verdict ("Your Wi-Fi is fine. The problem is past your router.", router down, weak Wi-Fi, slow DNS, all fine, offline).
+- [ ] **4.2 Probes.** Gateway and DNS servers from the OS (`netdev`), router ping (macOS unprivileged ICMP datagram socket, Windows `IcmpSendEcho2`, TCP connect fallback), DNS timing (one A query over UDP to the configured server), internet reach (`speed.cloudflare.com/__down?bytes=0`), Wi-Fi signal (macOS CoreWLAN RSSI/noise/rate, never SSID; Windows signal bars). Under 20 kB per check, no other hosts.
+  Verify: unit tests for packet building/parsing and fallbacks against local sockets; manual run on this Mac prints a verdict (no IPs recorded).
+- [ ] **4.3 Check connection view.** "Check connection" from the result, failed and offline states; each step a row with status and value, headline sentence first; designed states for Wi-Fi weak, router unreachable, DNS slow, internet down, all fine, checking.
+  Verify: demo states + e2e + axe in both themes; screenshots looked at.
+- [ ] **4.4 Watch for outages (opt-in).** Settings switch, off by default. A tiny check every 60 s ±10 % on a kept-alive connection (< 2 kB/min), plus OS path changes. Two failed checks start an outage; the first success ends it. Outages go into history ("No internet 14:02–14:09"); optional notification "Connection lost" / "Connection back", on by default when watching.
+  Verify: unit tests on the outage state machine (flaps, sleep gaps, path offline); e2e for outage rows; manual toggle on this Mac.
+- [ ] **4.5 Slow hours.** History shows median download by hour of day once there are ≥ 10 tests across ≥ 3 hours; the slowest hours are named ("Slowest around 20:00–22:00").
+  Verify: unit tests on bucketing; e2e with demo history.
+- [ ] **4.6 Release v0.2.0.** Changelog, tag, verify draft, publish (standing approval), record.
 
 ## Phase 5 — Later
 

@@ -40,7 +40,7 @@ Actions are pinned by SHA with read-only permissions; only the release job can w
    ```
 
 4. Record what passed, counts, CI run links, checksums and what is still pending in [verification.md](verification.md), newest release on top.
-5. Report to the owner. Publish only when the owner says "publish": `gh release edit vX.Y.Z --draft=false --latest`. Set the changelog date to the actual publish date (UTC).
+5. Publish once every check above passes (the owner gave standing approval on 2026-10-24): `gh release edit vX.Y.Z --draft=false --latest`. Date the changelog and release notes by the UTC publish day. Then report to the owner. If any check fails, stop and report instead.
 
 Never edit a published release's files or reuse a version; ship a new patch. To stop offering a bad release, mark it a prerelease so the latest endpoint falls back, then ship a fix.
 
