@@ -12,6 +12,7 @@ What was actually checked, newest release on top. Date, command, platform and ou
 - Real updater test against the exact `Weir.app.tar.gz`: altered bytes and a mismatched signed version rejected; 0.2.0 installed for x86_64 and arm64. DMG app ad-hoc signed, version 0.2.0, universal.
 - Live on this Mac (macOS 26.6.2, Wi-Fi): unprivileged ICMP reached the router 3 of 3; the connection check read Wi-Fi, router, DNS and Cloudflare as good ("Everything looks fine from here."). About 10 kB.
 - Pending: a real outage caught by the watch (needs a deliberate disconnect with watching on), notifications on screen, the connection check on Windows (ICMP and signal bars), and the first in-app update from 0.1.0 to 0.2.0 on the owner's Mac.
+- 2026-10-24: the owner reports checking the pending items by hand (outage watch and its notifications, the connection check on Windows, the in-app update from 0.1.0 to 0.2.0), with no problems reported.
 
 ## v0.1.0
 
