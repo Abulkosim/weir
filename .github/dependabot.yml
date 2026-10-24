@@ -11,9 +11,15 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Minor and patch updates arrive together; each major version gets its own pull request.
     groups:
       frontend:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # Types must match the Node version Weir targets (24).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: cargo
     directory: /src-tauri
     schedule:
@@ -21,3 +27,4 @@ updates:
     groups:
       rust:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
