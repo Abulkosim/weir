@@ -123,7 +123,8 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **4.5 Slow hours.** History shows median download by hour of day once there are ≥ 10 tests across ≥ 3 hours; the slowest hours are named ("Slowest around 20:00–22:00").
   Verify: unit tests on bucketing; e2e with demo history.
   Done 2026-10-24: `src/lib/hours.ts` (median per local hour; slowest contiguous run below 80 % of the usual median; shown from 10 tests across 3 hours), 24-bar chart in History with the slow hours in amber and a sentence. 3 unit tests, 1 e2e.
-- [ ] **4.6 Release v0.2.0.** Changelog, tag, verify draft, publish (standing approval), record.
+- [x] **4.6 Release v0.2.0.** Changelog, tag, verify draft, publish (standing approval), record.
+  Done 2026-10-24 01:06 UTC. Evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 

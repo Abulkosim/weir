@@ -2,6 +2,17 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.2.0
+
+**[v0.2.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.2.0)** at 2026-10-24 01:06 UTC and marked latest; `releases/latest/download/latest.json` serves 0.2.0. Published on standing approval after these checks. Tag `v0.2.0` builds `3342f39`.
+
+- Local: `pnpm typecheck`, 21 unit tests, 178 Chromium/WebKit browser cases (axe on 10 views × 2 themes), 14 release-script tests, 99 Rust tests, `cargo fmt --check`, strict Clippy. `node scripts/check-release.mjs v0.2.0` passed.
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/40045875308) and the [tag build](https://github.com/Abulkosim/weir/actions/runs/40046858843) green on every job, including Windows x64, which compiles and tests `IcmpSendEcho`, signal bars and the outage watch.
+- All eight checksummed files matched `SHA256SUMS.txt`. `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`.
+- Real updater test against the exact `Weir.app.tar.gz`: altered bytes and a mismatched signed version rejected; 0.2.0 installed for x86_64 and arm64. DMG app ad-hoc signed, version 0.2.0, universal.
+- Live on this Mac (macOS 26.6.2, Wi-Fi): unprivileged ICMP reached the router 3 of 3; the connection check read Wi-Fi, router, DNS and Cloudflare as good ("Everything looks fine from here."). About 10 kB.
+- Pending: a real outage caught by the watch (needs a deliberate disconnect with watching on), notifications on screen, the connection check on Windows (ICMP and signal bars), and the first in-app update from 0.1.0 to 0.2.0 on the owner's Mac.
+
 ## v0.1.0
 
 **[v0.1.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.1.0)** at 2026-10-24 00:11 UTC and marked latest; `releases/latest/download/latest.json` serves 0.1.0. The changelog and release notes were re-dated to the publish day; the `latest.json` asset keeps its signed build-time notes and was not edited.
