@@ -103,7 +103,8 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **3.5 Pages site.** `site/` from Margin's template, new palette.
   Verify: `pages.yml` deploys; 👤 enable Pages source "GitHub Actions".
   Done 2026-10-23: `site/` + `pages.yml`. 👤 Settings → Pages → Source "GitHub Actions", then set the repo homepage to https://abulkosim.github.io/weir/.
-- [ ] **3.6 Release v0.1.0.** Changelog, tag, draft, checksums, updater install test (tampered bytes and wrong version rejected), `docs/verification.md`, report; 👤 owner says "publish".
+- [x] **3.6 Release v0.1.0.** Changelog, tag, draft, checksums, updater install test (tampered bytes and wrong version rejected), `docs/verification.md`, report; 👤 owner says "publish".
+  Done 2026-10-24 00:11 UTC: published after the owner said "publish". Evidence in `docs/verification.md`. Still 👤: real DMG launch, Windows VM, speed.cloudflare.com comparison (1.6).
 
 ## Phase 4 — Is it me or the internet? (v0.2) ⛳
 

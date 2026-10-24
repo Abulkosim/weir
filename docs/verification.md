@@ -2,7 +2,9 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
-## v0.1.0 (draft)
+## v0.1.0
+
+**[v0.1.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.1.0)** at 2026-10-24 00:11 UTC and marked latest; `releases/latest/download/latest.json` serves 0.1.0. The changelog and release notes were re-dated to the publish day; the `latest.json` asset keeps its signed build-time notes and was not edited.
 
 Verified 2026-10-23 on macOS 26.6.2 against the draft built from tag `v0.1.0` (`e53489b`).
 
