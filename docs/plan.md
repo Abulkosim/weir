@@ -120,8 +120,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **4.4 Watch for outages (opt-in).** Settings switch, off by default. A tiny check every 60 s ±10 % on a kept-alive connection (< 2 kB/min), plus OS path changes. Two failed checks start an outage; the first success ends it. Outages go into history ("No internet 14:02–14:09"); optional notification "Connection lost" / "Connection back", on by default when watching.
   Verify: unit tests on the outage state machine (flaps, sleep gaps, path offline); e2e for outage rows; manual toggle on this Mac.
   Done 2026-10-24: `core/outage.rs` (7 tests: single failure ignored, two start an outage dated from the first, OS offline starts at once, sleep gaps close at the last observation, flaps count once), `monitor.rs` loop (60 s ± 6 s, kept-alive Cloudflare connection, skips while a test runs, wakes on toggle and when the path returns), outages in history and CSV, notifications "Connection lost" / "Connection back", tray crossed out during a watched outage. Manual run on the Mac still pending: the installed release holds the single-instance lock.
-- [ ] **4.5 Slow hours.** History shows median download by hour of day once there are ≥ 10 tests across ≥ 3 hours; the slowest hours are named ("Slowest around 20:00–22:00").
+- [x] **4.5 Slow hours.** History shows median download by hour of day once there are ≥ 10 tests across ≥ 3 hours; the slowest hours are named ("Slowest around 20:00–22:00").
   Verify: unit tests on bucketing; e2e with demo history.
+  Done 2026-10-24: `src/lib/hours.ts` (median per local hour; slowest contiguous run below 80 % of the usual median; shown from 10 tests across 3 hours), 24-bar chart in History with the slow hours in amber and a sentence. 3 unit tests, 1 e2e.
 - [ ] **4.6 Release v0.2.0.** Changelog, tag, verify draft, publish (standing approval), record.
 
 ## Phase 5 — Later

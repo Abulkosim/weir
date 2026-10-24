@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import AppIcon from './AppIcon.vue'
 import { errorCopy, formatMbps, formatMs } from '../lib/format'
 import { entryTime, type Entry } from '../lib/model'
+import { hourLabel, slowHours } from '../lib/hours'
 
 const props = defineProps<{ entries: Entry[]; now: number }>()
 defineEmits<{ back: []; export: [] }>()
@@ -16,6 +17,13 @@ const median = computed(() => {
   const middle = Math.floor(values.length / 2)
   return values.length % 2 ? values[middle]! : (values[middle - 1]! + values[middle]!) / 2
 })
+const hours = computed(() => slowHours(props.entries))
+const tallest = computed(() => Math.max(1, ...(hours.value?.buckets.map(bucket => bucket.median ?? 0) ?? [1])))
+const isSlow = (hour: number) => {
+  const slow = hours.value?.slow
+  if (!slow) return false
+  return slow.from <= slow.to ? hour >= slow.from && hour < slow.to : hour >= slow.from || hour < slow.to
+}
 const range = computed(() => sorted.value.length > 1 ? [sorted.value[0]!, sorted.value.at(-1)!] as const : null)
 
 const width = 300
@@ -82,6 +90,15 @@ function time(at: number): string {
         <svg v-if="spark" class="history-spark" :viewBox="`0 0 ${width} ${height}`" preserveAspectRatio="none" aria-hidden="true">
           <path :d="spark.line" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
         </svg>
+      </section>
+
+      <section v-if="hours" class="card hours-card" aria-labelledby="hours-title">
+        <p id="hours-title" class="label">Download by hour of day</p>
+        <div class="hour-bars" aria-hidden="true">
+          <span v-for="bucket in hours.buckets" :key="bucket.hour" class="hour-bar" :class="{ empty: bucket.median === null, slow: isSlow(bucket.hour) }" :style="{ height: bucket.median === null ? undefined : `${Math.max(8, bucket.median / tallest * 100)}%` }"/>
+        </div>
+        <div class="hour-axis num" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+        <p class="sub num">{{ hours.slow ? `Slowest around ${hourLabel(hours.slow.from)}–${hourLabel(hours.slow.to)}: ${formatMbps(hours.slow.median)} Mbps, usually ${formatMbps(hours.usual)}` : `No hour stands out. Usually ${formatMbps(hours.usual)} Mbps.` }}</p>
       </section>
 
       <div class="history-list">

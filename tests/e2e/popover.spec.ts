@@ -238,6 +238,13 @@ test('an outage found by the watch shows like offline but keeps Test usable', as
   await expect(page.getByRole('button', { name: 'Test again' })).toBeEnabled()
 })
 
+test('history shows download by hour of day', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await expect(page.getByText('Download by hour of day')).toBeVisible()
+  await expect(page.locator('.hour-bar')).toHaveCount(24)
+  await expect(page.locator('.hours-card .sub')).toContainText(/Slowest around|No hour stands out/)
+})
+
 test('outages appear in history with their length', async ({ page }) => {
   await page.goto('/?demo=1&page=history')
   await expect(page.getByText(/No internet until .* · 7 min/)).toBeVisible()

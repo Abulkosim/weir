@@ -589,6 +589,43 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   min-width: 0;
   height: 52px;
 }
+.hours-card {
+  margin-top: 10px;
+}
+.hour-bars {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  align-items: end;
+  gap: 3px;
+  height: 52px;
+  margin-top: 10px;
+}
+.hour-bar {
+  display: block;
+  min-height: 3px;
+  border-radius: 2px 2px 1px 1px;
+  background: var(--accent);
+  opacity: .85;
+}
+.hour-bar.empty {
+  height: 3px;
+  background: var(--track);
+}
+.hour-bar.slow {
+  background: var(--warning);
+}
+.hour-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10.5px;
+  color: var(--tertiary);
+}
+.hours-card .sub {
+  margin-top: 8px !important;
+  font-size: 12.5px;
+  color: var(--secondary);
+}
 .history-list {
   margin-top: 10px;
 }
