@@ -95,7 +95,8 @@ function time(at: number): string {
                 <span class="history-metric"><span class="sr-only">{{ entry.report.upload ? `Upload ${formatMbps(entry.report.upload.mbps)} Mbps` : 'Upload not measured' }}</span><span aria-hidden="true" class="history-metric-shown"><AppIcon name="upload" :size="12"/>{{ entry.report.upload ? formatMbps(entry.report.upload.mbps) : '–' }}</span></span>
                 <span class="history-latency">{{ entry.report.latency ? `${formatMs(entry.report.latency.medianMs)} ms` : '–' }}</span>
               </template>
-              <span v-else class="history-failed">{{ errorCopy[entry.error].title }}</span>
+              <span v-else-if="entry.kind === 'failed'" class="history-failed">{{ errorCopy[entry.error].title }}</span>
+              <span v-else class="history-failed">No internet until {{ time(entry.endMs) }} · {{ Math.max(1, Math.ceil((entry.endMs - entry.startMs) / 60_000)) }} min</span>
             </li>
           </ul>
         </section>

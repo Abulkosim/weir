@@ -101,10 +101,14 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<View, String>
         changed.map_err(|_| "Weir couldn’t change launch at login.".to_owned())?;
     }
     let wake = settings.auto_check_updates && !current.auto_check_updates;
+    let watch = settings.watch_outages != current.watch_outages;
     runtime.save_settings(&app, settings)?;
     if wake {
         app.state::<std::sync::Arc<tokio::sync::Notify>>()
             .notify_one();
+    }
+    if watch {
+        runtime.monitor_wake.notify_one();
     }
     Ok(runtime.view())
 }

@@ -1,7 +1,7 @@
 import type { UpdateState } from './updater.ts'
 import { testErrorSchema, viewSchema, type Diagnosis, type Entry, type Meaning, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking', 'outage'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -52,7 +52,7 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true }, checking: false, diagnosis: null }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true, watchOutages: true, notifyOutages: true }, checking: false, diagnosis: null, outageSinceMs: null }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.meaning = demoMeaning
@@ -70,6 +70,7 @@ export function createDemoView(state: string | null, now = Date.now(), error: st
   if (scenario === 'metered') view.network.metered = 'hotspot'
   if (scenario.startsWith('check-')) view.diagnosis = demoDiagnosis(scenario.slice(6), now)
   if (scenario === 'checking') view.checking = true
+  if (scenario === 'outage') view.outageSinceMs = new Date(now).setHours(14, 2, 0, 0)
   if (scenario === 'stutter' && view.last) {
     view.last.download.loadedMs = 180
     view.meaning = demoStutter
@@ -130,6 +131,7 @@ export function demoHistory(now: number): Entry[] {
     return { kind: 'result', report }
   })
   entries.splice(4, 0, { kind: 'failed', atMs: now - 30 * hour, error: 'stalled' })
+  entries.splice(2, 0, { kind: 'outage', startMs: now - 9 * hour, endMs: now - 9 * hour + 7 * 60_000 })
   return entries
 }
 

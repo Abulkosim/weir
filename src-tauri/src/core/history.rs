@@ -23,6 +23,11 @@ pub enum Entry {
         at_ms: u64,
         error: TestError,
     },
+    #[serde(rename_all = "camelCase")]
+    Outage {
+        start_ms: u64,
+        end_ms: u64,
+    },
 }
 
 impl Entry {
@@ -30,13 +35,14 @@ impl Entry {
         match self {
             Self::Result { report } => report.started_at_ms,
             Self::Failed { at_ms, .. } => *at_ms,
+            Self::Outage { start_ms, .. } => *start_ms,
         }
     }
 
     pub fn report(&self) -> Option<&Report> {
         match self {
             Self::Result { report } => Some(report),
-            Self::Failed { .. } => None,
+            Self::Failed { .. } | Self::Outage { .. } => None,
         }
     }
 }
@@ -162,7 +168,7 @@ impl History {
     pub fn last_failure(&self) -> Option<(u64, TestError)> {
         self.entries.iter().rev().find_map(|entry| match entry {
             Entry::Failed { at_ms, error } => Some((*at_ms, *error)),
-            Entry::Result { .. } => None,
+            Entry::Result { .. } | Entry::Outage { .. } => None,
         })
     }
 

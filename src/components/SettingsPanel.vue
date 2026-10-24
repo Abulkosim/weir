@@ -55,6 +55,18 @@ function patch(change: Partial<Settings>): void {
       </section>
 
       <section class="settings-section">
+        <h2>Outages</h2>
+        <div class="setting-row">
+          <div><span id="watch-label" class="setting-label">Watch for outages</span><p>A tiny check about once a minute, under 2 kB. Outages go into History.</p></div>
+          <AppSwitch :model-value="settings.watchOutages" aria-labelledby="watch-label" :disabled="busy" @update:model-value="patch({ watchOutages: $event })"/>
+        </div>
+        <div class="setting-row">
+          <span id="notify-label" class="setting-label">Notify when it drops and returns</span>
+          <AppSwitch :model-value="settings.notifyOutages" aria-labelledby="notify-label" :disabled="busy || !settings.watchOutages" @update:model-value="patch({ notifyOutages: $event })"/>
+        </div>
+      </section>
+
+      <section class="settings-section">
         <h2>History</h2>
         <div class="setting-row">
           <div><span class="setting-label num">{{ historyCount === 1 ? '1 test' : `${historyCount} tests` }}</span><p>Kept on this computer for a year.</p></div>

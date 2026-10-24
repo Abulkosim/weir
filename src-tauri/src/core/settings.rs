@@ -28,6 +28,10 @@ pub struct Settings {
     pub autostart: bool,
     /// Check GitHub for a new release once a day. Never installs on its own.
     pub auto_check_updates: bool,
+    /// A tiny reachability check every minute to record outages. Off by default.
+    pub watch_outages: bool,
+    /// Notify when a watched connection drops and when it returns.
+    pub notify_outages: bool,
 }
 
 impl Default for Settings {
@@ -37,6 +41,8 @@ impl Default for Settings {
             tray_speed: false,
             autostart: false,
             auto_check_updates: true,
+            watch_outages: false,
+            notify_outages: true,
         }
     }
 }
@@ -81,6 +87,20 @@ impl Settings {
                 "autoCheckUpdates",
                 defaults.auto_check_updates,
                 "Update checks",
+                notes,
+            ),
+            watch_outages: field(
+                map,
+                "watchOutages",
+                defaults.watch_outages,
+                "Watch for outages",
+                notes,
+            ),
+            notify_outages: field(
+                map,
+                "notifyOutages",
+                defaults.notify_outages,
+                "Outage notifications",
                 notes,
             ),
         }
@@ -220,6 +240,8 @@ mod tests {
             tray_speed: true,
             autostart: true,
             auto_check_updates: false,
+            watch_outages: true,
+            notify_outages: false,
         };
         store.save(&settings).unwrap();
         let (_, loaded, notes) = Store::load(path, 2);

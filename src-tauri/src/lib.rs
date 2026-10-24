@@ -1,6 +1,7 @@
 mod activity;
 mod commands;
 pub mod core;
+mod monitor;
 mod platform;
 mod runtime;
 mod updates;
@@ -22,6 +23,7 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(updates::Updates::default())
         .manage(tray::Visibility::default())
@@ -56,6 +58,7 @@ pub fn run() {
             app.manage(runtime.clone());
             let wake = Arc::new(tokio::sync::Notify::new());
             app.manage(wake.clone());
+            monitor::start(app.handle().clone(), runtime.clone());
             updates::start_background_checks(app.handle().clone(), runtime, wake);
             tray::setup(app.handle())?;
             let watcher = app.handle().clone();

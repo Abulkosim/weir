@@ -55,8 +55,10 @@ export const settingsSchema = z.object({
   traySpeed: z.boolean(),
   autostart: z.boolean(),
   autoCheckUpdates: z.boolean(),
+  watchOutages: z.boolean(),
+  notifyOutages: z.boolean(),
 })
-export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true }
+export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true }
 
 export const checkStatusSchema = z.enum(['good', 'skipped', 'fair', 'bad'])
 export const diagnosisSchema = z.object({
@@ -79,11 +81,13 @@ export const viewSchema = z.object({
   settings: settingsSchema,
   checking: z.boolean(),
   diagnosis: diagnosisSchema.nullable(),
+  outageSinceMs: count.nullable(),
 })
 
 export const entrySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('result'), report: reportSchema }),
   z.object({ kind: z.literal('failed'), atMs: count, error: testErrorSchema }),
+  z.object({ kind: z.literal('outage'), startMs: count, endMs: count }),
 ])
 export const historySchema = z.array(entrySchema).max(1_000)
 
@@ -99,7 +103,7 @@ export type Entry = z.infer<typeof entrySchema>
 export type Settings = z.infer<typeof settingsSchema>
 export type Diagnosis = z.infer<typeof diagnosisSchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null, outageSinceMs: null }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {
@@ -108,5 +112,5 @@ export function loadedMs(report: Report): number | null {
 }
 
 export function entryTime(entry: Entry): number {
-  return entry.kind === 'result' ? entry.report.startedAtMs : entry.atMs
+  return entry.kind === 'result' ? entry.report.startedAtMs : entry.kind === 'failed' ? entry.atMs : entry.startMs
 }

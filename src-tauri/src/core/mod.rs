@@ -4,6 +4,7 @@ pub mod export;
 pub mod history;
 pub mod meaning;
 pub mod network;
+pub mod outage;
 pub mod popover;
 pub mod probe;
 pub mod ring;

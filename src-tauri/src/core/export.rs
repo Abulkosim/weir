@@ -98,6 +98,16 @@ fn row(entry: &Entry, offset: &FixedOffset) -> String {
             fields.push(field(error_text(*error)));
             fields
         }
+        Entry::Outage { start_ms, end_ms } => {
+            let mut fields = vec![timestamp(*start_ms, offset), "outage".into()];
+            fields.extend(std::iter::repeat_n(String::new(), 9));
+            fields.push(format!(
+                "no internet until {} ({} min)",
+                timestamp(*end_ms, offset),
+                end_ms.saturating_sub(*start_ms).div_ceil(60_000)
+            ));
+            fields
+        }
     };
     fields.join(",")
 }

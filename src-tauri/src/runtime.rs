@@ -4,6 +4,7 @@ use crate::core::{
     history::{Entry, History, Recovery},
     meaning::{meaning, Meaning},
     network::{Network, Path},
+    outage::{Event, Watch},
     settings::{Settings, Store},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
     stats::{data_estimate, DataEstimate},
@@ -56,6 +57,8 @@ pub struct View {
     pub settings: Settings,
     pub checking: bool,
     pub diagnosis: Option<Diagnosis>,
+    /// Start of an outage found by the opt-in watch, while it lasts.
+    pub outage_since_ms: Option<u64>,
 }
 
 impl Default for View {
@@ -73,6 +76,7 @@ impl Default for View {
             settings: Settings::default(),
             checking: false,
             diagnosis: None,
+            outage_since_ms: None,
         }
     }
 }
@@ -92,6 +96,18 @@ pub struct Runtime {
     path: Mutex<Option<Path>>,
     history: Mutex<History>,
     store: Store,
+    watch: Mutex<Watch>,
+    pub monitor_wake: tokio::sync::Notify,
+}
+
+fn clock(ms: u64) -> String {
+    chrono::DateTime::from_timestamp_millis(ms as i64)
+        .map(|time| {
+            time.with_timezone(&chrono::Local)
+                .format("%H:%M")
+                .to_string()
+        })
+        .unwrap_or_default()
 }
 
 fn notice(recovery: Recovery) -> String {
@@ -144,7 +160,86 @@ impl Runtime {
             path: Mutex::new(None),
             history: Mutex::new(history),
             store,
+            watch: Mutex::new(Watch::default()),
+            monitor_wake: tokio::sync::Notify::new(),
         }
+    }
+
+    fn notify(app: &AppHandle, title: &str, body: &str) {
+        use tauri_plugin_notification::NotificationExt;
+        let _ = app.notification().builder().title(title).body(body).show();
+    }
+
+    /// Applies what the outage watch decided: view, history and notifications.
+    pub fn outage_events(&self, app: &AppHandle, events: Vec<Event>) {
+        let notify = self.view().settings.notify_outages;
+        for event in events {
+            match event {
+                Event::Lost { since_ms } => {
+                    self.change(app, |view| view.outage_since_ms = Some(since_ms));
+                    if notify {
+                        Self::notify(
+                            app,
+                            "Connection lost",
+                            &format!("No internet since {}.", clock(since_ms)),
+                        );
+                    }
+                }
+                Event::Back { start_ms, end_ms } => {
+                    let (count, _, problem) = self.record(Entry::Outage { start_ms, end_ms });
+                    self.change(app, |view| {
+                        view.outage_since_ms = None;
+                        view.history_count = count;
+                        view.notice = problem.or(view.notice.take());
+                    });
+                    if notify {
+                        let minutes = end_ms.saturating_sub(start_ms).div_ceil(60_000);
+                        Self::notify(
+                            app,
+                            "Connection back",
+                            &format!(
+                                "No internet {}–{} ({minutes} min).",
+                                clock(start_ms),
+                                clock(end_ms)
+                            ),
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /// One tick of the opt-in watch. `ok` is `None` when the OS reports no path.
+    pub fn watch_tick(&self, app: &AppHandle, ok: Option<bool>) {
+        let now = unix_ms();
+        let events = match self.watch.lock() {
+            Ok(mut watch) => match ok {
+                Some(ok) => watch.on_check(ok, now),
+                None => watch.on_offline(now),
+            },
+            Err(_) => return,
+        };
+        self.outage_events(app, events);
+    }
+
+    pub fn stop_watching(&self, app: &AppHandle) {
+        if let Ok(mut watch) = self.watch.lock() {
+            watch.reset();
+        }
+        if self.view().outage_since_ms.is_some() {
+            self.change(app, |view| view.outage_since_ms = None);
+        }
+    }
+
+    pub fn testing(&self) -> bool {
+        self.control
+            .lock()
+            .map(|control| control.is_some())
+            .unwrap_or(false)
+    }
+
+    pub fn path(&self) -> Option<Path> {
+        self.path.lock().ok().and_then(|path| *path)
     }
 
     /// Runs the connection check unless one is already running.
@@ -259,6 +354,11 @@ impl Runtime {
             if let Some(control) = self.control.lock().ok().and_then(|control| control.clone()) {
                 control.network_changed.store(true, Ordering::Relaxed);
             }
+        }
+        if !path.online && self.view().settings.watch_outages {
+            self.watch_tick(app, None);
+        } else if path.online && previous.is_some_and(|previous| !previous.online) {
+            self.monitor_wake.notify_one();
         }
         let next = self.view().network.next(&path, unix_ms());
         if next != self.view().network {

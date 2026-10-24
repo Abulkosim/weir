@@ -232,6 +232,26 @@ test('failed and offline states offer the connection check', async ({ page }) =>
   await expect(page.getByRole('heading', { name: 'Connection' })).toBeVisible()
 })
 
+test('an outage found by the watch shows like offline but keeps Test usable', async ({ page }) => {
+  await page.goto('/?demo=1&state=outage')
+  await expect(page.getByRole('status').filter({ hasText: /No internet since/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Test again' })).toBeEnabled()
+})
+
+test('outages appear in history with their length', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await expect(page.getByText(/No internet until .* · 7 min/)).toBeVisible()
+})
+
+test('outage settings explain the cost and gate notifications', async ({ page }) => {
+  await page.goto('/?demo=1&page=settings')
+  const watch = page.getByRole('switch', { name: 'Watch for outages' })
+  await expect(page.getByText('A tiny check about once a minute, under 2 kB.', { exact: false })).toBeVisible()
+  await expect(watch).toHaveAttribute('aria-checked', 'true')
+  await watch.click()
+  await expect(page.getByRole('switch', { name: 'Notify when it drops and returns' })).toBeDisabled()
+})
+
 test('a simulated run goes from Test to a settled result', async ({ page }) => {
   await page.clock.install()
   await page.goto('/?demo=1&state=never')

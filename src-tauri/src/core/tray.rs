@@ -317,7 +317,7 @@ pub fn glyph(view: &View, now_ms: u64) -> Glyph {
     if let Some(progress) = &view.testing {
         return Glyph::Testing(progress_fraction(progress));
     }
-    if !view.network.online {
+    if !view.network.online || view.outage_since_ms.is_some() {
         return Glyph::Offline;
     }
     let failed_last = view.failure.as_ref().is_some_and(|failure| {
