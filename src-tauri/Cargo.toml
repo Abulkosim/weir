@@ -48,7 +48,7 @@ objc2-app-kit = { version = "0.3", default-features = false, features = ["NSView
 objc2-foundation = { version = "0.3", default-features = false, features = ["NSArray", "NSGeometry", "NSString", "NSProcessInfo"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-registry = "0.6"
+windows-registry = "0.100"
 windows = { version = "0.62", features = ["Foundation", "Networking_Connectivity", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock"] }
 
 [profile.release]
