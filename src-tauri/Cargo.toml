@@ -26,9 +26,11 @@ chrono = { version = "0.4", default-features = false, features = ["std", "clock"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "sync", "time", "macros"] }
+socket2 = "0.6"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 bytes = "1"
+netdev = "0.46"
 
 [dev-dependencies]
 tauri = { version = "2.12.4", features = ["test"] }
@@ -39,13 +41,14 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-uti
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block2 = "0.6"
+objc2-core-wlan = { version = "0.3", default-features = false, features = ["std", "CWWiFiClient", "CWInterface"] }
 objc2 = "0.6"
 objc2-app-kit = { version = "0.3", default-features = false, features = ["NSView", "NSVisualEffectView", "NSWindow", "NSScreen", "NSStatusItem", "NSStatusBarButton", "NSButton", "NSControl", "NSFont", "NSFontDescriptor", "objc2-core-foundation", "NSResponder"] }
 objc2-foundation = { version = "0.3", default-features = false, features = ["NSArray", "NSGeometry", "NSString", "NSProcessInfo"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6"
-windows = { version = "0.62", features = ["Foundation", "Networking_Connectivity"] }
+windows = { version = "0.62", features = ["Foundation", "Networking_Connectivity", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock"] }
 
 [profile.release]
 codegen-units = 1
