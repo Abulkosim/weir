@@ -18,16 +18,17 @@ Interface preview with sample data.
 
 - **One click, about 20 seconds.** Download, upload, latency at rest and under load, and jitter, against Cloudflare. The server and the time are always shown; a failed or cut-short test shows no number.
 - **What it means.** "Good for 4K video and calls", or the problem: "Calls may stutter: latency jumps to 180 ms under load".
+- **Is it you or the internet?** One check reads your Wi-Fi, router, DNS and Cloudflare and answers in a sentence: "Your Wi-Fi is fine. The problem is past your router."
 - **Careful with your data.** The data a test will use is shown before it starts and capped at 600 MB. On a hotspot or metered connection Weir asks first. No accounts, ads or tracking; history stays on your computer.
 
 ## Install
 
-Download **v0.1.0** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest). Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
+Download **v0.2.0** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest). Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
 
 | Platform | Download |
 | --- | --- |
-| macOS 12+ · Apple Silicon and Intel | [Universal DMG](https://github.com/Abulkosim/weir/releases/download/v0.1.0/Weir_0.1.0_universal.dmg) |
-| Windows x64 | [Setup EXE](https://github.com/Abulkosim/weir/releases/download/v0.1.0/Weir_0.1.0_x64-setup.exe) · [MSI](https://github.com/Abulkosim/weir/releases/download/v0.1.0/Weir_0.1.0_x64_en-US.msi) |
+| macOS 12+ · Apple Silicon and Intel | [Universal DMG](https://github.com/Abulkosim/weir/releases/download/v0.2.0/Weir_0.2.0_universal.dmg) |
+| Windows x64 | [Setup EXE](https://github.com/Abulkosim/weir/releases/download/v0.2.0/Weir_0.2.0_x64-setup.exe) · [MSI](https://github.com/Abulkosim/weir/releases/download/v0.2.0/Weir_0.2.0_x64_en-US.msi) |
 
 Builds are not signed with an Apple Developer ID or a Windows publisher certificate, so the first launch shows a warning. Updates are signed and verified in the app.
 
@@ -41,14 +42,17 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 
 <p>
   <img src="docs/images/meaning-light.png" alt="Verdict expanded into video, calls, games and under-load lines" width="300" />
-  <img src="docs/images/history-light.png" alt="History grouped by day with a median and range" width="300" />
+  <img src="docs/images/check-light.png" alt="Connection check: Wi-Fi and router fine, DNS and Cloudflare failing, with the sentence Your Wi-Fi is fine. The problem is past your router." width="300" />
+  <img src="docs/images/history-light.png" alt="History with the median, download by hour of day and an outage row" width="300" />
 </p>
 
 - **Result.** Download in large type; upload; idle latency and latency under load; the server, for example "Tested 12 min ago · Cloudflare, Frankfurt".
 - **Plain meaning.** Video (Netflix bands), calls (upload, latency under load, jitter), games, and how the line holds up when busy. Thresholds in [docs/method.md](docs/method.md#plain-meaning).
 - **Honest labels.** "Varied 52–118 Mbps" when the rate swings, "Stopped at the data limit, speed may be higher", "Over a day old", and a named reason when a test fails.
 - **Tray icon.** A small gauge that fills while testing, then shows the last result: full, two thirds or one third for good, fair or poor; crossed out when offline.
-- **History.** Every test for a year, by day, with the median and range. **Export CSV** from History or Settings, for a spreadsheet or your provider.
+- **Check connection.** Wi-Fi signal, router round trip, DNS lookup time and whether Cloudflare answers, each in plain words, about 10 kB, no speed test. Weir never reads your Wi-Fi name.
+- **Outages, if you want them.** Settings → Outages → Watch for outages (off by default) sends one tiny request a minute, records "No internet until 14:09 · 7 min" in History, and can notify you when the connection drops and returns.
+- **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet or your provider.
 
 ## Why Weir
 
@@ -59,6 +63,8 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 | Latency under load | ✓ | ✓ | ✓ | ✓ | ✓ (RPM) |
 | Says what the result is good for | ✓ | – | – | partly | – |
 | Asks before testing on metered links | ✓ | – | – | – | – |
+| Is it me or the internet? check | ✓ | – | – | – | – |
+| Outage record | opt-in | – | – | – | – |
 | Local history and CSV export | ✓ | – | account | – | – |
 | No ads, no account, no tracking | ✓ | ✓ | – | ✓ | ✓ |
 | Free, open source | MIT | – | – | engine MIT | – |
@@ -67,11 +73,11 @@ Numbers differ between tests because servers, stream counts and statistics diffe
 
 ## Privacy
 
-Weir contacts `speed.cloudflare.com` only when you run a test, and GitHub to check for updates. It sends no telemetry and stores no IP address, location or Wi-Fi name: history keeps the Cloudflare data-centre code and the numbers. Cloudflare sees your IP address, as with any website. Full list: [PRIVACY.md](PRIVACY.md).
+Weir contacts `speed.cloudflare.com` when you run a test or check your connection (and once a minute if you turn on outage watching), your own router and DNS server when you check your connection, and GitHub to check for updates. It sends no telemetry and stores no IP address, location or Wi-Fi name: history keeps the Cloudflare data-centre code and the numbers. Cloudflare sees your IP address, as with any website. Full list: [PRIVACY.md](PRIVACY.md).
 
 ## Export
 
-CSV columns: `tested_at` (local time with UTC offset), `result` (`ok` or `failed`), `server`, `download_mbps`, `upload_mbps`, `latency_ms`, `latency_under_load_ms`, `jitter_ms`, `download_low_mbps`, `download_high_mbps`, `data_used_mb`, `notes` (for example "stopped at data limit" or the failure reason).
+CSV columns: `tested_at` (local time with UTC offset), `result` (`ok`, `failed` or `outage`), `server`, `download_mbps`, `upload_mbps`, `latency_ms`, `latency_under_load_ms`, `jitter_ms`, `download_low_mbps`, `download_high_mbps`, `data_used_mb`, `notes` (for example "stopped at data limit" or the failure reason).
 
 ## Develop
 

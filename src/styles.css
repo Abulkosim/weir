@@ -538,8 +538,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .meta-actions {
   display: flex;
-  gap: 2px;
-  margin: -6px -6px -6px 8px;
+  flex: none;
+  gap: 0;
+  margin: -6px -6px -6px 6px;
+}
+.meta-actions .icon-button {
+  width: 27px;
+  height: 27px;
 }
 .page-header {
   position: sticky;

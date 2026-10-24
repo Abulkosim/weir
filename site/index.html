@@ -93,7 +93,7 @@ h1 { font-size: clamp(34px, 5.2vw, 52px); line-height: 1.06; letter-spacing: -.0
 @media (prefers-color-scheme: dark) { .shot .live { color-scheme: dark; } }
 section { padding: 56px 0; border-top: 1px solid var(--line); }
 h2 { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 22px; }
-.features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; list-style: none; padding: 0; margin: 0; }
+.features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px 32px; list-style: none; padding: 0; margin: 0; }
 .features h3 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; margin: 0 0 6px; }
 .features p { font-size: 15px; color: var(--secondary); margin: 0; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
@@ -180,8 +180,20 @@ footer a:hover { color: var(--ink); }
           <p>The estimate is shown before every test. On a hotspot or metered connection, Weir asks first.</p>
         </li>
         <li>
+          <h3>Is it you or the internet?</h3>
+          <p>One check reads your Wi-Fi, router, DNS and Cloudflare: “Your Wi-Fi is fine. The problem is past your router.”</p>
+        </li>
+        <li>
+          <h3>Outages, if you want</h3>
+          <p>Turn on a tiny check once a minute to record drops, “No internet until 14:09 · 7 min”, and get told when it returns.</p>
+        </li>
+        <li>
+          <h3>Slow hours</h3>
+          <p>History shows download by hour of day and names the slowest stretch, so you can show your provider.</p>
+        </li>
+        <li>
           <h3>Local history</h3>
-          <p>Every test is kept for a year on your computer. Export it as CSV.</p>
+          <p>Every test and outage is kept for a year on your computer. Export it as CSV.</p>
         </li>
       </ul>
     </div>
@@ -199,7 +211,8 @@ footer a:hover { color: var(--ink); }
         <h2>Privacy</h2>
         <p>No accounts, telemetry, analytics, or ads. Weir connects only to:</p>
         <ul class="hosts">
-          <li><code>speed.cloudflare.com</code> when you run a test</li>
+          <li><code>speed.cloudflare.com</code> when you run a test or check your connection</li>
+          <li>Your router and DNS server, only during a connection check</li>
           <li><code>github.com</code> update checks, daily unless turned off</li>
         </ul>
         <p>History stays on your computer and never includes your IP address, location, or Wi-Fi name. Details in <a href="https://github.com/Abulkosim/weir/blob/main/PRIVACY.md">PRIVACY.md</a>.</p>

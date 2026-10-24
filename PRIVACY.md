@@ -7,8 +7,8 @@ This page describes Weir's current release. It is derived from the source code; 
 ## Summary
 
 - No accounts, telemetry, analytics, crash reporting, or ads.
-- Network requests go only to Cloudflare's speed test servers, when you run a test, and to GitHub Releases for update checks.
-- Weir never runs a test on its own. Every test starts when you click **Test**.
+- Network requests go only to Cloudflare's speed test servers, to GitHub Releases for update checks, and, when you check your connection, to your own router and DNS server.
+- Weir never runs a speed test on its own. Every test starts when you click **Test**. Outage watching, off by default, sends one tiny request a minute when you turn it on.
 - History and settings stay on your computer. They never include your IP address, location, network provider, or Wi-Fi name.
 
 ## Network requests
@@ -23,10 +23,14 @@ All requests use HTTPS and send a `Weir/<version> (+https://github.com/Abulkosim
 | `speed.cloudflare.com` | `POST /__up` | Upload part of each test | Zero bytes as test data |
 | `github.com` | `GET /Abulkosim/weir/releases/latest/download/latest.json` | Once a day while **Check for updates daily** is on (default), and when you choose **Check for updates** | Nothing about you or your tests |
 | `github.com` | Download of the matching release asset | Only when you choose to install an update | Nothing about you or your tests |
+| `speed.cloudflare.com` | `GET /__down?bytes=0`, twice on a new connection | When you choose **Check connection** | Nothing about you |
+| `speed.cloudflare.com` | `GET /__down?bytes=0` on a kept-alive connection | About once a minute, only while **Watch for outages** is on (off by default) | Nothing about you |
+| Your router | Five ICMP echo requests (or TCP connection attempts to ports 80, 443 and 53 if ICMP is not allowed) | When you choose **Check connection** | Nothing; it stays on your network |
+| Your DNS server | Three lookups of `speed.cloudflare.com` over UDP | When you choose **Check connection** | The name `speed.cloudflare.com` |
 
 Each test request carries a random number in its query string so caches don't answer it ([`cloudflare.rs`](src-tauri/src/core/backends/cloudflare.rs)). GitHub may redirect release files to its own download storage, such as `objects.githubusercontent.com`.
 
-Weir does not send test results anywhere, including Cloudflare's own results endpoint. It does not contact any other host. The interface itself has no network access: its content security policy allows connections only to Weir's local process ([`tauri.conf.json`](src-tauri/tauri.conf.json)).
+Weir does not send test results anywhere, including Cloudflare's own results endpoint. It does not contact any other host. The router address and DNS server come from your operating system and are used only for that check; they are not stored. Wi-Fi signal strength and link rate come from the operating system too, never the network name ([`probe.rs`](src-tauri/src/core/probe.rs), [`platform/`](src-tauri/src/platform)). The interface itself has no network access: its content security policy allows connections only to Weir's local process ([`tauri.conf.json`](src-tauri/tauri.conf.json)).
 
 To tell whether you are online or on a metered connection, Weir asks the operating system (Network framework on macOS, connection profile on Windows). This sends no traffic.
 
@@ -55,8 +59,8 @@ Weir writes only to its own data folder:
 
 | File | Contents |
 | --- | --- |
-| `history.json` | Each test for up to one year or 5,000 tests: start time, duration, provider (`Cloudflare`), data-centre code, latency, jitter, download and upload speeds, latency under load, and data used. Failed tests keep the time and the reason. |
-| `settings.json` | Theme, tray speed text, launch at login, and daily update checks |
+| `history.json` | Each test for up to one year or 5,000 tests: start time, duration, provider (`Cloudflare`), data-centre code, latency, jitter, download and upload speeds, latency under load, and data used. Failed tests keep the time and the reason. Outages keep their start and end times. |
+| `settings.json` | Theme, tray speed text, launch at login, daily update checks, outage watching and its notifications |
 
 Neither file holds an IP address, city, network provider (ASN), coordinates, Wi-Fi name (SSID), or router address. Files are replaced atomically. An unreadable file is moved aside as `history.unreadable-<time>.json` or `settings.unreadable-<time>.json`, never deleted. See [`history.rs`](src-tauri/src/core/history.rs) and [`settings.rs`](src-tauri/src/core/settings.rs).
 
