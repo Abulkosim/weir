@@ -108,8 +108,9 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 
 ## Phase 4 — Is it me or the internet? (v0.2.0) ⛳
 
-- [ ] **4.1 Diagnosis core.** `core/diagnose.rs`: pure verdict from four step results (Wi-Fi signal, router round trip, DNS lookup, internet reach) into one plain sentence plus per-step lines. Thresholds: Wi-Fi good ≥ −64 dBm, weak ≤ −75 dBm (Teams bands); router slow ≥ 50 ms or ≥ 2 of 5 probes lost; DNS slow ≥ 300 ms; internet down when no answer in 3 s.
+- [x] **4.1 Diagnosis core.** `core/diagnose.rs`: pure verdict from four step results (Wi-Fi signal, router round trip, DNS lookup, internet reach) into one plain sentence plus per-step lines. Thresholds: Wi-Fi good ≥ −64 dBm, weak ≤ −75 dBm (Teams bands); router slow ≥ 50 ms or ≥ 2 of 5 probes lost; DNS slow ≥ 300 ms; internet down when no answer in 3 s.
   Verify: unit tests per verdict ("Your Wi-Fi is fine. The problem is past your router.", router down, weak Wi-Fi, slow DNS, all fine, offline).
+  Done 2026-10-24: `core/diagnose.rs`, 7 tests. Priority: offline → router silent (blames weak Wi-Fi if both) → internet down ("past your router") → DNS failing/slow → weak Wi-Fi → slow router → fair Wi-Fi → fine. Unknown pieces are skipped, never failed.
 - [ ] **4.2 Probes.** Gateway and DNS servers from the OS (`netdev`), router ping (macOS unprivileged ICMP datagram socket, Windows `IcmpSendEcho2`, TCP connect fallback), DNS timing (one A query over UDP to the configured server), internet reach (`speed.cloudflare.com/__down?bytes=0`), Wi-Fi signal (macOS CoreWLAN RSSI/noise/rate, never SSID; Windows signal bars). Under 20 kB per check, no other hosts.
   Verify: unit tests for packet building/parsing and fallbacks against local sockets; manual run on this Mac prints a verdict (no IPs recorded).
 - [ ] **4.3 Check connection view.** "Check connection" from the result, failed and offline states; each step a row with status and value, headline sentence first; designed states for Wi-Fi weak, router unreachable, DNS slow, internet down, all fine, checking.
