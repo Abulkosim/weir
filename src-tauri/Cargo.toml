@@ -1,6 +1,6 @@
 [package]
 name = "weir"
-version = "0.1.0"
+version = "0.2.0"
 description = "Internet speed and connection checks in your menu bar"
 authors = ["abulkosim <abulkasimkattaev@gmail.com>"]
 edition = "2021"
