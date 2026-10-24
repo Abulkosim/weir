@@ -5,7 +5,7 @@ import { clock, errorCopy, estimateText, formatMb, formatMbps, formatMs, metered
 import { loadedMs, type View } from '../lib/model'
 
 const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean; updateAvailable?: boolean }>()
-defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: []; settings: [] }>()
+defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: []; settings: []; check: [] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
 const details = ref(false)
 const stale = computed(() => props.view.last ? props.now - props.view.last.startedAtMs > 24 * 3_600_000 : false)
@@ -28,17 +28,18 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
 <template>
   <div class="view result-view">
     <template v-if="failure">
-      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
+      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span><span class="meta-actions"><button class="icon-button" aria-label="Check connection" @click="$emit('check')"><AppIcon name="pulse" :size="16"/></button><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
       <section class="card failure" role="alert">
         <span class="failure-icon"><AppIcon name="alert" :size="20"/></span>
         <h1>{{ errorCopy[failure.error].title }}</h1>
         <p>{{ errorCopy[failure.error].detail }}</p>
+        <button class="text-button failure-check" @click="$emit('check')"><AppIcon name="pulse" :size="13"/>Check connection</button>
         <p v-if="report" class="previous num">Last result {{ formatMbps(report.download.mbps) }} Mbps down · {{ relativeAge(report.startedAtMs, now) }}</p>
       </section>
     </template>
 
     <template v-else-if="report">
-      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><span class="meta-actions"><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
+      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><span class="meta-actions"><button class="icon-button" aria-label="Check connection" @click="$emit('check')"><AppIcon name="pulse" :size="16"/></button><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
       <section class="card" aria-label="Last result">
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>
@@ -89,7 +90,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </template>
 
     <template v-else>
-      <div class="meta"><span class="where"><span class="dot"/>Cloudflare speed test</span><span class="meta-actions"><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
+      <div class="meta"><span class="where"><span class="dot"/>Cloudflare speed test</span><span class="meta-actions"><button class="icon-button" aria-label="Check connection" @click="$emit('check')"><AppIcon name="pulse" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
       <section class="card never">
         <span class="never-mark" aria-hidden="true"><AppIcon name="weir" :size="22"/></span>
         <h1>Not tested yet</h1>
@@ -97,7 +98,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
       </section>
     </template>
 
-    <p v-if="offline" class="offline-pill" role="status"><AppIcon name="offline" :size="15"/><span class="num">{{ view.network.offlineSinceMs ? `No internet since ${clock(view.network.offlineSinceMs)}` : 'No internet' }}</span></p>
+    <p v-if="offline" class="offline-pill" role="status"><AppIcon name="offline" :size="15"/><span class="num">{{ view.network.offlineSinceMs ? `No internet since ${clock(view.network.offlineSinceMs)}` : 'No internet' }}</span><button class="text-button offline-check" @click="$emit('check')">Check</button></p>
     <section v-if="confirming && metered && !offline" class="confirm" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-detail">
       <p id="confirm-title" class="confirm-title"><AppIcon name="alert" :size="15"/>{{ meteredCopy[metered] }}</p>
       <p id="confirm-detail" class="confirm-detail num">{{ estimateText(view.estimate) }} of your data.</p>

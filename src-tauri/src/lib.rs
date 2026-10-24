@@ -36,6 +36,7 @@ pub fn run() {
             commands::clear_history,
             commands::export_history,
             commands::save_settings,
+            commands::check_connection,
             updates::get_update_status,
             updates::check_for_update,
             updates::install_update,

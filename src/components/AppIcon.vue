@@ -1,5 +1,5 @@
 <script setup lang="ts">
-export type IconName = 'weir' | 'history' | 'settings' | 'play' | 'stop' | 'back' | 'chevron' | 'check' | 'tick' | 'close' | 'alert' | 'sun' | 'moon' | 'system' | 'external' | 'download' | 'upload' | 'wifi' | 'offline' | 'export'
+export type IconName = 'weir' | 'history' | 'settings' | 'play' | 'stop' | 'back' | 'chevron' | 'check' | 'tick' | 'close' | 'alert' | 'sun' | 'moon' | 'system' | 'external' | 'download' | 'upload' | 'wifi' | 'offline' | 'export' | 'router' | 'globe' | 'dns' | 'pulse'
 defineProps<{ name: IconName; size?: number }>()
 </script>
 
@@ -24,6 +24,10 @@ defineProps<{ name: IconName; size?: number }>()
     <path v-else-if="name === 'upload'" d="M12 20V7M6.5 12.5 12 7l5.5 5.5M5 3.5h14"/>
     <template v-else-if="name === 'wifi'"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 15.9a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19.2" r="1.2" fill="currentColor" stroke="none"/></template>
     <template v-else-if="name === 'offline'"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 15.9a5 5 0 0 1 6.8 0M4 4l16 16"/><circle cx="12" cy="19.2" r="1.2" fill="currentColor" stroke="none"/></template>
+    <template v-else-if="name === 'router'"><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 16.5h.01M11 16.5h.01M8.5 9.5a5 5 0 0 1 7 0M6 7a8.5 8.5 0 0 1 12 0"/></template>
+    <template v-else-if="name === 'globe'"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></template>
+    <template v-else-if="name === 'dns'"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="15" cy="18" r="2"/></template>
+    <path v-else-if="name === 'pulse'" d="M3 12h4l2.5-6 4 12 2.5-6h5"/>
     <path v-else-if="name === 'export'" d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>
   </svg>
 </template>

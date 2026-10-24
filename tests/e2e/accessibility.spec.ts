@@ -10,6 +10,8 @@ const views = [
   { name: 'offline', url: '/?demo=1&state=offline' },
   { name: 'history', url: '/?demo=1&page=history' },
   { name: 'settings', url: '/?demo=1&page=settings' },
+  { name: 'check past router', url: '/?demo=1&state=check-isp' },
+  { name: 'checking', url: '/?demo=1&state=checking' },
 ]
 
 for (const theme of ['light', 'dark'] as const) {
@@ -33,11 +35,11 @@ test('the result view works from the keyboard alone', async ({ page, browserName
   await page.goto('/?demo=1&state=stutter')
   await page.locator('body').focus()
   const order: string[] = []
-  for (let step = 0; step < 4; step++) {
+  for (let step = 0; step < 5; step++) {
     await page.keyboard.press(tab)
     order.push(await page.evaluate(() => document.activeElement?.getAttribute('aria-label') || document.activeElement?.textContent?.trim() || ''))
   }
-  expect(order).toEqual(['History', 'Settings', 'Calls may stutter: latency jumps to 180 ms under load', 'Test again'])
+  expect(order).toEqual(['Check connection', 'History', 'Settings', 'Calls may stutter: latency jumps to 180 ms under load', 'Test again'])
   await page.keyboard.press(`Shift+${tab}`)
   await page.keyboard.press('Enter')
   await expect(page.getByText('Lags under load: +166 ms')).toBeVisible()

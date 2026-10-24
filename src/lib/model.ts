@@ -58,6 +58,14 @@ export const settingsSchema = z.object({
 })
 export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true }
 
+export const checkStatusSchema = z.enum(['good', 'skipped', 'fair', 'bad'])
+export const diagnosisSchema = z.object({
+  status: checkStatusSchema,
+  headline: z.string().max(200),
+  steps: z.array(z.object({ key: z.enum(['wifi', 'router', 'dns', 'internet']), label: z.string().max(20), status: checkStatusSchema, text: z.string().max(120) })).max(4),
+  checkedAtMs: count,
+})
+
 export const viewSchema = z.object({
   revision: count,
   testing: progressSchema.nullable(),
@@ -69,6 +77,8 @@ export const viewSchema = z.object({
   historyCount: count,
   notice: z.string().max(300).nullable(),
   settings: settingsSchema,
+  checking: z.boolean(),
+  diagnosis: diagnosisSchema.nullable(),
 })
 
 export const entrySchema = z.discriminatedUnion('kind', [
@@ -87,8 +97,9 @@ export type Metered = z.infer<typeof meteredSchema>
 export type Meaning = z.infer<typeof meaningSchema>
 export type Entry = z.infer<typeof entrySchema>
 export type Settings = z.infer<typeof settingsSchema>
+export type Diagnosis = z.infer<typeof diagnosisSchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { ...defaultSettings } }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {

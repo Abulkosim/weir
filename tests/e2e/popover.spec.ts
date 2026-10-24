@@ -193,6 +193,45 @@ test('history button stays hidden until there is history', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'History' })).toHaveCount(0)
 })
 
+const checks = [
+  { state: 'check-fine', headline: 'Everything looks fine from here.' },
+  { state: 'check-isp', headline: 'Your Wi-Fi is fine. The problem is past your router.' },
+  { state: 'check-router', headline: 'Your router isn’t answering. Restart it, or check the cable.' },
+  { state: 'check-wifi', headline: 'Your Wi-Fi signal is weak (-81 dBm). Move closer to the router.' },
+  { state: 'check-dns', headline: 'Websites are slow to open: looking up names takes 450 ms.' },
+] as const
+
+for (const theme of themes) {
+  for (const check of checks) {
+    test(`connection check ${check.state} reads as one sentence in ${theme}`, async ({ page }, info) => {
+      await page.goto(`/?demo=1&state=${check.state}&theme=${theme}`)
+      await expect(page.getByRole('heading', { name: 'Connection' })).toBeVisible()
+      await expect(page.getByRole('status').filter({ hasText: check.headline })).toBeVisible()
+      await expect(page.locator('.check-step')).toHaveCount(4)
+      await expect(page.getByRole('button', { name: 'Check again' })).toBeEnabled()
+      await shoot(page, check.state, info.outputPath(`${check.state}-${theme}.png`))
+    })
+  }
+}
+
+test('check connection runs from the result and shows progress first', async ({ page }) => {
+  await page.goto('/?demo=1&state=result')
+  await page.getByRole('button', { name: 'Check connection' }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Checking your connection' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Check' })).toBeDisabled()
+  await expect(page.getByRole('status').filter({ hasText: 'Everything looks fine from here.' })).toBeVisible({ timeout: 4_000 })
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button', { name: 'Test again' })).toBeVisible()
+})
+
+test('failed and offline states offer the connection check', async ({ page }) => {
+  await page.goto('/?demo=1&state=failed')
+  await expect(page.getByRole('button', { name: 'Check connection' }).first()).toBeVisible()
+  await page.goto('/?demo=1&state=offline')
+  await page.getByRole('button', { name: 'Check', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Connection' })).toBeVisible()
+})
+
 test('a simulated run goes from Test to a settled result', async ({ page }) => {
   await page.clock.install()
   await page.goto('/?demo=1&state=never')

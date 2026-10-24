@@ -390,6 +390,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .mark-poor {
   background: var(--danger);
 }
+.failure-check {
+  margin-top: 10px;
+  color: var(--accent-ink);
+}
+.offline-check {
+  margin-left: auto;
+  padding: 0;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .note-warning {
   color: var(--warning);
 }
@@ -808,6 +820,98 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   margin: 6px 0 0;
   font-size: 13px;
   color: var(--secondary);
+}
+.diagnose-card {
+  padding: 14px 16px;
+}
+.diagnose-headline {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 0 12px !important;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -.01em;
+}
+.diagnose-headline svg {
+  flex: none;
+  margin-top: 1px;
+}
+.diagnose-headline.checking {
+  align-items: center;
+  color: var(--secondary);
+}
+.tone-good svg {
+  color: var(--accent-ink);
+}
+.tone-fair svg {
+  color: var(--warning);
+}
+.tone-bad svg {
+  color: var(--danger);
+}
+.check-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.check-step {
+  display: grid;
+  grid-template-columns: 28px 66px 1fr 8px;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+.check-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--hover);
+  color: var(--secondary);
+}
+.status-bad .check-icon {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.status-fair .check-icon {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.check-label {
+  font-weight: 500;
+}
+.check-text {
+  color: var(--secondary);
+}
+.status-skipped .check-text {
+  color: var(--tertiary);
+}
+.check-mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.status-fair .check-mark {
+  background: var(--warning);
+}
+.status-bad .check-mark {
+  background: var(--danger);
+}
+.status-skipped .check-mark {
+  background: var(--track);
+}
+.check-bar {
+  grid-column: 3 / -1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--hover);
+  animation: pulse 1.4s var(--ease) infinite;
 }
 .connection-error {
   margin: 12px 12px 0;

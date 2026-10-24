@@ -90,9 +90,9 @@ fn wifi_step(wifi: &Wifi) -> Step {
             let rate = wifi
                 .rate_mbps
                 .filter(|rate| *rate > 0.0)
-                .map(|rate| format!(" · link {rate:.0} Mbps"))
+                .map(|rate| format!(" · {rate:.0} Mbps"))
                 .unwrap_or_default();
-            (status, format!("{word} signal · {rssi} dBm{rate}"))
+            (status, format!("{word} · {rssi} dBm{rate}"))
         }
         (None, Some(bars)) => {
             let status = match bars {
@@ -302,7 +302,7 @@ mod tests {
         assert_eq!(
             texts,
             [
-                "Strong signal · -52 dBm · link 866 Mbps",
+                "Strong · -52 dBm · 866 Mbps",
                 "Answers in 3 ms",
                 "Lookups in 18 ms",
                 "Cloudflare in 24 ms"

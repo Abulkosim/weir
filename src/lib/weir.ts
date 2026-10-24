@@ -1,6 +1,6 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { demo, desktop, invoke, listen, query } from './bridge.ts'
-import { createDemoView, demoHistory, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
+import { createDemoView, demoDiagnosis, demoHistory, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
 import { emptyView, historySchema, startSchema, viewSchema, type Entry, type Phase, type Settings, type View } from './model.ts'
 
 export function useWeir() {
@@ -74,6 +74,16 @@ export function useWeir() {
     } catch (error) {
       say(typeof error === 'string' ? error : 'Weir couldn’t export the history.')
     }
+  }
+
+  async function checkConnection(): Promise<void> {
+    if (view.value.checking) return
+    if (demo) {
+      view.value = { ...view.value, revision: view.value.revision + 1, checking: true }
+      setTimeout(() => { view.value = { ...view.value, revision: view.value.revision + 1, checking: false, diagnosis: demoDiagnosis('fine') } }, 1_600)
+      return
+    }
+    await invoke('check_connection').catch(() => { say('Weir couldn’t check the connection.') })
   }
 
   async function saveSettings(settings: Settings): Promise<void> {
@@ -165,5 +175,5 @@ export function useWeir() {
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, saveSettings }
+  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, saveSettings, checkConnection }
 }

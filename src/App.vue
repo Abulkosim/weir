@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
 import DesignGallery from './components/DesignGallery.vue'
 import HistoryView from './components/HistoryView.vue'
+import DiagnoseView from './components/DiagnoseView.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import ResultView from './components/ResultView.vue'
 import TestingView from './components/TestingView.vue'
@@ -11,10 +12,15 @@ import { useUpdater } from './lib/updater'
 import { createDemoUpdateState } from './lib/demo'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
-const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory, clearHistory, saveSettings } = useWeir()
+const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory, clearHistory, saveSettings, checkConnection } = useWeir()
 const updater = useUpdater({ demo, desktop, initial: demo ? createDemoUpdateState(query.get('update')) : undefined })
 const requested = demo ? query.get('page') : null
-const page = ref<'overview' | 'history' | 'settings'>(requested === 'history' || requested === 'settings' ? requested : 'overview')
+const startState = demo ? query.get('state') ?? '' : ''
+const page = ref<'overview' | 'history' | 'settings' | 'diagnose'>(requested === 'history' || requested === 'settings' || requested === 'diagnose' ? requested : startState.startsWith('check') ? 'diagnose' : 'overview')
+function openCheck(): void {
+  page.value = 'diagnose'
+  if (!view.value.diagnosis || Date.now() - view.value.diagnosis.checkedAtMs > 60_000) void checkConnection()
+}
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
 const forcedTheme = demo ? query.get('theme') : null
@@ -119,10 +125,11 @@ onUnmounted(() => {
           <div ref="content">
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
           <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
-          <HistoryView v-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
+          <DiagnoseView v-if="page === 'diagnose'" :diagnosis="view.diagnosis" :checking="view.checking" :now="now" @back="page = 'overview'" @check="checkConnection"/>
+          <HistoryView v-else-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
           <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" :update-state="updater.state.value" :update-busy="updater.busy.value" :demo="demo" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @clear="clearHistory" @check-update="updater.check" @install-update="updater.install"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
-          <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'"/>
+          <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'" @check="openCheck"/>
           </div>
         </main>
         <Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition>

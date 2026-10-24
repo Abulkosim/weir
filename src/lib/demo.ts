@@ -1,7 +1,7 @@
 import type { UpdateState } from './updater.ts'
-import { testErrorSchema, viewSchema, type Entry, type Meaning, type Report, type View } from './model.ts'
+import { testErrorSchema, viewSchema, type Diagnosis, type Entry, type Meaning, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -52,7 +52,7 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true } }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true }, checking: false, diagnosis: null }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.meaning = demoMeaning
@@ -68,6 +68,8 @@ export function createDemoView(state: string | null, now = Date.now(), error: st
     view.testing = { phase: 'upload', phaseMs: 2_900, liveMbps: 39.6, downloadMbps: 312.4, latencyMs: 14, loadedMs: 51, bytesUsed: 214_000_000, colo: 'FRA' }
   }
   if (scenario === 'metered') view.network.metered = 'hotspot'
+  if (scenario.startsWith('check-')) view.diagnosis = demoDiagnosis(scenario.slice(6), now)
+  if (scenario === 'checking') view.checking = true
   if (scenario === 'stutter' && view.last) {
     view.last.download.loadedMs = 180
     view.meaning = demoStutter
@@ -133,4 +135,23 @@ export function demoHistory(now: number): Entry[] {
 
 export function createDemoUpdateState(scenario: string | null): UpdateState {
   return scenario === 'update-available' ? { kind: 'available', version: '0.9.0' } : { kind: 'idle' }
+}
+
+type Step = Diagnosis['steps'][number]
+const step = (key: Step['key'], status: Step['status'], text: string): Step =>
+  ({ key, label: { wifi: 'Wi-Fi', router: 'Router', dns: 'DNS', internet: 'Internet' }[key], status, text })
+
+export function demoDiagnosis(kind: string, now = Date.now()): Diagnosis {
+  const wifi = step('wifi', 'good', 'Strong · -52 dBm · 866 Mbps')
+  const router = step('router', 'good', 'Answers in 3 ms')
+  const dns = step('dns', 'good', 'Lookups in 18 ms')
+  const internet = step('internet', 'good', 'Cloudflare in 24 ms')
+  const at = now - 20_000
+  switch (kind) {
+    case 'isp': return { status: 'bad', headline: 'Your Wi-Fi is fine. The problem is past your router.', steps: [wifi, router, step('dns', 'bad', 'Lookups fail'), step('internet', 'bad', 'Cloudflare not reachable')], checkedAtMs: at }
+    case 'router': return { status: 'bad', headline: 'Your router isn’t answering. Restart it, or check the cable.', steps: [wifi, step('router', 'bad', 'Not answering'), step('dns', 'bad', 'Lookups fail'), step('internet', 'bad', 'Cloudflare not reachable')], checkedAtMs: at }
+    case 'wifi': return { status: 'bad', headline: 'Your Wi-Fi signal is weak (-81 dBm). Move closer to the router.', steps: [step('wifi', 'bad', 'Weak · -81 dBm · 24 Mbps'), step('router', 'good', 'Answers in 9 ms'), dns, internet], checkedAtMs: at }
+    case 'dns': return { status: 'fair', headline: 'Websites are slow to open: looking up names takes 450 ms.', steps: [wifi, router, step('dns', 'fair', 'Slow lookups · 450 ms'), internet], checkedAtMs: at }
+    default: return { status: 'good', headline: 'Everything looks fine from here.', steps: [wifi, router, dns, internet], checkedAtMs: at }
+  }
 }

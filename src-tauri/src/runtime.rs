@@ -1,5 +1,6 @@
 use crate::core::{
     backends::cloudflare::Cloudflare,
+    diagnose::{diagnose, Diagnosis},
     history::{Entry, History, Recovery},
     meaning::{meaning, Meaning},
     network::{Network, Path},
@@ -53,6 +54,8 @@ pub struct View {
     pub history_count: usize,
     pub notice: Option<String>,
     pub settings: Settings,
+    pub checking: bool,
+    pub diagnosis: Option<Diagnosis>,
 }
 
 impl Default for View {
@@ -68,6 +71,8 @@ impl Default for View {
             history_count: 0,
             notice: None,
             settings: Settings::default(),
+            checking: false,
+            diagnosis: None,
         }
     }
 }
@@ -140,6 +145,34 @@ impl Runtime {
             history: Mutex::new(history),
             store,
         }
+    }
+
+    /// Runs the connection check unless one is already running.
+    pub fn check_connection(self: &Arc<Self>, app: &AppHandle) -> bool {
+        if self.view().checking {
+            return false;
+        }
+        self.change(app, |view| view.checking = true);
+        let path = self
+            .path
+            .lock()
+            .ok()
+            .and_then(|path| *path)
+            .unwrap_or(Path {
+                online: true,
+                ..Path::default()
+            });
+        let runtime = self.clone();
+        let handle = app.clone();
+        tauri::async_runtime::spawn(async move {
+            let readings = crate::core::probe::readings(&Cloudflare::default(), path).await;
+            let diagnosis = diagnose(&readings, unix_ms());
+            runtime.change(&handle, |view| {
+                view.checking = false;
+                view.diagnosis = Some(diagnosis);
+            });
+        });
+        true
     }
 
     pub fn save_settings(&self, app: &AppHandle, settings: Settings) -> Result<(), String> {

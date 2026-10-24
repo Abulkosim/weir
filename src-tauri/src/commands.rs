@@ -108,3 +108,8 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<View, String>
     }
     Ok(runtime.view())
 }
+
+#[tauri::command]
+pub fn check_connection(app: AppHandle) -> bool {
+    runtime(&app).check_connection(&app)
+}
