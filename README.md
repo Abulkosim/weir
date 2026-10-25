@@ -23,12 +23,12 @@ Interface preview with sample data.
 
 ## Install
 
-Download **v0.2.0** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest). Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
+Download **v0.3.0** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest). Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
 
 | Platform | Download |
 | --- | --- |
-| macOS 12+ · Apple Silicon and Intel | [Universal DMG](https://github.com/Abulkosim/weir/releases/download/v0.2.0/Weir_0.2.0_universal.dmg) |
-| Windows x64 | [Setup EXE](https://github.com/Abulkosim/weir/releases/download/v0.2.0/Weir_0.2.0_x64-setup.exe) · [MSI](https://github.com/Abulkosim/weir/releases/download/v0.2.0/Weir_0.2.0_x64_en-US.msi) |
+| macOS 12+ · Apple Silicon and Intel | [Universal DMG](https://github.com/Abulkosim/weir/releases/download/v0.3.0/Weir_0.3.0_universal.dmg) |
+| Windows x64 | [Setup EXE](https://github.com/Abulkosim/weir/releases/download/v0.3.0/Weir_0.3.0_x64-setup.exe) · [MSI](https://github.com/Abulkosim/weir/releases/download/v0.3.0/Weir_0.3.0_x64_en-US.msi) |
 
 Builds are not signed with an Apple Developer ID or a Windows publisher certificate, so the first launch shows a warning. Updates are signed and verified in the app.
 
@@ -49,7 +49,8 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 - **Result.** Download in large type; upload; idle latency and latency under load; the server, for example "Tested 12 min ago · Cloudflare, Frankfurt".
 - **Plain meaning.** Video (Netflix bands), calls (upload, latency under load, jitter), games, and how the line holds up when busy. Thresholds in [docs/method.md](docs/method.md#plain-meaning).
 - **Honest labels.** "Varied 52–118 Mbps" when the rate swings, "Stopped at the data limit, speed may be higher", "Over a day old", and a named reason when a test fails.
-- **Tray icon.** A small gauge that fills while testing, then shows the last result: full, two thirds or one third for good, fair or poor; crossed out when offline.
+- **Tray icon.** A small gauge that fills while testing, then shows the last result: full, two thirds or one third for good, fair or poor; crossed out when offline. Hover it for the last numbers; right-click to run a test or check the connection without opening the popover.
+- **Keyboard.** ⌘T (Ctrl+T) runs a test, ⌘K (Ctrl+K) checks the connection, ⌘, (Ctrl+,) opens Settings, Esc goes back. **Copy summary** in the result details puts the numbers on the clipboard for a chat with your provider.
 - **Check connection.** Wi-Fi signal, router round trip, DNS lookup time and whether Cloudflare answers, each in plain words, about 10 kB, no speed test. Weir never reads your Wi-Fi name.
 - **Outages, if you want them.** Settings → Outages → Watch for outages (off by default) sends one tiny request a minute, records "No internet until 14:09 · 7 min" in History, and can notify you when the connection drops and returns.
 - **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet or your provider.
