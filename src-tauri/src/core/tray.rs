@@ -5,6 +5,7 @@ use super::{
     speedtest::{Phase, Progress},
 };
 use crate::runtime::View;
+use serde::Serialize;
 use std::{sync::Mutex, time::Instant};
 use tauri::{
     image::Image,
@@ -58,6 +59,9 @@ fn set_tabular_title(tray: &tauri::tray::TrayIcon, title: Option<&str>) -> bool 
 #[derive(Default)]
 pub struct Visibility {
     presentation: Mutex<Presentation>,
+    /// Last rendered glyph and size; a test emits progress ten times a second
+    /// but the gauge only changes in 1/36 steps.
+    rendered: Mutex<Option<(Glyph, u32, Vec<u8>)>>,
     /// Set while a native dialog is open so losing focus does not hide the popover.
     pub keep_open: std::sync::atomic::AtomicBool,
     pub last_blur: Mutex<Option<Instant>>,
@@ -335,15 +339,40 @@ pub fn glyph(view: &View, now_ms: u64) -> Glyph {
     }
 }
 
-fn tooltip(view: &View, glyph: Glyph) -> String {
+fn clock(ms: u64) -> String {
+    chrono::DateTime::from_timestamp_millis(ms as i64)
+        .map(|time| {
+            time.with_timezone(&chrono::Local)
+                .format("%H:%M")
+                .to_string()
+        })
+        .unwrap_or_default()
+}
+
+/// The last result at a glance, without opening the popover.
+pub fn tooltip(view: &View, glyph: Glyph) -> String {
+    let summary = |report: &crate::core::speedtest::Report| {
+        let mut line = format!("Download {:.0} Mbps", report.download.mbps);
+        if let Some(upload) = &report.upload {
+            line.push_str(&format!(" · Upload {:.0} Mbps", upload.mbps));
+        }
+        if let Some(latency) = &report.latency {
+            line.push_str(&format!(" · {:.0} ms", latency.median_ms));
+        }
+        line
+    };
     match (glyph, &view.last) {
         (Glyph::Testing(_), _) => "Weir · Testing".into(),
-        (Glyph::Offline, _) => "Weir · No internet".into(),
+        (Glyph::Offline, _) => match view.network.offline_since_ms.or(view.outage_since_ms) {
+            Some(since) => format!("Weir · No internet since {}", clock(since)),
+            None => "Weir · No internet".into(),
+        },
         (Glyph::Failed, _) => "Weir · Last test failed".into(),
         (Glyph::Result { stale, .. }, Some(report)) => format!(
-            "Weir · Download {:.0} Mbps{}",
-            report.download.mbps,
-            if stale { " · over a day ago" } else { "" }
+            "Weir · {}\nTested {}{}",
+            summary(report),
+            clock(report.started_at_ms),
+            if stale { ", over a day ago" } else { "" }
         ),
         _ => "Weir · Not tested yet".into(),
     }
@@ -355,7 +384,22 @@ pub fn update(app: &AppHandle, view: &View) {
         .map_or(0, |time| time.as_millis() as u64);
     let glyph = glyph(view, now_ms);
     let size = icon_size(app);
-    let pixels = glyph_rgba(size, glyph, icon_style());
+    let visibility = app.state::<Visibility>();
+    let cached = visibility.rendered.lock().ok().and_then(|rendered| {
+        rendered
+            .as_ref()
+            .filter(|(shown, shown_size, _)| *shown == glyph && *shown_size == size)
+            .map(|(_, _, pixels)| pixels.clone())
+    });
+    let Some(pixels) = cached.or_else(|| {
+        let pixels = glyph_rgba(size, glyph, icon_style());
+        if let Ok(mut rendered) = visibility.rendered.lock() {
+            *rendered = Some((glyph, size, pixels.clone()));
+        }
+        Some(pixels)
+    }) else {
+        return;
+    };
     let tooltip = tooltip(view, glyph);
     #[cfg(target_os = "macos")]
     let title = title(view, glyph);
@@ -388,11 +432,55 @@ pub fn update(app: &AppHandle, view: &View) {
     });
 }
 
+/// What the popover should show when opened from the tray menu.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Navigate {
+    Overview,
+    Confirm,
+    Check,
+    History,
+    Settings,
+}
+
+pub const NAVIGATE_EVENT: &str = "navigate";
+
+pub fn navigate(app: &AppHandle, target: Navigate) {
+    show(app);
+    let _ = app.emit(NAVIGATE_EVENT, target);
+}
+
+/// Runs a test straight from the menu. The popover opens only when it has
+/// something to ask or say: a metered link, no internet, or a test already running.
+fn menu_test(app: &AppHandle) {
+    use crate::runtime::{runtime, Start};
+    match runtime(app).start(app, false) {
+        Start::Started => {}
+        Start::NeedsConfirmation => navigate(app, Navigate::Confirm),
+        Start::Offline | Start::Running => navigate(app, Navigate::Overview),
+    }
+}
+
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
-    let show_item = MenuItem::with_id(app, "show", "Open Weir", true, None::<&str>)?;
+    let test_item = MenuItem::with_id(app, "test", "Run speed test", true, None::<&str>)?;
+    let check_item = MenuItem::with_id(app, "check", "Check connection", true, None::<&str>)?;
+    let history_item = MenuItem::with_id(app, "history", "History", true, None::<&str>)?;
+    let settings_item = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit Weir", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&show_item, &separator, &quit_item])?;
+    let separator_two = PredefinedMenuItem::separator(app)?;
+    let menu = Menu::with_items(
+        app,
+        &[
+            &test_item,
+            &check_item,
+            &separator,
+            &history_item,
+            &settings_item,
+            &separator_two,
+            &quit_item,
+        ],
+    )?;
     let size = icon_size(app);
     TrayIconBuilder::with_id(TRAY_ID)
         .icon(Image::new_owned(
@@ -405,7 +493,10 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
-            "show" => show(app),
+            "test" => menu_test(app),
+            "check" => navigate(app, Navigate::Check),
+            "history" => navigate(app, Navigate::History),
+            "settings" => navigate(app, Navigate::Settings),
             "quit" => app.exit(0),
             _ => {}
         })
@@ -537,6 +628,28 @@ mod tests {
         assert!(matches!(glyph(&view, now), Glyph::Result { .. }));
         view.network.online = false;
         assert_eq!(glyph(&view, now), Glyph::Offline);
+    }
+
+    #[test]
+    fn tooltip_summarises_the_last_result() {
+        let view = View {
+            last: Some(report(0)),
+            ..View::default()
+        };
+        let glyph = Glyph::Result {
+            health: crate::core::meaning::Health::Good,
+            stale: false,
+        };
+        let text = tooltip(&view, glyph);
+        assert!(
+            text.starts_with("Weir · Download 300 Mbps · Upload 40 Mbps · 12 ms\nTested "),
+            "{text}"
+        );
+        assert_eq!(
+            tooltip(&View::default(), Glyph::Unknown),
+            "Weir · Not tested yet"
+        );
+        assert_eq!(tooltip(&view, Glyph::Testing(0.3)), "Weir · Testing");
     }
 
     #[test]
