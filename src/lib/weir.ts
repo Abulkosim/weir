@@ -66,6 +66,24 @@ export function useWeir() {
     messageTimer = setTimeout(() => { message.value = null }, 4_000)
   }
 
+  async function copy(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const area = document.createElement('textarea')
+      area.value = text
+      area.setAttribute('readonly', '')
+      area.style.position = 'fixed'
+      area.style.opacity = '0'
+      document.body.append(area)
+      area.select()
+      const copied = document.execCommand('copy')
+      area.remove()
+      if (!copied) return say('Couldn’t copy. Select the text instead.')
+    }
+    say('Copied the summary')
+  }
+
   async function exportHistory(): Promise<void> {
     if (demo) return say(`Saved weir-history-${new Date().toISOString().slice(0, 10)}.csv`)
     try {
@@ -175,5 +193,5 @@ export function useWeir() {
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, saveSettings, checkConnection }
+  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, saveSettings, checkConnection, copy }
 }

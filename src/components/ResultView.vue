@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
-import { clock, errorCopy, estimateText, formatMb, formatMbps, formatMs, meteredCopy, meteredLabel, relativeAge, server } from '../lib/format'
+import AppTooltip from './ui/AppTooltip.vue'
+import MetaActions from './MetaActions.vue'
+import { clock, errorCopy, estimateText, formatMb, shortcut, summaryText, formatMbps, formatMs, meteredCopy, meteredLabel, relativeAge, server } from '../lib/format'
 import { loadedMs, type View } from '../lib/model'
 
 const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean; updateAvailable?: boolean }>()
-defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: []; settings: []; check: [] }>()
+defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: []; settings: []; check: []; copy: [text: string] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
 const details = ref(false)
 const stale = computed(() => props.view.last ? props.now - props.view.last.startedAtMs > 24 * 3_600_000 : false)
@@ -29,7 +31,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
 <template>
   <div class="view result-view">
     <template v-if="failure">
-      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span><span class="meta-actions"><button class="icon-button" aria-label="Check connection" @click="$emit('check')"><AppIcon name="pulse" :size="16"/></button><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
+      <div class="meta"><span class="where"><span class="dot dot-danger"/>Test failed · {{ clock(failure.atMs) }}</span><MetaActions :history="Boolean(view.historyCount)" :update-available="updateAvailable" @check="$emit('check')" @history="$emit('history')" @settings="$emit('settings')"/></div>
       <section class="card failure" role="alert">
         <span class="failure-icon"><AppIcon name="alert" :size="20"/></span>
         <h1>{{ errorCopy[failure.error].title }}</h1>
@@ -40,7 +42,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </template>
 
     <template v-else-if="report">
-      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><span class="meta-actions"><button class="icon-button" aria-label="Check connection" @click="$emit('check')"><AppIcon name="pulse" :size="16"/></button><button v-if="view.historyCount" class="icon-button" aria-label="History" @click="$emit('history')"><AppIcon name="history" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
+      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><MetaActions :history="Boolean(view.historyCount)" :update-available="updateAvailable" @check="$emit('check')" @history="$emit('history')" @settings="$emit('settings')"/></div>
       <section class="card" aria-label="Last result">
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>
@@ -85,13 +87,14 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
               <span class="meaning-mark" :class="`mark-${line.health}`"  role="img" :aria-label="line.health"/>
             </li>
             <li class="meaning-data"><span class="meaning-topic">Data</span><span class="meaning-text num">Used {{ formatMb(report.bytesUsed) }}</span><span/></li>
+            <li class="meaning-copy"><button class="text-button" @click="$emit('copy', summaryText(report, view.meaning))"><AppIcon name="copy" :size="13"/>Copy summary</button></li>
           </ul>
         </div>
       </section>
     </template>
 
     <template v-else>
-      <div class="meta"><span class="where"><span class="dot"/>Cloudflare speed test</span><span class="meta-actions"><button class="icon-button" aria-label="Check connection" @click="$emit('check')"><AppIcon name="pulse" :size="16"/></button><button class="icon-button settings-button" :aria-label="updateAvailable ? 'Settings, update available' : 'Settings'" @click="$emit('settings')"><AppIcon name="settings" :size="16"/><span v-if="updateAvailable" class="update-dot" aria-hidden="true"/></button></span></div>
+      <div class="meta"><span class="where"><span class="dot"/>Cloudflare speed test</span><MetaActions :history="false" :update-available="updateAvailable" @check="$emit('check')" @history="$emit('history')" @settings="$emit('settings')"/></div>
       <section class="card never">
         <span class="never-mark" aria-hidden="true"><AppIcon name="weir" :size="22"/></span>
         <h1>Not tested yet</h1>
@@ -110,7 +113,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </section>
     <footer v-else class="foot">
       <span class="note num" :class="{ 'note-warning': metered }">{{ note }}</span>
-      <button class="button button-primary" :disabled="busy || !view.network.online" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button>
+      <AppTooltip :text="`Run a speed test (${shortcut('T')})`"><button class="button button-primary" :disabled="busy || !view.network.online" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button></AppTooltip>
     </footer>
   </div>
 </template>

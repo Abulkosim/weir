@@ -1,4 +1,4 @@
-import type { Metered, TestError } from './model.ts'
+import { loadedMs, type Meaning, type Metered, type Report, type TestError } from './model.ts'
 
 export function formatMbps(value: number): string {
   if (!Number.isFinite(value) || value < 0) return '–'
@@ -83,4 +83,28 @@ export const meteredLabel: Record<Metered, string> = {
   metered: 'Metered connection',
   roaming: 'Roaming',
   overLimit: 'Over data limit',
+}
+
+const mac = typeof navigator === 'undefined' || !navigator.userAgent.includes('Windows')
+
+/** Keyboard shortcut label for this platform, e.g. ⌘T or Ctrl+T. */
+export function shortcut(key: string): string {
+  return mac ? `⌘${key}` : `Ctrl+${key}`
+}
+
+/** Plain-text result for a chat with an internet provider or a note. */
+export function summaryText(report: Report, meaning: Meaning | null): string {
+  const when = new Date(report.startedAtMs).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+  const lines = [`Weir speed test · ${when} · ${server(report.provider, report.colo)}`]
+  const speeds = [`Download ${formatMbps(report.download.mbps)} Mbps`]
+  speeds.push(report.upload ? `Upload ${formatMbps(report.upload.mbps)} Mbps` : 'Upload not measured')
+  lines.push(speeds.join(' · '))
+  if (report.latency) {
+    const loaded = loadedMs(report)
+    const latency = [`Latency ${formatMs(report.latency.medianMs)} ms${loaded === null ? '' : `, ${formatMs(loaded)} ms under load`}`]
+    if (report.latency.jitterMs !== null) latency.push(`Jitter ${formatMs(report.latency.jitterMs)} ms`)
+    lines.push(latency.join(' · '))
+  }
+  if (meaning) lines.push(meaning.headline)
+  return lines.join('\n')
 }
