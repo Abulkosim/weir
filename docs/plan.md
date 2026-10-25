@@ -126,6 +126,20 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
 - [x] **4.6 Release v0.2.0.** Changelog, tag, verify draft, publish (standing approval), record.
   Done 2026-10-24 01:06 UTC. Evidence in `docs/verification.md`.
 
+## Comfort and efficiency (v0.3.0) ⛳
+
+- [x] **C.1 Tray menu.** Run speed test, Check connection, History, Settings from a right-click; a test from the menu runs without the popover unless it needs to ask (metered) or say something (offline, already running).
+  Verify: Rust tests green; menu items compile on macOS and Windows in CI.
+- [x] **C.2 Tray tooltip** with the last download, upload, latency and test time.
+  Verify: unit test on the tooltip text.
+- [x] **C.3 Shortcuts and tooltips.** ⌘/Ctrl+T test, ⌘/Ctrl+K check connection; icon buttons and Test show their shortcut on hover.
+  Verify: e2e for both shortcuts and the tooltip.
+- [x] **C.4 Copy summary** of a result as plain text for a provider chat.
+  Verify: unit tests on the text; e2e reads the clipboard on Chromium.
+- [x] **C.5 Tray redraws only on change** (glyph cache), instead of rasterising 36×36×64 samples on every 100 ms progress event.
+  Verify: Rust tests green.
+- [ ] **C.6 Release v0.3.0.**
+
 ## Phase 5 — Later
 
 - [ ] PDF provider report (tests, outages, against the speed you pay for).
