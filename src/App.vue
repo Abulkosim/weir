@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { TooltipProvider } from 'reka-ui'
+import { navigateSchema } from './lib/model'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
 import DesignGallery from './components/DesignGallery.vue'
 import HistoryView from './components/HistoryView.vue'
@@ -12,11 +14,22 @@ import { useUpdater } from './lib/updater'
 import { createDemoUpdateState } from './lib/demo'
 import { arrowOffset, fitHeight, nextPlacement, type PopoverPlacement } from './lib/popover'
 
-const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory, clearHistory, saveSettings, checkConnection } = useWeir()
+const { view, connectionError, now, samples, confirming, history, message, start, cancel, exportHistory, clearHistory, saveSettings, checkConnection, copy } = useWeir()
 const updater = useUpdater({ demo, desktop, initial: demo ? createDemoUpdateState(query.get('update')) : undefined })
 const requested = demo ? query.get('page') : null
 const startState = demo ? query.get('state') ?? '' : ''
 const page = ref<'overview' | 'history' | 'settings' | 'diagnose'>(requested === 'history' || requested === 'settings' || requested === 'diagnose' ? requested : startState.startsWith('check') ? 'diagnose' : 'overview')
+function navigate(payload: unknown): void {
+  const target = navigateSchema.safeParse(payload)
+  if (!target.success) return
+  if (target.data === 'check') return openCheck()
+  if (target.data === 'history' || target.data === 'settings') {
+    page.value = target.data
+    return
+  }
+  page.value = 'overview'
+  if (target.data === 'confirm') void start(false)
+}
 function openCheck(): void {
   page.value = 'diagnose'
   if (!view.value.diagnosis || Date.now() - view.value.diagnosis.checkedAtMs > 60_000) void checkConnection()
@@ -42,6 +55,7 @@ const measured = ref(0)
 let frame = 0
 let observer: ResizeObserver | undefined
 let stopPlacement: (() => void) | undefined
+let stopNavigate: (() => void) | undefined
 let destroyed = false
 
 watchEffect(() => {
@@ -77,6 +91,18 @@ function onKeydown(event: KeyboardEvent): void {
     return
   }
   if (event.defaultPrevented || document.querySelector('[role="alertdialog"][data-state="open"]')) return
+  const command = event.metaKey || event.ctrlKey
+  if (command && event.key.toLowerCase() === 't' && !view.value.testing) {
+    event.preventDefault()
+    page.value = 'overview'
+    void start(false)
+    return
+  }
+  if (command && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    openCheck()
+    return
+  }
   if (event.key !== 'Escape') return
   if (confirming.value) confirming.value = false
   else if (page.value !== 'overview') page.value = 'overview'
@@ -95,6 +121,9 @@ onMounted(async () => {
   scheduleMeasure()
   if (!desktop || demo) return
   try {
+    const unlistenNavigate = await listen('navigate', navigate)
+    if (destroyed) { unlistenNavigate(); return }
+    stopNavigate = unlistenNavigate
     const unlisten = await listen('popover_placement_changed', payload => { placement.value = nextPlacement(placement.value, payload) })
     if (destroyed) { unlisten(); return }
     stopPlacement = unlisten
@@ -109,6 +138,7 @@ onUnmounted(() => {
   observer?.disconnect()
   cancelAnimationFrame(frame)
   stopPlacement?.()
+  stopNavigate?.()
   media.removeEventListener('change', syncTheme)
   window.removeEventListener('resize', syncWidth)
   window.removeEventListener('keydown', onKeydown)
@@ -116,6 +146,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <TooltipProvider :delay-duration="450">
   <div class="preview-stage" :class="{ 'desktop-stage': framed, 'embed-stage': embedded }">
     <div ref="shell" class="app-shell" :data-fit-height="measured">
       <div v-if="!desktop || demo || arrowX !== null" class="popover-arrow" :style="arrowX === null ? undefined : { left: `${arrowX - 6}px` }" aria-hidden="true"/>
@@ -129,7 +160,7 @@ onUnmounted(() => {
           <HistoryView v-else-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
           <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" :update-state="updater.state.value" :update-busy="updater.busy.value" :demo="demo" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @clear="clearHistory" @check-update="updater.check" @install-update="updater.install"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
-          <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'" @check="openCheck"/>
+          <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'" @check="openCheck" @copy="copy"/>
           </div>
         </main>
         <Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition>
@@ -137,4 +168,5 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
+  </TooltipProvider>
 </template>

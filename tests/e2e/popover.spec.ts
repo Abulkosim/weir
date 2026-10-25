@@ -259,6 +259,36 @@ test('outage settings explain the cost and gate notifications', async ({ page })
   await expect(page.getByRole('switch', { name: 'Notify when it drops and returns' })).toBeDisabled()
 })
 
+test('keyboard shortcuts run a test and open the connection check', async ({ page }) => {
+  await page.clock.install()
+  await page.goto('/?demo=1&state=result')
+  await page.keyboard.press('ControlOrMeta+k')
+  await expect(page.getByRole('heading', { name: 'Connection' })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('ControlOrMeta+t')
+  await page.clock.runFor(1_000)
+  await expect(page.getByRole('status').filter({ hasText: 'Measuring latency' })).toBeVisible()
+})
+
+test('copy summary puts the result on the clipboard', async ({ page, context, browserName }) => {
+  if (browserName === 'chromium') await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/?demo=1&state=result')
+  await page.getByRole('button', { name: 'Good for 4K video and calls' }).click()
+  await page.getByRole('button', { name: 'Copy summary' }).click()
+  await expect(page.getByRole('status').filter({ hasText: /Copied the summary|Couldn’t copy/ })).toBeVisible()
+  if (browserName === 'chromium') {
+    const text = await page.evaluate(() => navigator.clipboard.readText())
+    expect(text).toContain('Download 312 Mbps · Upload 41 Mbps')
+    expect(text).toContain('Cloudflare, Frankfurt')
+  }
+})
+
+test('icon buttons explain themselves with their shortcut', async ({ page }) => {
+  await page.goto('/?demo=1&state=result')
+  await page.getByRole('button', { name: 'Check connection' }).hover()
+  await expect(page.getByRole('tooltip')).toHaveText(/Check connection \((⌘|Ctrl\+)K\)/)
+})
+
 test('a simulated run goes from Test to a settled result', async ({ page }) => {
   await page.clock.install()
   await page.goto('/?demo=1&state=never')

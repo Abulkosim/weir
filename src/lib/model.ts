@@ -114,3 +114,6 @@ export function loadedMs(report: Report): number | null {
 export function entryTime(entry: Entry): number {
   return entry.kind === 'result' ? entry.report.startedAtMs : entry.kind === 'failed' ? entry.atMs : entry.startMs
 }
+
+export const navigateSchema = z.enum(['overview', 'confirm', 'check', 'history', 'settings'])
+export type Navigate = z.infer<typeof navigateSchema>
