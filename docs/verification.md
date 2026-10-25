@@ -2,6 +2,15 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.3.0
+
+**[v0.3.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.3.0)** at 2026-10-25 02:31 UTC and marked latest; `latest.json` serves 0.3.0. Published on standing approval. Tag `v0.3.0` builds `d160695`.
+
+- Pull request #9: browser tests on Playwright 1.64 (Chromium, WebKit), both installer builds and security checks green. Locally: 184 browser cases on Playwright 1.60 (cached browsers; the dev Mac is on a hotspot), 23 unit tests, 100 Rust tests, fmt, strict Clippy.
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/40153927071) and the [tag build](https://github.com/Abulkosim/weir/actions/runs/40154327045) green on every job.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`; the real updater test rejected altered bytes and a wrong signed version and installed 0.3.0 for x86_64 and arm64.
+- Installed on the owner's Mac from the verified DMG, replacing 0.2.0; history and settings kept.
+
 ## v0.2.0
 
 **[v0.2.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.2.0)** at 2026-10-24 01:06 UTC and marked latest; `releases/latest/download/latest.json` serves 0.2.0. Published on standing approval after these checks. Tag `v0.2.0` builds `3342f39`.

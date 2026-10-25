@@ -138,7 +138,7 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
   Verify: unit tests on the text; e2e reads the clipboard on Chromium.
 - [x] **C.5 Tray redraws only on change** (glyph cache), instead of rasterising 36×36×64 samples on every 100 ms progress event.
   Verify: Rust tests green.
-- [ ] **C.6 Release v0.3.0.**
+- [x] **C.6 Release v0.3.0.** Published 2026-10-25 02:31 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 
