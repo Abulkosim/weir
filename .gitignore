@@ -18,3 +18,4 @@ design/directions/shots/sheet.html
 **/auth.json
 **/.credentials.json
 site/app/
+.claude/
