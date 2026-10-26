@@ -157,7 +157,7 @@ onUnmounted(() => {
           <p v-if="connectionError" class="connection-error" role="alert">{{ connectionError }}</p>
           <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
           <DiagnoseView v-if="page === 'diagnose'" :diagnosis="view.diagnosis" :checking="view.checking" :now="now" @back="page = 'overview'" @check="checkConnection"/>
-          <HistoryView v-else-if="page === 'history'" :entries="history" :now="now" @back="page = 'overview'" @export="exportHistory"/>
+          <HistoryView v-else-if="page === 'history'" :entries="history" :now="now" :plan-mbps="view.settings.planDownloadMbps" @back="page = 'overview'" @export="exportHistory"/>
           <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" :update-state="updater.state.value" :update-busy="updater.busy.value" :demo="demo" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @clear="clearHistory" @check-update="updater.check" @install-update="updater.install"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
           <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'" @check="openCheck" @copy="copy"/>

@@ -122,6 +122,16 @@ Our own rules, built from Netflix, Zoom, Teams, IETF responsiveness bands and Cl
 
 Increase = under load − idle. The headline sentence picks the most limiting line: "Good for 4K video and calls", or the first problem.
 
+## Your plan
+
+Optional, in Settings → Your plan: the download and upload speeds the provider sells, whole Mbps.
+
+- Share = measured ÷ plan, rounded to a whole percent. Over 100 % is shown as it is.
+- ≥ 80 % good, 50–79 % fair, < 50 % poor. Many regulators and providers treat about 80 % of the advertised speed as normal at busy times, so we don't call less than that good.
+- A test that stopped at its data limit says "At least N %" and is never called poor: the line may be faster than we measured.
+- Shown under the download number, under Upload, in History (median of recent tests) and in the tray tooltip. It never changes the plain-meaning verdict, which is about what the line is good for, not what it costs.
+- Wi-Fi often caps a fast plan. A low share on Wi-Fi is a reason to test on a cable before calling the provider.
+
 ## Comparing with other tests
 
 Weir uses 6 parallel streams and a sustained mean. speed.cloudflare.com uses one stream at a time and the 90th percentile of per-request speeds. On links up to ~300 Mbps with low latency the two should agree within about 10 %. On gigabit or high-latency links Weir may read higher because parallel streams fill the link faster. This is checked by hand on the owner's Mac and recorded in [verification.md](verification.md).

@@ -5,6 +5,7 @@ import AppTooltip from './ui/AppTooltip.vue'
 import MetaActions from './MetaActions.vue'
 import { clock, errorCopy, estimateText, formatMb, shortcut, summaryText, formatMbps, formatMs, meteredCopy, meteredLabel, relativeAge, server } from '../lib/format'
 import { loadedMs, type View } from '../lib/model'
+import { shareText } from '../lib/plan'
 
 const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean; updateAvailable?: boolean }>()
 defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: []; settings: []; check: []; copy: [text: string] }>()
@@ -47,6 +48,10 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>
         <p class="hero num"><span class="sr-only">{{ downloadLabel }}</span><span class="big" aria-hidden="true">{{ formatMbps(report.download.mbps) }}</span><span class="unit" aria-hidden="true">Mbps</span></p>
+        <div v-if="view.plan?.download" class="plan-share" :class="`plan-${view.plan.download.health}`">
+          <span class="plan-meter" aria-hidden="true"><span :style="{ width: `${Math.min(100, view.plan.download.percent)}%` }"/></span>
+          <span class="plan-text num">{{ shareText(view.plan.download) }}</span>
+        </div>
         <p v-if="varied" class="hint num">{{ varied }}</p>
         <p v-if="report.download.capped" class="hint">Stopped at the data limit, speed may be higher</p>
         <p v-if="stale" class="hint">Over a day old. Test again for a current number.</p>
@@ -56,6 +61,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
             <template v-if="report.upload">
               <p class="value num">{{ formatMbps(report.upload.mbps) }}<small>Mbps</small></p>
               <p v-if="report.upload.rough" class="sub">Rough estimate</p>
+              <p v-else-if="view.plan?.upload" class="sub num" :class="`plan-sub-${view.plan.upload.health}`">{{ view.plan.upload.atLeast ? 'At least ' : '' }}{{ view.plan.upload.percent }}% of {{ view.plan.upload.paidMbps }} Mbps plan</p>
             </template>
             <template v-else>
               <p class="value num wait">–</p>
@@ -87,7 +93,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
               <span class="meaning-mark" :class="`mark-${line.health}`"  role="img" :aria-label="line.health"/>
             </li>
             <li class="meaning-data"><span class="meaning-topic">Data</span><span class="meaning-text num">Used {{ formatMb(report.bytesUsed) }}</span><span/></li>
-            <li class="meaning-copy"><button class="text-button" @click="$emit('copy', summaryText(report, view.meaning))"><AppIcon name="copy" :size="13"/>Copy summary</button></li>
+            <li class="meaning-copy"><button class="text-button" @click="$emit('copy', summaryText(report, view.meaning, view.plan))"><AppIcon name="copy" :size="13"/>Copy summary</button></li>
           </ul>
         </div>
       </section>
