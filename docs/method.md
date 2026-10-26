@@ -122,6 +122,27 @@ Our own rules, built from Netflix, Zoom, Teams, IETF responsiveness bands and Cl
 
 Increase = under load − idle. The headline sentence picks the most limiting line: "Good for 4K video and calls", or the first problem.
 
+## Your plan
+
+Optional, in Settings → Your plan: the download and upload speeds the provider sells, whole Mbps.
+
+- Share = measured ÷ plan, rounded to a whole percent. Over 100 % is shown as it is.
+- ≥ 80 % good, 50–79 % fair, < 50 % poor. Many regulators and providers treat about 80 % of the advertised speed as normal at busy times, so we don't call less than that good.
+- A test that stopped at its data limit says "At least N %" and is never called poor: the line may be faster than we measured.
+- Shown under the download number, under Upload, in History (median of recent tests) and in the tray tooltip. It never changes the plain-meaning verdict, which is about what the line is good for, not what it costs.
+- Wi-Fi often caps a fast plan. A low share on Wi-Fi is a reason to test on a cable before calling the provider.
+
+## Provider report
+
+**Report** in History (or Settings → History → Save PDF) writes an A4 PDF of the last 30 days, built in Rust ([`report.rs`](../src-tauri/src/core/report.rs)) with the PDF's built-in Helvetica, so no fonts are embedded and nothing is fetched.
+
+- Header: the period, the UTC offset of every time, and the plan if one is set.
+- Medians for download, upload and latency (idle and under load), the download and upload range, the median's share of the plan, and how many tests failed.
+- Plain findings: tests under half the plan, the slowest hours (same rule as History: at least 10 tests over 3 hours of the day, hours under 80 % of the usual median), outages with the longest one, and failures. If the outage watch is off the report says outages were not monitored, instead of implying there were none.
+- A chart of every download over the 30 days with the plan as a dashed line, tests under half the plan in red and outages as red marks on the baseline.
+- Every test, newest first, with failures and outages in place, and a short note on how Weir measures.
+- No IP address, Wi-Fi name or location; the server is the Cloudflare data-centre code, as in History.
+
 ## Scheduled tests
 
 Off by default. Settings → Scheduled tests: every 6 hours, every 12 hours or once a day ([`schedule.rs`](../src-tauri/src/core/schedule.rs)).

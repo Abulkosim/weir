@@ -147,6 +147,15 @@ for (const theme of themes) {
   })
 }
 
+test('the provider report saves from History and Settings', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await page.getByRole('button', { name: 'Report' }).click()
+  await expect(page.getByRole('status').filter({ hasText: /Saved weir-report-\d{4}-\d{2}-\d{2}\.pdf/ })).toBeVisible()
+  await page.goto('/?demo=1&page=settings')
+  await expect(page.getByText('A PDF of the last 30 days', { exact: false })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Save PDF' })).toBeEnabled()
+})
+
 test('export confirms the saved file name', async ({ page }) => {
   await page.goto('/?demo=1&page=history')
   await page.getByRole('button', { name: 'Export CSV' }).click()
@@ -264,6 +273,38 @@ test('scheduled tests show their data cost and are marked in the result and hist
   await expect(page.locator('.history-scheduled').first()).toBeVisible()
 })
 
+test('the result compares with the plan speed and settings change it', async ({ page }) => {
+  await page.goto('/?demo=1&state=result')
+  await expect(page.getByText('62% of your 500 Mbps plan')).toBeVisible()
+  await expect(page.getByText('82% of 50 Mbps plan')).toBeVisible()
+  await page.getByRole('button', { name: 'Settings' }).click()
+  const download = page.getByLabel('Download speed in Mbps')
+  await download.fill('fast')
+  await download.press('Enter')
+  await expect(page.getByRole('alert')).toHaveText('Enter a whole number of Mbps, or leave it empty.')
+  await download.fill('1000')
+  await download.press('Enter')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page.getByText('31% of your 1000 Mbps plan')).toBeVisible()
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByLabel('Download speed in Mbps').fill('')
+  await page.getByLabel('Download speed in Mbps').press('Tab')
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page.getByText(/% of your .* plan/)).toHaveCount(0)
+})
+
+test('without a plan the result stays as it was', async ({ page }) => {
+  await page.goto('/?demo=1&state=noplan')
+  await expect(page.getByText('Download 312 megabits per second')).toBeVisible()
+  await expect(page.locator('.plan-share')).toHaveCount(0)
+})
+
+test('history shows the median against the plan', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await expect(page.getByText(/^\d+% of your 500 Mbps plan$/)).toBeVisible()
+})
+
 test('outage settings explain the cost and gate notifications', async ({ page }) => {
   await page.goto('/?demo=1&page=settings')
   const watch = page.getByRole('switch', { name: 'Watch for outages' })
@@ -329,8 +370,14 @@ for (const state of ['result', 'stutter', 'never', 'testing'] as const) {
     await page.setViewportSize({ width: 380, height: 200 })
     await page.goto(`/?demo=1&frame=1&state=${state}`)
     const shell = page.locator('.app-shell')
-    await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBeGreaterThan(200)
-    const fitted = Number(await shell.getAttribute('data-fit-height'))
+    await page.evaluate(() => document.fonts.ready)
+    let fitted = 0
+    await expect.poll(async () => {
+      const next = Number(await shell.getAttribute('data-fit-height'))
+      const settled = next === fitted && next > 200
+      fitted = next
+      return settled
+    }).toBe(true)
     expect(fitted).toBeLessThanOrEqual(600)
     await page.setViewportSize({ width: 380, height: fitted })
     await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBe(fitted)

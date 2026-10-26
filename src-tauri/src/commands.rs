@@ -1,5 +1,7 @@
 use crate::{
-    core::{export::csv, history::Entry, popover::PopoverPlacement, settings::Settings, tray},
+    core::{
+        export::csv, history::Entry, popover::PopoverPlacement, report, settings::Settings, tray,
+    },
     runtime::{runtime, Start, View},
 };
 use std::sync::atomic::Ordering;
@@ -56,35 +58,64 @@ pub fn clear_history(app: AppHandle) -> Result<(), String> {
     runtime(&app).clear_history(&app)
 }
 
-/// Asks where to save, writes the CSV, and returns the file name, or `None` if cancelled.
-#[tauri::command]
-pub async fn export_history(app: AppHandle) -> Result<Option<String>, String> {
-    let entries = runtime(&app).all_entries();
-    let name = format!(
-        "weir-history-{}.csv",
-        chrono::Local::now().format("%Y-%m-%d")
-    );
+/// Asks where to save, writes `bytes`, and returns the file name, or `None` if cancelled.
+async fn save_as(
+    app: &AppHandle,
+    name: String,
+    kind: (&str, &str),
+    bytes: Vec<u8>,
+) -> Result<Option<String>, String> {
     let visibility = app.state::<tray::Visibility>();
     visibility.keep_open.store(true, Ordering::Relaxed);
     let (sender, receiver) = tokio::sync::oneshot::channel();
     app.dialog()
         .file()
         .set_file_name(&name)
-        .add_filter("CSV", &["csv"])
+        .add_filter(kind.0, &[kind.1])
         .save_file(move |path| {
             let _ = sender.send(path);
         });
     let chosen = receiver.await.ok().flatten();
     visibility.keep_open.store(false, Ordering::Relaxed);
-    tray::show(&app);
+    tray::show(app);
     let Some(path) = chosen.and_then(|path| path.into_path().ok()) else {
         return Ok(None);
     };
-    std::fs::write(&path, csv(&entries)).map_err(|_| "Weir couldn’t write the file.".to_owned())?;
+    std::fs::write(&path, bytes).map_err(|_| "Weir couldn’t write the file.".to_owned())?;
     Ok(Some(
         path.file_name()
             .map_or(name, |file| file.to_string_lossy().into_owned()),
     ))
+}
+
+fn today() -> String {
+    chrono::Local::now().format("%Y-%m-%d").to_string()
+}
+
+#[tauri::command]
+pub async fn export_history(app: AppHandle) -> Result<Option<String>, String> {
+    let text = csv(&runtime(&app).all_entries());
+    let name = format!("weir-history-{}.csv", today());
+    save_as(&app, name, ("CSV", "csv"), text.into_bytes()).await
+}
+
+/// The PDF report of the last 30 days, saved where the user chooses.
+#[tauri::command]
+pub async fn export_report(app: AppHandle) -> Result<Option<String>, String> {
+    let runtime = runtime(&app);
+    let settings = runtime.view().settings;
+    let version = app.package_info().version.to_string();
+    let options = report::Options {
+        now_ms: chrono::Utc::now().timestamp_millis().max(0) as u64,
+        offset: chrono::Local::now().fixed_offset().offset().to_owned(),
+        plan: settings.plan(),
+        watching: settings.watch_outages,
+        version: &version,
+    };
+    let bytes = report::pdf(&runtime.all_entries(), &options)
+        .ok_or_else(|| format!("No tests in the last {} days.", report::DAYS))?;
+    let name = format!("weir-report-{}.pdf", today());
+    save_as(&app, name, ("PDF", "pdf"), bytes).await
 }
 
 #[tauri::command]

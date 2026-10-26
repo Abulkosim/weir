@@ -1,6 +1,7 @@
 //! Settings in their own versioned file. Each field loads on its own, so one bad
 //! value never resets the rest.
 
+use super::plan::{self, Plan};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::{
@@ -45,6 +46,10 @@ pub struct Settings {
     pub notify_outages: bool,
     /// Full tests in the background, never on a metered link.
     pub scheduled_tests: Schedule,
+    /// The download speed the provider sells, in Mbps.
+    pub plan_download_mbps: Option<u32>,
+    /// The upload speed the provider sells, in Mbps.
+    pub plan_upload_mbps: Option<u32>,
 }
 
 impl Default for Settings {
@@ -57,6 +62,8 @@ impl Default for Settings {
             watch_outages: false,
             notify_outages: true,
             scheduled_tests: Schedule::Off,
+            plan_download_mbps: None,
+            plan_upload_mbps: None,
         }
     }
 }
@@ -124,6 +131,27 @@ impl Settings {
                 "Scheduled tests",
                 notes,
             ),
+            plan_download_mbps: plan::valid(field(
+                map,
+                "planDownloadMbps",
+                defaults.plan_download_mbps,
+                "Plan download speed",
+                notes,
+            )),
+            plan_upload_mbps: plan::valid(field(
+                map,
+                "planUploadMbps",
+                defaults.plan_upload_mbps,
+                "Plan upload speed",
+                notes,
+            )),
+        }
+    }
+
+    pub fn plan(&self) -> Plan {
+        Plan {
+            download_mbps: plan::valid(self.plan_download_mbps),
+            upload_mbps: plan::valid(self.plan_upload_mbps),
         }
     }
 }
@@ -264,6 +292,8 @@ mod tests {
             watch_outages: true,
             notify_outages: false,
             scheduled_tests: Schedule::Every12Hours,
+            plan_download_mbps: Some(500),
+            plan_upload_mbps: Some(50),
         };
         store.save(&settings).unwrap();
         let (_, loaded, notes) = Store::load(path, 2);
@@ -289,6 +319,16 @@ mod tests {
         let (_, settings, notes) = Store::load(path, 1);
         assert_eq!(settings.scheduled_tests, Schedule::Off);
         assert_eq!(notes, ["Scheduled tests was reset."]);
+    }
+
+    #[test]
+    fn plan_speeds_out_of_range_are_dropped() {
+        let (_directory, path) = store_with(
+            r#"{"version":1,"settings":{"planDownloadMbps":0,"planUploadMbps":"fast"}}"#,
+        );
+        let (_, settings, notes) = Store::load(path, 1);
+        assert_eq!(settings.plan(), Plan::default());
+        assert_eq!(notes, ["Plan upload speed was reset."]);
     }
 
     #[test]

@@ -6,10 +6,11 @@ import AppIcon from './AppIcon.vue'
 import AppSwitch from './ui/AppSwitch.vue'
 import UpdateSettings from './settings/UpdateSettings.vue'
 import ScheduleSettings from './settings/ScheduleSettings.vue'
+import PlanSettings from './settings/PlanSettings.vue'
 import type { UpdateState } from '../lib/updater'
 
 const props = defineProps<{ settings: Settings; estimateMb: number; lastTestMs: number | null; now: number; metered: boolean; historyCount: number; busy?: boolean; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
-const emit = defineEmits<{ back: []; save: [settings: Settings]; export: []; clear: []; checkUpdate: []; installUpdate: [] }>()
+const emit = defineEmits<{ back: []; save: [settings: Settings]; export: []; report: []; clear: []; checkUpdate: []; installUpdate: [] }>()
 const confirmClear = ref(false)
 const isMac = navigator.userAgent.includes('Mac')
 const themes: { id: Settings['theme']; label: string; icon: 'system' | 'sun' | 'moon' }[] = [
@@ -55,6 +56,8 @@ function patch(change: Partial<Settings>): void {
         </div>
       </section>
 
+      <PlanSettings :download="settings.planDownloadMbps" :upload="settings.planUploadMbps" :disabled="busy" @save="patch"/>
+
       <ScheduleSettings :schedule="settings.scheduledTests" :estimate-mb="estimateMb" :last-test-ms="lastTestMs" :now="now" :metered="metered" :disabled="busy" @save="patch({ scheduledTests: $event })"/>
 
       <section class="settings-section">
@@ -74,6 +77,10 @@ function patch(change: Partial<Settings>): void {
         <div class="setting-row">
           <div><span class="setting-label num">{{ historyCount === 1 ? '1 test' : `${historyCount} tests` }}</span><p>Kept on this computer for a year.</p></div>
           <button class="button button-small" :disabled="busy || !historyCount" @click="$emit('export')"><AppIcon name="export" :size="13"/>Export CSV</button>
+        </div>
+        <div class="setting-row">
+          <div><span class="setting-label">Report for your provider</span><p>A PDF of the last 30 days: speeds against your plan, slow hours and outages.</p></div>
+          <button class="button button-small" :disabled="busy || !historyCount" @click="$emit('report')"><AppIcon name="report" :size="13"/>Save PDF</button>
         </div>
         <div class="setting-row">
           <span class="setting-label">Clear history</span>

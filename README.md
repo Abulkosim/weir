@@ -47,6 +47,7 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 </p>
 
 - **Result.** Download in large type; upload; idle latency and latency under load; the server, for example "Tested 12 min ago · Cloudflare, Frankfurt".
+- **Your plan.** Enter the speeds you pay for in Settings → Your plan, and each result says "62% of your 500 Mbps plan", in History too. [How it's judged](docs/method.md#your-plan).
 - **Plain meaning.** Video (Netflix bands), calls (upload, latency under load, jitter), games, and how the line holds up when busy. Thresholds in [docs/method.md](docs/method.md#plain-meaning).
 - **Honest labels.** "Varied 52–118 Mbps" when the rate swings, "Stopped at the data limit, speed may be higher", "Over a day old", and a named reason when a test fails.
 - **Tray icon.** A small gauge that fills while testing, then shows the last result: full, two thirds or one third for good, fair or poor; crossed out when offline. Hover it for the last numbers; right-click to run a test or check the connection without opening the popover.
@@ -54,7 +55,8 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 - **Check connection.** Wi-Fi signal, router round trip, DNS lookup time and whether Cloudflare answers, each in plain words, about 10 kB, no speed test. Weir never reads your Wi-Fi name.
 - **Scheduled tests, if you want them.** Settings → Scheduled tests (off by default) runs a full test every 6 or 12 hours or once a day, shows the data it will use each month, and waits whenever you're on a hotspot, a metered connection, Low Data Mode or Low Power Mode. Scheduled results are marked with a clock in History.
 - **Outages, if you want them.** Settings → Outages → Watch for outages (off by default) sends one tiny request a minute, records "No internet until 14:09 · 7 min" in History, and can notify you when the connection drops and returns.
-- **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet or your provider.
+- **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet.
+- **Report for your provider.** **Report** in History saves a PDF of the last 30 days: medians against your plan, how often it fell under half, slow hours, outages, a chart and every test. [What's in it](docs/method.md#provider-report).
 
 ## Why Weir
 

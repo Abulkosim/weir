@@ -38,6 +38,7 @@ pub fn run() {
             commands::get_history,
             commands::clear_history,
             commands::export_history,
+            commands::export_report,
             commands::save_settings,
             commands::check_connection,
             updates::get_update_status,

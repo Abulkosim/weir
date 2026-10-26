@@ -1,4 +1,4 @@
-import { loadedMs, type Meaning, type Metered, type Report, type TestError } from './model.ts'
+import { loadedMs, type Meaning, type Metered, type PlanComparison, type Report, type TestError } from './model.ts'
 
 export function formatMbps(value: number): string {
   if (!Number.isFinite(value) || value < 0) return '–'
@@ -93,7 +93,7 @@ export function shortcut(key: string): string {
 }
 
 /** Plain-text result for a chat with an internet provider or a note. */
-export function summaryText(report: Report, meaning: Meaning | null): string {
+export function summaryText(report: Report, meaning: Meaning | null, plan: PlanComparison | null = null): string {
   const when = new Date(report.startedAtMs).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
   const lines = [`Weir speed test · ${when} · ${server(report.provider, report.colo)}`]
   const speeds = [`Download ${formatMbps(report.download.mbps)} Mbps`]
@@ -105,6 +105,9 @@ export function summaryText(report: Report, meaning: Meaning | null): string {
     if (report.latency.jitterMs !== null) latency.push(`Jitter ${formatMs(report.latency.jitterMs)} ms`)
     lines.push(latency.join(' · '))
   }
+  const shares = [plan?.download && ['Download', plan.download] as const, plan?.upload && ['Upload', plan.upload] as const]
+    .flatMap(item => item ? [`${item[0]} ${item[1].atLeast ? 'at least ' : ''}${item[1].percent}% of the ${item[1].paidMbps} Mbps plan`] : [])
+  if (shares.length) lines.push(shares.join(' · '))
   if (meaning) lines.push(meaning.headline)
   return lines.join('\n')
 }

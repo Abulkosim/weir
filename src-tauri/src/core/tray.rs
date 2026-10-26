@@ -369,10 +369,17 @@ pub fn tooltip(view: &View, glyph: Glyph) -> String {
         },
         (Glyph::Failed, _) => "Weir · Last test failed".into(),
         (Glyph::Result { stale, .. }, Some(report)) => format!(
-            "Weir · {}\nTested {}{}",
+            "Weir · {}\nTested {}{}{}",
             summary(report),
             clock(report.started_at_ms),
-            if stale { ", over a day ago" } else { "" }
+            if stale { ", over a day ago" } else { "" },
+            view.plan
+                .and_then(|plan| plan.download)
+                .map_or_else(String::new, |share| format!(
+                    " · {}{}% of your plan",
+                    if share.at_least { "at least " } else { "" },
+                    share.percent
+                ))
         ),
         _ => "Weir · Not tested yet".into(),
     }
@@ -651,6 +658,17 @@ mod tests {
             "Weir · Not tested yet"
         );
         assert_eq!(tooltip(&view, Glyph::Testing(0.3)), "Weir · Testing");
+        let planned = View {
+            plan: crate::core::plan::compare(
+                view.last.as_ref().unwrap(),
+                crate::core::plan::Plan {
+                    download_mbps: Some(500),
+                    upload_mbps: None,
+                },
+            ),
+            ..view
+        };
+        assert!(tooltip(&planned, glyph).ends_with(" · 60% of your plan"));
     }
 
     #[test]

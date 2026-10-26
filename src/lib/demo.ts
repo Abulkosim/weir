@@ -1,7 +1,8 @@
 import type { UpdateState } from './updater.ts'
+import { comparePlan } from './plan.ts'
 import { testErrorSchema, viewSchema, type Diagnosis, type Entry, type Meaning, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking', 'outage', 'scheduled'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking', 'outage', 'scheduled', 'noplan'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -52,7 +53,7 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true, watchOutages: true, notifyOutages: true, scheduledTests: 'every12Hours' }, checking: false, diagnosis: null, outageSinceMs: null }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, plan: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true, watchOutages: true, notifyOutages: true, scheduledTests: 'every12Hours', planDownloadMbps: 500, planUploadMbps: 50 }, checking: false, diagnosis: null, outageSinceMs: null }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.meaning = demoMeaning
@@ -90,11 +91,13 @@ export function createDemoView(state: string | null, now = Date.now(), error: st
     view.meaning = { health: 'fair', headline: 'Upload not measured', lines: [{ topic: 'Video', text: 'Good for 4K video', health: 'good' }, { topic: 'Calls', text: 'Upload not measured', health: 'fair' }] }
   }
   if (scenario === 'scheduled' && view.last) view.last.scheduled = true
+  if (scenario === 'noplan') view.settings = { ...view.settings, planDownloadMbps: null, planUploadMbps: null }
   if (scenario === 'failed') {
     const parsed = testErrorSchema.safeParse(error)
     view.failure = { error: parsed.success ? parsed.data : 'stalled', atMs: now - 2 * minute }
     if (view.last) view.last = { ...view.last, startedAtMs: now - 3 * 60 * minute }
   }
+  view.plan = view.last && comparePlan(view.last, view.settings)
   return viewSchema.parse(view)
 }
 

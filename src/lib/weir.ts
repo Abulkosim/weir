@@ -1,5 +1,6 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { demo, desktop, invoke, listen, query } from './bridge.ts'
+import { comparePlan } from './plan.ts'
 import { createDemoView, demoDiagnosis, demoHistory, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
 import { emptyView, historySchema, startSchema, viewSchema, type Entry, type Phase, type Settings, type View } from './model.ts'
 
@@ -94,6 +95,16 @@ export function useWeir() {
     }
   }
 
+  async function exportReport(): Promise<void> {
+    if (demo) return say(`Saved weir-report-${new Date().toISOString().slice(0, 10)}.pdf`)
+    try {
+      const saved = await invoke('export_report')
+      if (typeof saved === 'string') say(`Saved ${saved}`)
+    } catch (error) {
+      say(typeof error === 'string' ? error : 'Weir couldn’t save the report.')
+    }
+  }
+
   async function checkConnection(): Promise<void> {
     if (view.value.checking) return
     if (demo) {
@@ -106,7 +117,7 @@ export function useWeir() {
 
   async function saveSettings(settings: Settings): Promise<void> {
     if (demo) {
-      view.value = { ...view.value, revision: view.value.revision + 1, settings }
+      view.value = { ...view.value, revision: view.value.revision + 1, settings, plan: view.value.last && comparePlan(view.value.last, settings) }
       return
     }
     try {
@@ -136,6 +147,7 @@ export function useWeir() {
         next.last = demoReport(Date.now())
         next.last.startedAtMs = Date.now()
         next.meaning = demoMeaning
+        next.plan = comparePlan(next.last, next.settings)
         next.historyCount += 1
         history.value = [{ kind: 'result', report: next.last }, ...history.value]
       }
@@ -193,5 +205,5 @@ export function useWeir() {
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, saveSettings, checkConnection, copy }
+  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, exportReport, saveSettings, checkConnection, copy }
 }

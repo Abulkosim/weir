@@ -5,6 +5,7 @@ use crate::core::{
     meaning::{meaning, Meaning},
     network::{Network, Path},
     outage::{Event, Watch},
+    plan::{compare, Comparison},
     settings::{Settings, Store},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
     stats::{data_estimate, DataEstimate},
@@ -52,6 +53,8 @@ pub struct View {
     pub estimate: Estimate,
     pub network: Network,
     pub meaning: Option<Meaning>,
+    /// The last result against the speed the provider sells, when it is set.
+    pub plan: Option<Comparison>,
     pub history_count: usize,
     pub notice: Option<String>,
     pub settings: Settings,
@@ -71,6 +74,7 @@ impl Default for View {
             estimate: data_estimate(&[]).into(),
             network: Network::default(),
             meaning: None,
+            plan: None,
             history_count: 0,
             notice: None,
             settings: Settings::default(),
@@ -78,6 +82,17 @@ impl Default for View {
             diagnosis: None,
             outage_since_ms: None,
         }
+    }
+}
+
+impl View {
+    /// Fields that follow from the last result and the settings.
+    fn derive(&mut self) {
+        self.meaning = self.last.as_ref().map(meaning);
+        self.plan = self
+            .last
+            .as_ref()
+            .and_then(|report| compare(report, self.settings.plan()));
     }
 }
 
@@ -153,7 +168,7 @@ impl Runtime {
                 view.failure = Some(Failure { error, at_ms });
             }
         }
-        view.meaning = view.last.as_ref().map(meaning);
+        view.derive();
         Self {
             view: Mutex::new(view),
             control: Mutex::new(None),
@@ -270,7 +285,10 @@ impl Runtime {
         true
     }
 
-    pub fn save_settings(&self, app: &AppHandle, settings: Settings) -> Result<(), String> {
+    pub fn save_settings(&self, app: &AppHandle, mut settings: Settings) -> Result<(), String> {
+        let plan = settings.plan();
+        settings.plan_download_mbps = plan.download_mbps;
+        settings.plan_upload_mbps = plan.upload_mbps;
         let saved = self.store.save(&settings);
         self.change(app, |view| view.settings = settings);
         saved.map_err(|_| "Weir couldn’t save settings.".to_owned())
@@ -331,7 +349,7 @@ impl Runtime {
             return;
         };
         update(&mut view);
-        view.meaning = view.last.as_ref().map(meaning);
+        view.derive();
         view.revision += 1;
         let _ = app.emit(STATE_EVENT, view.clone());
         crate::core::tray::update(app, &view);
