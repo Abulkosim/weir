@@ -147,6 +147,15 @@ for (const theme of themes) {
   })
 }
 
+test('the provider report saves from History and Settings', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await page.getByRole('button', { name: 'Report' }).click()
+  await expect(page.getByRole('status').filter({ hasText: /Saved weir-report-\d{4}-\d{2}-\d{2}\.pdf/ })).toBeVisible()
+  await page.goto('/?demo=1&page=settings')
+  await expect(page.getByText('A PDF of the last 30 days', { exact: false })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Save PDF' })).toBeEnabled()
+})
+
 test('export confirms the saved file name', async ({ page }) => {
   await page.goto('/?demo=1&page=history')
   await page.getByRole('button', { name: 'Export CSV' }).click()
@@ -347,8 +356,14 @@ for (const state of ['result', 'stutter', 'never', 'testing'] as const) {
     await page.setViewportSize({ width: 380, height: 200 })
     await page.goto(`/?demo=1&frame=1&state=${state}`)
     const shell = page.locator('.app-shell')
-    await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBeGreaterThan(200)
-    const fitted = Number(await shell.getAttribute('data-fit-height'))
+    await page.evaluate(() => document.fonts.ready)
+    let fitted = 0
+    await expect.poll(async () => {
+      const next = Number(await shell.getAttribute('data-fit-height'))
+      const settled = next === fitted && next > 200
+      fitted = next
+      return settled
+    }).toBe(true)
     expect(fitted).toBeLessThanOrEqual(600)
     await page.setViewportSize({ width: 380, height: fitted })
     await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBe(fitted)

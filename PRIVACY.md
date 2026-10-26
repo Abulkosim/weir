@@ -64,7 +64,7 @@ Weir writes only to its own data folder:
 
 Neither file holds an IP address, city, network provider (ASN), coordinates, Wi-Fi name (SSID), or router address. Files are replaced atomically. An unreadable file is moved aside as `history.unreadable-<time>.json` or `settings.unreadable-<time>.json`, never deleted. See [`history.rs`](src-tauri/src/core/history.rs) and [`settings.rs`](src-tauri/src/core/settings.rs).
 
-**Export CSV** in Settings → History writes a file only where you choose, with the same fields. **Clear history** deletes the entries after you confirm.
+**Export CSV** in Settings → History writes a file only where you choose, with the same fields. **Report** in History (or **Save PDF** in Settings → History) writes a PDF of the last 30 days the same way: the numbers, the plan speeds you entered, outages and failure reasons, and nothing else. Weir never uploads either file. **Clear history** deletes the entries after you confirm.
 
 Other changes Weir makes, only when you turn them on:
 

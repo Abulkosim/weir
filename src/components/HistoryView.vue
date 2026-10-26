@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import AppIcon from './AppIcon.vue'
+import AppTooltip from './ui/AppTooltip.vue'
 import { errorCopy, formatMbps, formatMs } from '../lib/format'
 import { entryTime, type Entry } from '../lib/model'
 import { hourLabel, slowHours } from '../lib/hours'
 
 const props = defineProps<{ entries: Entry[]; now: number; planMbps?: number | null }>()
-defineEmits<{ back: []; export: [] }>()
+defineEmits<{ back: []; export: []; report: [] }>()
 
 const results = computed(() => props.entries.flatMap(entry => entry.kind === 'result' ? [entry.report] : []))
 const recent = computed(() => results.value.slice(0, 30).reverse())
@@ -74,7 +75,10 @@ function time(at: number): string {
     <header class="page-header">
       <button class="icon-button" aria-label="Back" @click="$emit('back')"><AppIcon name="back" :size="17"/></button>
       <h1>History</h1>
-      <button v-if="entries.length" class="button button-small" @click="$emit('export')"><AppIcon name="export" :size="13"/>Export CSV</button>
+      <template v-if="entries.length">
+        <AppTooltip text="A PDF of the last 30 days for your provider"><button class="button button-small" @click="$emit('report')"><AppIcon name="report" :size="13"/>Report</button></AppTooltip>
+        <AppTooltip text="Export CSV"><button class="icon-button" aria-label="Export CSV" @click="$emit('export')"><AppIcon name="export" :size="16"/></button></AppTooltip>
+      </template>
     </header>
 
     <section v-if="!entries.length" class="card never">
