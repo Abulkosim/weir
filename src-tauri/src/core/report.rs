@@ -57,6 +57,8 @@ pub struct Summary<'a> {
     /// Newest first, as in History.
     pub entries: Vec<&'a Entry>,
     pub tests: usize,
+    /// Results from Settings → Scheduled tests.
+    pub scheduled: usize,
     pub failed: Vec<(u64, TestError)>,
     pub download: Option<Spread>,
     pub upload: Option<Spread>,
@@ -181,6 +183,7 @@ pub fn summarize<'a>(entries: &'a [Entry], options: &Options) -> Option<Summary<
         from_ms,
         to_ms: options.now_ms,
         tests: reports.len(),
+        scheduled: reports.iter().filter(|report| report.scheduled).count(),
         failed,
         download: spread(&downloads),
         upload: spread(&uploads),
@@ -238,6 +241,16 @@ pub fn findings(summary: &Summary, options: &Options) -> Vec<String> {
                 )
             });
         }
+    }
+    if summary.scheduled > 0 {
+        lines.push(if summary.scheduled == summary.tests {
+            "Every test ran on a schedule.".to_owned()
+        } else {
+            format!(
+                "{} of {} tests ran on a schedule; the rest were started by hand.",
+                summary.scheduled, summary.tests
+            )
+        });
     }
     match summary.slow {
         Some(slow) => lines.push(format!(

@@ -61,7 +61,11 @@ fn month() -> Vec<Entry> {
     for day in 0..14 {
         let base = NOW - (day + 1) * 24 * HOUR;
         let base = base - base % (24 * HOUR);
-        entries.push(result(base + 9 * HOUR, 310.0));
+        let mut scheduled = report(base + 9 * HOUR, 310.0);
+        scheduled.scheduled = true;
+        entries.push(Entry::Result {
+            report: Box::new(scheduled),
+        });
         entries.push(result(base + 13 * HOUR, 300.0));
         entries.push(result(base + 21 * HOUR, 140.0));
     }
@@ -110,6 +114,7 @@ fn slow_evening_hours_are_named() {
         findings,
         [
             "Download was under half of the 500 Mbps plan in 14 of 42 tests.",
+            "14 of 42 tests ran on a schedule; the rest were started by hand.",
             "Slowest around 21:00–22:00: 140 Mbps median, against 300 Mbps over the whole period.",
             "No internet once, 29 min in all. Longest: 20 Oct, 14:02–14:31 (29 min).",
             "1 test failed: Connection stalled (20 Oct, 14:05).",

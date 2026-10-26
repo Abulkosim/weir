@@ -147,7 +147,7 @@ Optional, in Settings → Your plan: the download and upload speeds the provider
 
 Off by default. Settings → Scheduled tests: every 6 hours, every 12 hours or once a day ([`schedule.rs`](../src-tauri/src/core/schedule.rs)).
 
-- The same full test as the Test button, so results compare. Marked as scheduled in History and the CSV notes.
+- The same full test as the Test button, so results compare. Marked as scheduled in History and the CSV notes, and counted in the provider report.
 - Runs only when the connection has been suitable for 2 minutes: online, no outage, not metered (hotspot, Low Data Mode, cellular, roaming, Windows metered cost), not in Low Power Mode or Battery Saver, and no test or connection check running. Waking from sleep or logging in starts the 2 minutes again.
 - Due when no test, by hand or scheduled, ran within the interval. A cancelled scheduled test is not retried until the next interval.
 - A scheduled test never asks to confirm data use, so it never runs where the Test button would ask. A failure goes into History without replacing the last result in the popover.
