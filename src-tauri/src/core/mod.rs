@@ -10,6 +10,7 @@ pub mod popover;
 pub mod probe;
 pub mod report;
 pub mod ring;
+pub mod schedule;
 pub mod settings;
 pub mod speedtest;
 pub mod stats;

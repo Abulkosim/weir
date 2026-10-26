@@ -8,7 +8,7 @@ This page describes Weir's current release. It is derived from the source code; 
 
 - No accounts, telemetry, analytics, crash reporting, or ads.
 - Network requests go only to Cloudflare's speed test servers, to GitHub Releases for update checks, and, when you check your connection, to your own router and DNS server.
-- Weir never runs a speed test on its own. Every test starts when you click **Test**. Outage watching, off by default, sends one tiny request a minute when you turn it on.
+- Weir runs a speed test only when you start one, unless you turn on **Settings → Scheduled tests** (off by default). Scheduled tests never run on a hotspot, a metered connection, in Low Data Mode, Low Power Mode or Battery Saver. Outage watching, off by default, sends one tiny request a minute when you turn it on.
 - History and settings stay on your computer. They never include your IP address, location, network provider, or Wi-Fi name.
 
 ## Network requests
@@ -19,7 +19,7 @@ All requests use HTTPS and send a `Weir/<version> (+https://github.com/Abulkosim
 | --- | --- | --- | --- |
 | `speed.cloudflare.com` | `GET /cdn-cgi/trace` | Start of each test | Nothing about you |
 | `speed.cloudflare.com` | `GET /__down?bytes=0` | About 20 latency probes per test, plus probes during download and upload | Nothing about you |
-| `speed.cloudflare.com` | `GET /__down?bytes=N` | Download part of each test | Nothing about you |
+| `speed.cloudflare.com` | `GET /__down?bytes=N` | Download part of each test, by hand or scheduled | Nothing about you |
 | `speed.cloudflare.com` | `POST /__up` | Upload part of each test | Zero bytes as test data |
 | `github.com` | `GET /Abulkosim/weir/releases/latest/download/latest.json` | Once a day while **Check for updates daily** is on (default), and when you choose **Check for updates** | Nothing about you or your tests |
 | `github.com` | Download of the matching release asset | Only when you choose to install an update | Nothing about you or your tests |

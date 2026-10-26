@@ -5,10 +5,11 @@ import type { Settings } from '../lib/model'
 import AppIcon from './AppIcon.vue'
 import AppSwitch from './ui/AppSwitch.vue'
 import UpdateSettings from './settings/UpdateSettings.vue'
+import ScheduleSettings from './settings/ScheduleSettings.vue'
 import PlanSettings from './settings/PlanSettings.vue'
 import type { UpdateState } from '../lib/updater'
 
-const props = defineProps<{ settings: Settings; historyCount: number; busy?: boolean; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
+const props = defineProps<{ settings: Settings; estimateMb: number; lastTestMs: number | null; now: number; metered: boolean; historyCount: number; busy?: boolean; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
 const emit = defineEmits<{ back: []; save: [settings: Settings]; export: []; report: []; clear: []; checkUpdate: []; installUpdate: [] }>()
 const confirmClear = ref(false)
 const isMac = navigator.userAgent.includes('Mac')
@@ -56,6 +57,8 @@ function patch(change: Partial<Settings>): void {
       </section>
 
       <PlanSettings :download="settings.planDownloadMbps" :upload="settings.planUploadMbps" :disabled="busy" @save="patch"/>
+
+      <ScheduleSettings :schedule="settings.scheduledTests" :estimate-mb="estimateMb" :last-test-ms="lastTestMs" :now="now" :metered="metered" :disabled="busy" @save="patch({ scheduledTests: $event })"/>
 
       <section class="settings-section">
         <h2>Outages</h2>

@@ -384,8 +384,30 @@ impl Runtime {
         }
     }
 
+    /// The newest test in history, by hand or scheduled, passed or failed.
+    pub fn last_test_ms(&self) -> Option<u64> {
+        self.history.lock().ok().and_then(|history| {
+            history
+                .entries()
+                .iter()
+                .rev()
+                .find(|entry| !matches!(entry, Entry::Outage { .. }))
+                .map(Entry::at_ms)
+        })
+    }
+
     /// Starts a test unless one is running. A metered connection needs `confirmed`.
     pub fn start(self: &Arc<Self>, app: &AppHandle, confirmed: bool) -> Start {
+        self.run(app, confirmed, false)
+    }
+
+    /// A test from Settings → Scheduled tests. It never confirms a metered connection,
+    /// and a failure goes to history without taking over the popover.
+    pub fn start_scheduled(self: &Arc<Self>, app: &AppHandle) -> Start {
+        self.run(app, false, true)
+    }
+
+    fn run(self: &Arc<Self>, app: &AppHandle, confirmed: bool, scheduled: bool) -> Start {
         let network = self.view().network;
         if !network.online {
             return Start::Offline;
@@ -418,6 +440,10 @@ impl Runtime {
             if let Ok(mut current) = runtime.control.lock() {
                 *current = None;
             }
+            let outcome = outcome.map(|report| Report {
+                scheduled,
+                ..report
+            });
             let entry = match &outcome {
                 Ok(report) => Some(Entry::Result {
                     report: Box::new(report.clone()),
@@ -442,6 +468,7 @@ impl Runtime {
                         view.failure = None;
                     }
                     Err(TestError::Cancelled) => {}
+                    Err(_) if scheduled => {}
                     Err(error) => {
                         view.failure = Some(Failure {
                             error,

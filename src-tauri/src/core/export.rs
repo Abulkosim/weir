@@ -61,6 +61,9 @@ fn notes(report: &Report) -> String {
     if report.latency.is_none() {
         notes.push("latency not measured".to_owned());
     }
+    if report.scheduled {
+        notes.push("scheduled".to_owned());
+    }
     notes.join("; ")
 }
 
@@ -158,6 +161,7 @@ mod tests {
             upload: Some(speed(41.2, Some(48.0))),
             upload_error: None,
             bytes_used: 238_400_000,
+            scheduled: false,
         }
     }
 
@@ -168,6 +172,7 @@ mod tests {
         partial.upload = None;
         partial.upload_error = Some(TestError::Stalled);
         partial.download.capped = true;
+        partial.scheduled = true;
         let entries = [
             Entry::Result {
                 report: Box::new(report()),
@@ -190,7 +195,7 @@ mod tests {
         );
         assert_eq!(
             lines[2],
-            "2026-10-23T22:00:00+05:00,ok,Cloudflare FRA,312.4,,14.0,62.0,2.2,296.8,328.1,238.4,stopped at data limit; upload failed: Connection stalled"
+            "2026-10-23T22:00:00+05:00,ok,Cloudflare FRA,312.4,,14.0,62.0,2.2,296.8,328.1,238.4,stopped at data limit; upload failed: Connection stalled; scheduled"
         );
         assert_eq!(
             lines[3],

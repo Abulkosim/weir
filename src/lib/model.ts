@@ -38,6 +38,7 @@ export const reportSchema = z.object({
   upload: speedSchema.nullable(),
   uploadError: testErrorSchema.nullable(),
   bytesUsed: count,
+  scheduled: z.boolean().optional(),
 })
 
 export const meteredSchema = z.enum(['hotspot', 'lowData', 'metered', 'roaming', 'overLimit'])
@@ -50,6 +51,7 @@ export const meaningSchema = z.object({
   lines: z.array(z.object({ topic: z.string().max(20), text: z.string().max(120), health: healthSchema })).max(6),
 })
 
+export const scheduleSchema = z.enum(['off', 'every6Hours', 'every12Hours', 'daily'])
 export const PLAN_MAX_MBPS = 100_000
 const planMbps = z.number().int().min(1).max(PLAN_MAX_MBPS).nullable()
 
@@ -60,10 +62,11 @@ export const settingsSchema = z.object({
   autoCheckUpdates: z.boolean(),
   watchOutages: z.boolean(),
   notifyOutages: z.boolean(),
+  scheduledTests: scheduleSchema,
   planDownloadMbps: planMbps,
   planUploadMbps: planMbps,
 })
-export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true, planDownloadMbps: null, planUploadMbps: null }
+export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true, scheduledTests: 'off', planDownloadMbps: null, planUploadMbps: null }
 
 export const shareSchema = z.object({ paidMbps: count, percent: count, atLeast: z.boolean(), health: healthSchema })
 export const planSchema = z.object({ download: shareSchema.nullable(), upload: shareSchema.nullable() })
@@ -110,6 +113,7 @@ export type Metered = z.infer<typeof meteredSchema>
 export type Meaning = z.infer<typeof meaningSchema>
 export type Entry = z.infer<typeof entrySchema>
 export type Settings = z.infer<typeof settingsSchema>
+export type Schedule = z.infer<typeof scheduleSchema>
 export type Diagnosis = z.infer<typeof diagnosisSchema>
 export type Share = z.infer<typeof shareSchema>
 export type PlanComparison = z.infer<typeof planSchema>

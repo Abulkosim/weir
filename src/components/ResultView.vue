@@ -43,7 +43,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </template>
 
     <template v-else-if="report">
-      <div class="meta"><span class="where" :class="{ stale }"><span class="dot"/>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><MetaActions :history="Boolean(view.historyCount)" :update-available="updateAvailable" @check="$emit('check')" @history="$emit('history')" @settings="$emit('settings')"/></div>
+      <div class="meta"><span class="where" :class="{ stale }"><AppIcon v-if="report.scheduled" class="where-icon" name="clock" :size="12"/><span v-else class="dot"/><span v-if="report.scheduled" class="sr-only">Scheduled test, </span>Tested {{ relativeAge(report.startedAtMs, now) }} · {{ server(report.provider, report.colo) }}</span><MetaActions :history="Boolean(view.historyCount)" :update-available="updateAvailable" @check="$emit('check')" @history="$emit('history')" @settings="$emit('settings')"/></div>
       <section class="card" aria-label="Last result">
         <h1 class="sr-only">Last result</h1>
         <p class="label" aria-hidden="true">Download</p>

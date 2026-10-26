@@ -4,6 +4,7 @@ pub mod core;
 mod monitor;
 mod platform;
 mod runtime;
+mod scheduler;
 mod updates;
 
 use crate::core::tray;
@@ -60,6 +61,7 @@ pub fn run() {
             let wake = Arc::new(tokio::sync::Notify::new());
             app.manage(wake.clone());
             monitor::start(app.handle().clone(), runtime.clone());
+            scheduler::start(app.handle().clone(), runtime.clone());
             updates::start_background_checks(app.handle().clone(), runtime, wake);
             tray::setup(app.handle())?;
             let watcher = app.handle().clone();

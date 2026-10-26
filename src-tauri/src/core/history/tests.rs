@@ -30,6 +30,7 @@ fn report(at_ms: u64, down: f64) -> Report {
         upload: Some(speed(down / 10.0)),
         upload_error: None,
         bytes_used: 200_000_000,
+        scheduled: false,
     }
 }
 

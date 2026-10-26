@@ -192,6 +192,13 @@ pub struct Report {
     pub upload: Option<Speed>,
     pub upload_error: Option<TestError>,
     pub bytes_used: u64,
+    /// Started by Settings → Scheduled tests rather than by hand.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub scheduled: bool,
+}
+
+fn is_false(value: &bool) -> bool {
+    !value
 }
 
 impl Report {
@@ -578,6 +585,7 @@ pub async fn run<B: Backend>(
         upload_error: upload.as_ref().err().copied(),
         upload: upload.ok(),
         bytes_used: phases.used.load(Ordering::Relaxed),
+        scheduled: false,
     })
 }
 

@@ -102,3 +102,10 @@ pub fn wifi() -> Option<Wifi> {
         ..Wifi::default()
     })
 }
+
+pub fn low_power() -> bool {
+    use windows::Win32::System::Power::{GetSystemPowerStatus, SYSTEM_POWER_STATUS};
+    let mut status = SYSTEM_POWER_STATUS::default();
+    // SAFETY: `status` is a valid, writable SYSTEM_POWER_STATUS for the call.
+    unsafe { GetSystemPowerStatus(&mut status) }.is_ok() && status.SystemStatusFlag == 1
+}

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { TooltipProvider } from 'reka-ui'
-import { navigateSchema } from './lib/model'
+import { entryTime, navigateSchema } from './lib/model'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
 import DesignGallery from './components/DesignGallery.vue'
 import HistoryView from './components/HistoryView.vue'
@@ -34,6 +34,10 @@ function openCheck(): void {
   page.value = 'diagnose'
   if (!view.value.diagnosis || Date.now() - view.value.diagnosis.checkedAtMs > 60_000) void checkConnection()
 }
+const lastTestMs = computed(() => {
+  const entry = history.value.find(item => item.kind !== 'outage')
+  return entry ? entryTime(entry) : view.value.last?.startedAtMs ?? null
+})
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(media.matches)
 const forcedTheme = demo ? query.get('theme') : null
@@ -160,7 +164,7 @@ onUnmounted(() => {
           <p v-if="view.notice" class="notice" role="status">{{ view.notice }}</p>
           <DiagnoseView v-if="page === 'diagnose'" :diagnosis="view.diagnosis" :checking="view.checking" :now="now" @back="page = 'overview'" @check="checkConnection"/>
           <HistoryView v-else-if="page === 'history'" :entries="history" :now="now" :plan-mbps="view.settings.planDownloadMbps" @back="page = 'overview'" @export="exportHistory" @report="exportReport"/>
-          <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :history-count="view.historyCount" :update-state="updater.state.value" :update-busy="updater.busy.value" :demo="demo" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @report="exportReport" @clear="clearHistory" @check-update="updater.check" @install-update="updater.install"/>
+          <SettingsPanel v-else-if="page === 'settings'" :settings="view.settings" :estimate-mb="view.estimate.mb" :last-test-ms="lastTestMs" :now="now" :metered="Boolean(view.network.metered)" :history-count="view.historyCount" :update-state="updater.state.value" :update-busy="updater.busy.value" :demo="demo" @back="page = 'overview'" @save="saveSettings" @export="exportHistory" @report="exportReport" @clear="clearHistory" @check-update="updater.check" @install-update="updater.install"/>
           <TestingView v-else-if="view.testing" :progress="view.testing" :samples="samples" @cancel="cancel"/>
           <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'" @check="openCheck" @copy="copy"/>
           </div>

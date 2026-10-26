@@ -215,6 +215,7 @@ mod tests {
             upload: up.map(|up| speed(up, None)),
             upload_error: None,
             bytes_used: 0,
+            scheduled: false,
         }
     }
 

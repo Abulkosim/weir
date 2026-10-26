@@ -91,6 +91,7 @@ mod tests {
             upload: up,
             upload_error: None,
             bytes_used: 0,
+            scheduled: false,
         }
     }
 

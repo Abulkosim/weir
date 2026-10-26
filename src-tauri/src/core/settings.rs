@@ -20,6 +20,17 @@ pub enum Theme {
     Dark,
 }
 
+/// How often to run a full test in the background. Off by default.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Schedule {
+    #[default]
+    Off,
+    Every6Hours,
+    Every12Hours,
+    Daily,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
@@ -33,6 +44,8 @@ pub struct Settings {
     pub watch_outages: bool,
     /// Notify when a watched connection drops and when it returns.
     pub notify_outages: bool,
+    /// Full tests in the background, never on a metered link.
+    pub scheduled_tests: Schedule,
     /// The download speed the provider sells, in Mbps.
     pub plan_download_mbps: Option<u32>,
     /// The upload speed the provider sells, in Mbps.
@@ -48,6 +61,7 @@ impl Default for Settings {
             auto_check_updates: true,
             watch_outages: false,
             notify_outages: true,
+            scheduled_tests: Schedule::Off,
             plan_download_mbps: None,
             plan_upload_mbps: None,
         }
@@ -108,6 +122,13 @@ impl Settings {
                 "notifyOutages",
                 defaults.notify_outages,
                 "Outage notifications",
+                notes,
+            ),
+            scheduled_tests: field(
+                map,
+                "scheduledTests",
+                defaults.scheduled_tests,
+                "Scheduled tests",
                 notes,
             ),
             plan_download_mbps: plan::valid(field(
@@ -270,6 +291,7 @@ mod tests {
             auto_check_updates: false,
             watch_outages: true,
             notify_outages: false,
+            scheduled_tests: Schedule::Every12Hours,
             plan_download_mbps: Some(500),
             plan_upload_mbps: Some(50),
         };
@@ -292,6 +314,11 @@ mod tests {
             notes,
             ["Appearance was reset.", "Launch at login was reset."]
         );
+        let (_directory, path) =
+            store_with(r#"{"version":1,"settings":{"scheduledTests":"hourly"}}"#);
+        let (_, settings, notes) = Store::load(path, 1);
+        assert_eq!(settings.scheduled_tests, Schedule::Off);
+        assert_eq!(notes, ["Scheduled tests was reset."]);
     }
 
     #[test]
