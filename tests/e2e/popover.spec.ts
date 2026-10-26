@@ -356,8 +356,14 @@ for (const state of ['result', 'stutter', 'never', 'testing'] as const) {
     await page.setViewportSize({ width: 380, height: 200 })
     await page.goto(`/?demo=1&frame=1&state=${state}`)
     const shell = page.locator('.app-shell')
-    await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBeGreaterThan(200)
-    const fitted = Number(await shell.getAttribute('data-fit-height'))
+    await page.evaluate(() => document.fonts.ready)
+    let fitted = 0
+    await expect.poll(async () => {
+      const next = Number(await shell.getAttribute('data-fit-height'))
+      const settled = next === fitted && next > 200
+      fitted = next
+      return settled
+    }).toBe(true)
     expect(fitted).toBeLessThanOrEqual(600)
     await page.setViewportSize({ width: 380, height: fitted })
     await expect.poll(async () => Number(await shell.getAttribute('data-fit-height'))).toBe(fitted)
