@@ -72,14 +72,16 @@ function measure(): void {
   if (!shell.value || !popover.value) return
   const style = getComputedStyle(shell.value)
   // Natural height: the popover chrome plus the full content, even while the window
-  // is still shorter than that content and the scroller is clipping it.
-  const chrome = popover.value.offsetHeight - (scroller.value?.clientHeight ?? 0)
-  const natural = chrome + (content.value?.offsetHeight ?? scroller.value?.scrollHeight ?? 0)
-  const height = fitHeight(parseFloat(style.paddingTop), parseFloat(style.paddingBottom), natural)
-  if (height === measured.value) return
-  measured.value = height
-  if (desktop && !demo) invoke('fit_popover', { height }).catch(() => {})
-  if (embedded) window.parent.postMessage({ weirHeight: height }, '*')
+  // is still shorter than that content and the scroller is clipping it. Fractional
+  // sizes, rounded once in fitHeight, so it doesn't wobble a pixel as the window resizes.
+  const height = (element: HTMLElement | null) => element?.getBoundingClientRect().height ?? 0
+  const chrome = height(popover.value) - height(scroller.value)
+  const natural = chrome + (content.value ? height(content.value) : scroller.value?.scrollHeight ?? 0)
+  const fitted = fitHeight(parseFloat(style.paddingTop), parseFloat(style.paddingBottom), natural)
+  if (fitted === measured.value) return
+  measured.value = fitted
+  if (desktop && !demo) invoke('fit_popover', { height: fitted }).catch(() => {})
+  if (embedded) window.parent.postMessage({ weirHeight: fitted }, '*')
 }
 
 function scheduleMeasure(): void {
