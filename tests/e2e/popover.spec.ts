@@ -250,6 +250,20 @@ test('outages appear in history with their length', async ({ page }) => {
   await expect(page.getByText(/No internet until .* · 7 min/)).toBeVisible()
 })
 
+test('scheduled tests show their data cost and are marked in the result and history', async ({ page }) => {
+  await page.goto('/?demo=1&page=settings')
+  const schedule = page.getByRole('combobox', { name: 'Test automatically' })
+  await expect(schedule).toHaveText(/Every 12 hours/)
+  await expect(page.getByText(/About 250 MB a test, 15 GB a month · Next test/)).toBeVisible()
+  await schedule.click()
+  await page.getByRole('option', { name: 'Off' }).click()
+  await expect(page.getByText(/GB a month/)).toHaveCount(0)
+  await page.goto('/?demo=1&state=scheduled')
+  await expect(page.locator('.where')).toContainText('Scheduled test, Tested 12 min ago')
+  await page.goto('/?demo=1&page=history')
+  await expect(page.locator('.history-scheduled').first()).toBeVisible()
+})
+
 test('outage settings explain the cost and gate notifications', async ({ page }) => {
   await page.goto('/?demo=1&page=settings')
   const watch = page.getByRole('switch', { name: 'Watch for outages' })

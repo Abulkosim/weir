@@ -8,6 +8,7 @@ pub mod outage;
 pub mod popover;
 pub mod probe;
 pub mod ring;
+pub mod schedule;
 pub mod settings;
 pub mod speedtest;
 pub mod stats;

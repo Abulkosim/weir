@@ -576,6 +576,7 @@ mod tests {
             upload: Some(speed(40.0)),
             upload_error: None,
             bytes_used: 0,
+            scheduled: false,
         }
     }
 

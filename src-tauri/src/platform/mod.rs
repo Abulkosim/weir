@@ -32,6 +32,16 @@ pub fn wifi() -> Option<Wifi> {
     None
 }
 
+/// Low Power Mode on macOS, Battery Saver on Windows: scheduled tests wait.
+pub fn low_power() -> bool {
+    #[cfg(target_os = "macos")]
+    return macos::low_power();
+    #[cfg(windows)]
+    return windows::low_power();
+    #[cfg(not(any(target_os = "macos", windows)))]
+    false
+}
+
 /// Calls `on_change` with the current path now and on every change.
 pub fn watch_path(on_change: impl Fn(Path) + Send + Sync + 'static) {
     #[cfg(target_os = "macos")]

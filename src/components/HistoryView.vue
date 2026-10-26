@@ -106,7 +106,7 @@ function time(at: number): string {
           <h2>{{ group.label }}</h2>
           <ul>
             <li v-for="entry in group.entries" :key="entryTime(entry)" class="history-row num">
-              <span class="history-time">{{ time(entryTime(entry)) }}</span>
+              <span class="history-time">{{ time(entryTime(entry)) }}<template v-if="entry.kind === 'result' && entry.report.scheduled"><AppIcon class="history-scheduled" name="clock" :size="11"/><span class="sr-only">, scheduled</span></template></span>
               <template v-if="entry.kind === 'result'">
                 <span class="history-metric"><span class="sr-only">{{ `Download ${formatMbps(entry.report.download.mbps)} Mbps` }}</span><span aria-hidden="true" class="history-metric-shown"><AppIcon name="download" :size="12"/>{{ formatMbps(entry.report.download.mbps) }}</span></span>
                 <span class="history-metric"><span class="sr-only">{{ entry.report.upload ? `Upload ${formatMbps(entry.report.upload.mbps)} Mbps` : 'Upload not measured' }}</span><span aria-hidden="true" class="history-metric-shown"><AppIcon name="upload" :size="12"/>{{ entry.report.upload ? formatMbps(entry.report.upload.mbps) : '–' }}</span></span>

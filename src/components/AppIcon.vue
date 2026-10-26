@@ -1,5 +1,5 @@
 <script setup lang="ts">
-export type IconName = 'weir' | 'history' | 'settings' | 'play' | 'stop' | 'back' | 'chevron' | 'check' | 'tick' | 'close' | 'alert' | 'sun' | 'moon' | 'system' | 'external' | 'download' | 'upload' | 'wifi' | 'offline' | 'export' | 'router' | 'globe' | 'dns' | 'pulse' | 'copy'
+export type IconName = 'weir' | 'history' | 'settings' | 'play' | 'stop' | 'back' | 'chevron' | 'check' | 'tick' | 'close' | 'alert' | 'sun' | 'moon' | 'system' | 'external' | 'download' | 'upload' | 'wifi' | 'offline' | 'export' | 'router' | 'globe' | 'dns' | 'pulse' | 'copy' | 'clock'
 defineProps<{ name: IconName; size?: number }>()
 </script>
 
@@ -29,6 +29,7 @@ defineProps<{ name: IconName; size?: number }>()
     <template v-else-if="name === 'dns'"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="15" cy="18" r="2"/></template>
     <path v-else-if="name === 'pulse'" d="M3 12h4l2.5-6 4 12 2.5-6h5"/>
     <template v-else-if="name === 'copy'"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></template>
+    <template v-else-if="name === 'clock'"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></template>
     <path v-else-if="name === 'export'" d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>
   </svg>
 </template>

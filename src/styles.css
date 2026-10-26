@@ -222,6 +222,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .stale .dot {
   background: var(--tertiary);
 }
+.where-icon {
+  flex: none;
+  margin: 0 -2px;
+  color: var(--accent);
+}
+.stale .where-icon {
+  color: var(--tertiary);
+}
 .dot-danger {
   background: var(--danger);
 }
@@ -664,7 +672,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .history-row {
   display: grid;
-  grid-template-columns: 72px 1fr 1fr 56px;
+  grid-template-columns: 82px 1fr 1fr 56px;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
@@ -674,7 +682,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-top: 1px solid var(--line);
 }
 .history-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--tertiary);
+  white-space: nowrap;
+}
+.history-scheduled {
+  flex: none;
+  opacity: .8;
 }
 .history-metric {
   display: inline-flex;
@@ -830,6 +846,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .setting-label {
   font-size: 13.5px;
+}
+.settings-note {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--secondary);
 }
 .setting-row p {
   margin: 2px 0 0;

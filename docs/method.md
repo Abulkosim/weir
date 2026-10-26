@@ -122,6 +122,16 @@ Our own rules, built from Netflix, Zoom, Teams, IETF responsiveness bands and Cl
 
 Increase = under load − idle. The headline sentence picks the most limiting line: "Good for 4K video and calls", or the first problem.
 
+## Scheduled tests
+
+Off by default. Settings → Scheduled tests: every 6 hours, every 12 hours or once a day ([`schedule.rs`](../src-tauri/src/core/schedule.rs)).
+
+- The same full test as the Test button, so results compare. Marked as scheduled in History and the CSV notes.
+- Runs only when the connection has been suitable for 2 minutes: online, no outage, not metered (hotspot, Low Data Mode, cellular, roaming, Windows metered cost), not in Low Power Mode or Battery Saver, and no test or connection check running. Waking from sleep or logging in starts the 2 minutes again.
+- Due when no test, by hand or scheduled, ran within the interval. A cancelled scheduled test is not retried until the next interval.
+- A scheduled test never asks to confirm data use, so it never runs where the Test button would ask. A failure goes into History without replacing the last result in the popover.
+- Settings shows the cost before you choose: the per-test estimate × tests a month, for example "About 250 MB a test, 15 GB a month" at every 12 hours.
+
 ## Comparing with other tests
 
 Weir uses 6 parallel streams and a sustained mean. speed.cloudflare.com uses one stream at a time and the 90th percentile of per-request speeds. On links up to ~300 Mbps with low latency the two should agree within about 10 %. On gigabit or high-latency links Weir may read higher because parallel streams fill the link faster. This is checked by hand on the owner's Mac and recorded in [verification.md](verification.md).

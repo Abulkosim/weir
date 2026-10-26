@@ -1,7 +1,7 @@
 import type { UpdateState } from './updater.ts'
 import { testErrorSchema, viewSchema, type Diagnosis, type Entry, type Meaning, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking', 'outage'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking', 'outage', 'scheduled'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -52,7 +52,7 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true, watchOutages: true, notifyOutages: true }, checking: false, diagnosis: null, outageSinceMs: null }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true, watchOutages: true, notifyOutages: true, scheduledTests: 'every12Hours' }, checking: false, diagnosis: null, outageSinceMs: null }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.meaning = demoMeaning
@@ -89,6 +89,7 @@ export function createDemoView(state: string | null, now = Date.now(), error: st
     view.last.download.loadedMs = null
     view.meaning = { health: 'fair', headline: 'Upload not measured', lines: [{ topic: 'Video', text: 'Good for 4K video', health: 'good' }, { topic: 'Calls', text: 'Upload not measured', health: 'fair' }] }
   }
+  if (scenario === 'scheduled' && view.last) view.last.scheduled = true
   if (scenario === 'failed') {
     const parsed = testErrorSchema.safeParse(error)
     view.failure = { error: parsed.success ? parsed.data : 'stalled', atMs: now - 2 * minute }
@@ -129,6 +130,7 @@ export function demoHistory(now: number): Entry[] {
     report.download = { ...report.download, mbps: down, p10: down * 0.95, p90: down * 1.04 }
     report.upload = report.upload && { ...report.upload, mbps: up }
     report.latency = report.latency && { ...report.latency, medianMs: latency }
+    report.scheduled = hoursAgo >= 46 && Math.round(hoursAgo) % 2 === 0
     return { kind: 'result', report }
   })
   entries.splice(4, 0, { kind: 'failed', atMs: now - 30 * hour, error: 'stalled' })

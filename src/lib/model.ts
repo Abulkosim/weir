@@ -38,6 +38,7 @@ export const reportSchema = z.object({
   upload: speedSchema.nullable(),
   uploadError: testErrorSchema.nullable(),
   bytesUsed: count,
+  scheduled: z.boolean().optional(),
 })
 
 export const meteredSchema = z.enum(['hotspot', 'lowData', 'metered', 'roaming', 'overLimit'])
@@ -50,6 +51,8 @@ export const meaningSchema = z.object({
   lines: z.array(z.object({ topic: z.string().max(20), text: z.string().max(120), health: healthSchema })).max(6),
 })
 
+export const scheduleSchema = z.enum(['off', 'every6Hours', 'every12Hours', 'daily'])
+
 export const settingsSchema = z.object({
   theme: z.enum(['system', 'light', 'dark']),
   traySpeed: z.boolean(),
@@ -57,8 +60,9 @@ export const settingsSchema = z.object({
   autoCheckUpdates: z.boolean(),
   watchOutages: z.boolean(),
   notifyOutages: z.boolean(),
+  scheduledTests: scheduleSchema,
 })
-export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true }
+export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true, scheduledTests: 'off' }
 
 export const checkStatusSchema = z.enum(['good', 'skipped', 'fair', 'bad'])
 export const diagnosisSchema = z.object({
@@ -101,6 +105,7 @@ export type Metered = z.infer<typeof meteredSchema>
 export type Meaning = z.infer<typeof meaningSchema>
 export type Entry = z.infer<typeof entrySchema>
 export type Settings = z.infer<typeof settingsSchema>
+export type Schedule = z.infer<typeof scheduleSchema>
 export type Diagnosis = z.infer<typeof diagnosisSchema>
 
 export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null, outageSinceMs: null }

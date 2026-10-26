@@ -142,6 +142,10 @@ pub fn wifi() -> Option<Wifi> {
     })
 }
 
+pub fn low_power() -> bool {
+    objc2_foundation::NSProcessInfo::processInfo().isLowPowerModeEnabled()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

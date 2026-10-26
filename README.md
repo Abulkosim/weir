@@ -52,6 +52,7 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 - **Tray icon.** A small gauge that fills while testing, then shows the last result: full, two thirds or one third for good, fair or poor; crossed out when offline. Hover it for the last numbers; right-click to run a test or check the connection without opening the popover.
 - **Keyboard.** ⌘T (Ctrl+T) runs a test, ⌘K (Ctrl+K) checks the connection, ⌘, (Ctrl+,) opens Settings, Esc goes back. **Copy summary** in the result details puts the numbers on the clipboard for a chat with your provider.
 - **Check connection.** Wi-Fi signal, router round trip, DNS lookup time and whether Cloudflare answers, each in plain words, about 10 kB, no speed test. Weir never reads your Wi-Fi name.
+- **Scheduled tests, if you want them.** Settings → Scheduled tests (off by default) runs a full test every 6 or 12 hours or once a day, shows the data it will use each month, and waits whenever you're on a hotspot, a metered connection, Low Data Mode or Low Power Mode. Scheduled results are marked with a clock in History.
 - **Outages, if you want them.** Settings → Outages → Watch for outages (off by default) sends one tiny request a minute, records "No internet until 14:09 · 7 min" in History, and can notify you when the connection drops and returns.
 - **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet or your provider.
 
