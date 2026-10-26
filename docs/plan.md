@@ -151,7 +151,7 @@ Built as three branches, each its own pull request, merged into `main`: #10 plan
 - [x] **P.3 Scheduled tests.** Off / 6 h / 12 h / daily; 2 min settle, never metered, Low Power Mode or Battery Saver, never confirms; monthly data shown.
   Verify: scheduler state-machine tests (settle, sleep, by-hand tests, cancel); Windows build compiles `GetSystemPowerStatus` in CI.
   Findings: the popover's fit height could wobble a pixel (rounded offsetHeight sums); now measured with fractional rects, 96/96 repeated fit runs pass.
-- [ ] **P.4 Release v0.4.0.**
+- [x] **P.4 Release v0.4.0.** Published 2026-10-26 04:19 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 

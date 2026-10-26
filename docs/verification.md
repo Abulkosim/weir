@@ -2,6 +2,17 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.4.0
+
+**[v0.4.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.4.0)** at 2026-10-26 04:19 UTC and marked latest; `latest.json` serves 0.4.0. Published on standing approval. Tag `v0.4.0` builds `4ec9bff`.
+
+- Built as three pull requests, each green before merging: #10 (plan), #13 (report; replaces #11, closed when its base merged), #12 (scheduled tests, including the Windows `GetSystemPowerStatus` build).
+- Locally: 194 browser cases on Playwright 1.60 (cached browsers; the dev Mac is on a hotspot), 29 unit tests, 14 release-script tests, 116 Rust tests, fmt, strict Clippy, `cargo deny` licenses and bans. The fit test flaked by one pixel in both engines; fixed in the app (fractional measuring), 96 of 96 repeated runs pass. A sample report was rendered and checked page by page.
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/40266524882) and the [tag build](https://github.com/Abulkosim/weir/actions/runs/40267574661) green on every job.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`; the real updater test rejected altered bytes and a wrong signed version and installed 0.4.0 for x86_64 and arm64.
+- Installed on the owner's Mac from the verified DMG, replacing 0.3.0; history and settings kept.
+- Pending: a scheduled test firing on a real unmetered link (the dev Mac is on a hotspot, where scheduled tests correctly stay paused), the PDF opened in Preview from the real app, and Windows Battery Saver behaviour in a VM.
+
 ## v0.3.0
 
 **[v0.3.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.3.0)** at 2026-10-25 02:31 UTC and marked latest; `latest.json` serves 0.3.0. Published on standing approval. Tag `v0.3.0` builds `d160695`.
