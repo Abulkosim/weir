@@ -140,10 +140,21 @@ Written 2026-10-23 from [research.md](research.md), [method.md](method.md) and t
   Verify: Rust tests green.
 - [x] **C.6 Release v0.3.0.** Published 2026-10-25 02:31 UTC; evidence in `docs/verification.md`.
 
+## Plan, report, schedule (v0.4.0) ⛳
+
+Built as three branches, each its own pull request, merged into `main`: #10 plan, #13 report (replaces #11, closed when its base merged), #12 schedule.
+
+- [x] **P.1 Speed you pay for.** Settings → Your plan; share under the result, in Upload, History, tray tooltip and Copy summary. Bands 80 / 50 %, "At least" when capped.
+  Verify: Rust and TS tests on bands and validation; e2e edits the plan and sees the share change.
+- [x] **P.2 PDF provider report.** 30 days, medians against the plan, findings, chart, every test; Helvetica via pdf-writer, nothing embedded.
+  Verify: Rust tests on summary, findings, pagination and text encoding; sample rendered and looked at (2 A4 pages for 45 entries).
+- [x] **P.3 Scheduled tests.** Off / 6 h / 12 h / daily; 2 min settle, never metered, Low Power Mode or Battery Saver, never confirms; monthly data shown.
+  Verify: scheduler state-machine tests (settle, sleep, by-hand tests, cancel); Windows build compiles `GetSystemPowerStatus` in CI.
+  Findings: the popover's fit height could wobble a pixel (rounded offsetHeight sums); now measured with fractional rects, 96/96 repeated fit runs pass.
+- [ ] **P.4 Release v0.4.0.**
+
 ## Phase 5 — Later
 
-- [ ] PDF provider report (tests, outages, against the speed you pay for).
-- [ ] "Speed you pay for" setting and comparison.
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.
 - [ ] Scheduled full tests (opt-in, never metered).
 - [ ] Global shortcut; `weir --json`.
