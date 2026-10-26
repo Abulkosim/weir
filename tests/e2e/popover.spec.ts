@@ -250,6 +250,38 @@ test('outages appear in history with their length', async ({ page }) => {
   await expect(page.getByText(/No internet until .* · 7 min/)).toBeVisible()
 })
 
+test('the result compares with the plan speed and settings change it', async ({ page }) => {
+  await page.goto('/?demo=1&state=result')
+  await expect(page.getByText('62% of your 500 Mbps plan')).toBeVisible()
+  await expect(page.getByText('82% of 50 Mbps plan')).toBeVisible()
+  await page.getByRole('button', { name: 'Settings' }).click()
+  const download = page.getByLabel('Download speed in Mbps')
+  await download.fill('fast')
+  await download.press('Enter')
+  await expect(page.getByRole('alert')).toHaveText('Enter a whole number of Mbps, or leave it empty.')
+  await download.fill('1000')
+  await download.press('Enter')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page.getByText('31% of your 1000 Mbps plan')).toBeVisible()
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByLabel('Download speed in Mbps').fill('')
+  await page.getByLabel('Download speed in Mbps').press('Tab')
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page.getByText(/% of your .* plan/)).toHaveCount(0)
+})
+
+test('without a plan the result stays as it was', async ({ page }) => {
+  await page.goto('/?demo=1&state=noplan')
+  await expect(page.getByText('Download 312 megabits per second')).toBeVisible()
+  await expect(page.locator('.plan-share')).toHaveCount(0)
+})
+
+test('history shows the median against the plan', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await expect(page.getByText(/^\d+% of your 500 Mbps plan$/)).toBeVisible()
+})
+
 test('outage settings explain the cost and gate notifications', async ({ page }) => {
   await page.goto('/?demo=1&page=settings')
   const watch = page.getByRole('switch', { name: 'Watch for outages' })

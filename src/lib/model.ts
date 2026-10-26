@@ -50,6 +50,9 @@ export const meaningSchema = z.object({
   lines: z.array(z.object({ topic: z.string().max(20), text: z.string().max(120), health: healthSchema })).max(6),
 })
 
+export const PLAN_MAX_MBPS = 100_000
+const planMbps = z.number().int().min(1).max(PLAN_MAX_MBPS).nullable()
+
 export const settingsSchema = z.object({
   theme: z.enum(['system', 'light', 'dark']),
   traySpeed: z.boolean(),
@@ -57,8 +60,13 @@ export const settingsSchema = z.object({
   autoCheckUpdates: z.boolean(),
   watchOutages: z.boolean(),
   notifyOutages: z.boolean(),
+  planDownloadMbps: planMbps,
+  planUploadMbps: planMbps,
 })
-export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true }
+export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true, planDownloadMbps: null, planUploadMbps: null }
+
+export const shareSchema = z.object({ paidMbps: count, percent: count, atLeast: z.boolean(), health: healthSchema })
+export const planSchema = z.object({ download: shareSchema.nullable(), upload: shareSchema.nullable() })
 
 export const checkStatusSchema = z.enum(['good', 'skipped', 'fair', 'bad'])
 export const diagnosisSchema = z.object({
@@ -76,6 +84,7 @@ export const viewSchema = z.object({
   estimate: z.object({ upTo: z.boolean(), mb: count }),
   network: z.object({ online: z.boolean(), metered: meteredSchema.nullable(), offlineSinceMs: count.nullable() }),
   meaning: meaningSchema.nullable(),
+  plan: planSchema.nullable(),
   historyCount: count,
   notice: z.string().max(300).nullable(),
   settings: settingsSchema,
@@ -102,8 +111,10 @@ export type Meaning = z.infer<typeof meaningSchema>
 export type Entry = z.infer<typeof entrySchema>
 export type Settings = z.infer<typeof settingsSchema>
 export type Diagnosis = z.infer<typeof diagnosisSchema>
+export type Share = z.infer<typeof shareSchema>
+export type PlanComparison = z.infer<typeof planSchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null, outageSinceMs: null }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, plan: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null, outageSinceMs: null }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {

@@ -1,6 +1,7 @@
 //! Settings in their own versioned file. Each field loads on its own, so one bad
 //! value never resets the rest.
 
+use super::plan::{self, Plan};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::{
@@ -32,6 +33,10 @@ pub struct Settings {
     pub watch_outages: bool,
     /// Notify when a watched connection drops and when it returns.
     pub notify_outages: bool,
+    /// The download speed the provider sells, in Mbps.
+    pub plan_download_mbps: Option<u32>,
+    /// The upload speed the provider sells, in Mbps.
+    pub plan_upload_mbps: Option<u32>,
 }
 
 impl Default for Settings {
@@ -43,6 +48,8 @@ impl Default for Settings {
             auto_check_updates: true,
             watch_outages: false,
             notify_outages: true,
+            plan_download_mbps: None,
+            plan_upload_mbps: None,
         }
     }
 }
@@ -103,6 +110,27 @@ impl Settings {
                 "Outage notifications",
                 notes,
             ),
+            plan_download_mbps: plan::valid(field(
+                map,
+                "planDownloadMbps",
+                defaults.plan_download_mbps,
+                "Plan download speed",
+                notes,
+            )),
+            plan_upload_mbps: plan::valid(field(
+                map,
+                "planUploadMbps",
+                defaults.plan_upload_mbps,
+                "Plan upload speed",
+                notes,
+            )),
+        }
+    }
+
+    pub fn plan(&self) -> Plan {
+        Plan {
+            download_mbps: plan::valid(self.plan_download_mbps),
+            upload_mbps: plan::valid(self.plan_upload_mbps),
         }
     }
 }
@@ -242,6 +270,8 @@ mod tests {
             auto_check_updates: false,
             watch_outages: true,
             notify_outages: false,
+            plan_download_mbps: Some(500),
+            plan_upload_mbps: Some(50),
         };
         store.save(&settings).unwrap();
         let (_, loaded, notes) = Store::load(path, 2);
@@ -262,6 +292,16 @@ mod tests {
             notes,
             ["Appearance was reset.", "Launch at login was reset."]
         );
+    }
+
+    #[test]
+    fn plan_speeds_out_of_range_are_dropped() {
+        let (_directory, path) = store_with(
+            r#"{"version":1,"settings":{"planDownloadMbps":0,"planUploadMbps":"fast"}}"#,
+        );
+        let (_, settings, notes) = Store::load(path, 1);
+        assert_eq!(settings.plan(), Plan::default());
+        assert_eq!(notes, ["Plan upload speed was reset."]);
     }
 
     #[test]

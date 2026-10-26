@@ -47,6 +47,7 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 </p>
 
 - **Result.** Download in large type; upload; idle latency and latency under load; the server, for example "Tested 12 min ago · Cloudflare, Frankfurt".
+- **Your plan.** Enter the speeds you pay for in Settings → Your plan, and each result says "62% of your 500 Mbps plan", in History too. [How it's judged](docs/method.md#your-plan).
 - **Plain meaning.** Video (Netflix bands), calls (upload, latency under load, jitter), games, and how the line holds up when busy. Thresholds in [docs/method.md](docs/method.md#plain-meaning).
 - **Honest labels.** "Varied 52–118 Mbps" when the rate swings, "Stopped at the data limit, speed may be higher", "Over a day old", and a named reason when a test fails.
 - **Tray icon.** A small gauge that fills while testing, then shows the last result: full, two thirds or one third for good, fair or poor; crossed out when offline. Hover it for the last numbers; right-click to run a test or check the connection without opening the popover.

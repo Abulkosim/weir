@@ -5,6 +5,7 @@ import type { Settings } from '../lib/model'
 import AppIcon from './AppIcon.vue'
 import AppSwitch from './ui/AppSwitch.vue'
 import UpdateSettings from './settings/UpdateSettings.vue'
+import PlanSettings from './settings/PlanSettings.vue'
 import type { UpdateState } from '../lib/updater'
 
 const props = defineProps<{ settings: Settings; historyCount: number; busy?: boolean; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
@@ -53,6 +54,8 @@ function patch(change: Partial<Settings>): void {
           <AppSwitch :model-value="settings.autostart" aria-labelledby="autostart-label" :disabled="busy" @update:model-value="patch({ autostart: $event })"/>
         </div>
       </section>
+
+      <PlanSettings :download="settings.planDownloadMbps" :upload="settings.planUploadMbps" :disabled="busy" @save="patch"/>
 
       <section class="settings-section">
         <h2>Outages</h2>
