@@ -54,7 +54,8 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 - **Keyboard.** ⌘T (Ctrl+T) runs a test, ⌘K (Ctrl+K) checks the connection, ⌘, (Ctrl+,) opens Settings, Esc goes back. **Copy summary** in the result details puts the numbers on the clipboard for a chat with your provider.
 - **Check connection.** Wi-Fi signal, router round trip, DNS lookup time and whether Cloudflare answers, each in plain words, about 10 kB, no speed test. Weir never reads your Wi-Fi name.
 - **Outages, if you want them.** Settings → Outages → Watch for outages (off by default) sends one tiny request a minute, records "No internet until 14:09 · 7 min" in History, and can notify you when the connection drops and returns.
-- **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet or your provider.
+- **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet.
+- **Report for your provider.** **Report** in History saves a PDF of the last 30 days: medians against your plan, how often it fell under half, slow hours, outages, a chart and every test. [What's in it](docs/method.md#provider-report).
 
 ## Why Weir
 

@@ -147,6 +147,15 @@ for (const theme of themes) {
   })
 }
 
+test('the provider report saves from History and Settings', async ({ page }) => {
+  await page.goto('/?demo=1&page=history')
+  await page.getByRole('button', { name: 'Report' }).click()
+  await expect(page.getByRole('status').filter({ hasText: /Saved weir-report-\d{4}-\d{2}-\d{2}\.pdf/ })).toBeVisible()
+  await page.goto('/?demo=1&page=settings')
+  await expect(page.getByText('A PDF of the last 30 days', { exact: false })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Save PDF' })).toBeEnabled()
+})
+
 test('export confirms the saved file name', async ({ page }) => {
   await page.goto('/?demo=1&page=history')
   await page.getByRole('button', { name: 'Export CSV' }).click()

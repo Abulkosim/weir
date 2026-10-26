@@ -95,6 +95,16 @@ export function useWeir() {
     }
   }
 
+  async function exportReport(): Promise<void> {
+    if (demo) return say(`Saved weir-report-${new Date().toISOString().slice(0, 10)}.pdf`)
+    try {
+      const saved = await invoke('export_report')
+      if (typeof saved === 'string') say(`Saved ${saved}`)
+    } catch (error) {
+      say(typeof error === 'string' ? error : 'Weir couldn’t save the report.')
+    }
+  }
+
   async function checkConnection(): Promise<void> {
     if (view.value.checking) return
     if (demo) {
@@ -195,5 +205,5 @@ export function useWeir() {
     stopListening?.()
   })
 
-  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, saveSettings, checkConnection, copy }
+  return { view, loading, connectionError, now, samples, confirming, history, message, start, cancel, clearHistory, exportHistory, exportReport, saveSettings, checkConnection, copy }
 }
