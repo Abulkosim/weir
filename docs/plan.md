@@ -153,12 +153,24 @@ Built as three branches, each its own pull request, merged into `main`: #10 plan
   Findings: the popover's fit height could wobble a pixel (rounded offsetHeight sums); now measured with fractional rects, 96/96 repeated fit runs pass.
 - [x] **P.4 Release v0.4.0.** Published 2026-10-26 04:19 UTC; evidence in `docs/verification.md`.
 
+## Shortcut and Homebrew (v0.5.0) ⛳
+
+Two branches, two pull requests: #14 shortcut, #15 Homebrew.
+
+- [x] **S.1 Global shortcut.** Settings → Tray & startup → Shortcut records a combination that opens or closes the popover from any app; ported from Wick.
+  Verify: Rust parse and recovery tests; TS record/format tests (Mac symbols, Windows names); e2e records, rejects Shift-only, removes; axe clean.
+  Findings: axe flagged the recorder's name not containing its visible key; it now labels itself with both.
+- [x] **S.2 Homebrew cask** in `Abulkosim/homebrew-tap`; update script tested in CI; tap-bump workflow ported from Wick, skipped until its deploy key is set.
+  Verify: `brew style` clean; script tests; first cask pushed by hand after the v0.5.0 publish and installed with `brew`.
+  Findings: creating the tap deploy key was left to the owner (new write access); 👤 steps in `docs/releasing.md`.
+- [ ] **S.3 Release v0.5.0.**
+
 ## Phase 5 — Later
 
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.
 - [ ] Scheduled full tests (opt-in, never metered).
-- [ ] Global shortcut; `weir --json`.
-- [ ] Homebrew tap and winget jobs, gated off (Margin's `packaging/`).
+- [ ] `weir --json`.
+- [ ] winget, gated off (Margin's `packaging/winget`).
 
 ## Not doing
 
