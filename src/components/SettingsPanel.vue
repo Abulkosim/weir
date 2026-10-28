@@ -7,6 +7,7 @@ import AppSwitch from './ui/AppSwitch.vue'
 import UpdateSettings from './settings/UpdateSettings.vue'
 import ScheduleSettings from './settings/ScheduleSettings.vue'
 import PlanSettings from './settings/PlanSettings.vue'
+import ShortcutField from './settings/ShortcutField.vue'
 import type { UpdateState } from '../lib/updater'
 
 const props = defineProps<{ settings: Settings; estimateMb: number; lastTestMs: number | null; now: number; metered: boolean; historyCount: number; busy?: boolean; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
@@ -49,6 +50,10 @@ function patch(change: Partial<Settings>): void {
         <div v-if="isMac" class="setting-row">
           <div><span id="tray-speed-label" class="setting-label">Show speed next to icon</span><p>The last download speed, in Mbps.</p></div>
           <AppSwitch :model-value="settings.traySpeed" aria-labelledby="tray-speed-label" :disabled="busy" @update:model-value="patch({ traySpeed: $event })"/>
+        </div>
+        <div class="setting-row">
+          <div><span id="shortcut-label" class="setting-label">Shortcut</span><p>Opens Weir from any app.</p></div>
+          <ShortcutField :model-value="settings.shortcut" labelledby="shortcut-label" :disabled="busy" @update:model-value="patch({ shortcut: $event })"/>
         </div>
         <div class="setting-row">
           <span id="autostart-label" class="setting-label">Launch at login</span>

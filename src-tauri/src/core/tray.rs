@@ -199,6 +199,24 @@ pub fn show(app: &AppHandle) {
     });
 }
 
+/// Shows the popover, or hides it if it is open or was closed by this very click.
+pub fn toggle(app: &AppHandle) {
+    let blurred = app
+        .state::<Visibility>()
+        .last_blur
+        .lock()
+        .ok()
+        .and_then(|value| *value)
+        .is_some_and(|time| time.elapsed().as_millis() < 250);
+    if let Some(window) = app.get_webview_window("main") {
+        if window.is_visible().unwrap_or(false) || blurred {
+            let _ = window.hide();
+        } else {
+            show(app);
+        }
+    }
+}
+
 pub fn fit(app: &AppHandle, height: f64) -> Result<(), String> {
     let height = popover_height(Some(height));
     {
@@ -516,20 +534,7 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
                 ..
             } = event
             {
-                let blurred = app
-                    .state::<Visibility>()
-                    .last_blur
-                    .lock()
-                    .ok()
-                    .and_then(|value| *value)
-                    .is_some_and(|time| time.elapsed().as_millis() < 250);
-                if let Some(window) = app.get_webview_window("main") {
-                    if window.is_visible().unwrap_or(false) || blurred {
-                        let _ = window.hide();
-                    } else {
-                        show(app);
-                    }
-                }
+                toggle(app);
             }
         })
         .build(app)?;

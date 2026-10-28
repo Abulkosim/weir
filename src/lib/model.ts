@@ -63,10 +63,11 @@ export const settingsSchema = z.object({
   watchOutages: z.boolean(),
   notifyOutages: z.boolean(),
   scheduledTests: scheduleSchema,
+  shortcut: z.string().max(64).nullable(),
   planDownloadMbps: planMbps,
   planUploadMbps: planMbps,
 })
-export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true, scheduledTests: 'off', planDownloadMbps: null, planUploadMbps: null }
+export const defaultSettings: z.infer<typeof settingsSchema> = { theme: 'system', traySpeed: false, autostart: false, autoCheckUpdates: true, watchOutages: false, notifyOutages: true, scheduledTests: 'off', shortcut: null, planDownloadMbps: null, planUploadMbps: null }
 
 export const shareSchema = z.object({ paidMbps: count, percent: count, atLeast: z.boolean(), health: healthSchema })
 export const planSchema = z.object({ download: shareSchema.nullable(), upload: shareSchema.nullable() })

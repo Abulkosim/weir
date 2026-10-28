@@ -5,6 +5,7 @@ mod monitor;
 mod platform;
 mod runtime;
 mod scheduler;
+mod shortcut;
 mod updates;
 
 use crate::core::tray;
@@ -25,6 +26,7 @@ pub fn run() {
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(shortcut::plugin())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(updates::Updates::default())
         .manage(tray::Visibility::default())
@@ -58,6 +60,10 @@ pub fn run() {
                 }
             }
             app.manage(runtime.clone());
+            let saved = runtime.view().settings.shortcut;
+            if let Err(error) = shortcut::replace(app.handle(), None, saved.as_deref()) {
+                eprintln!("weir: {error}");
+            }
             let wake = Arc::new(tokio::sync::Notify::new());
             app.manage(wake.clone());
             monitor::start(app.handle().clone(), runtime.clone());

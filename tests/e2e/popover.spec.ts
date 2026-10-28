@@ -305,6 +305,23 @@ test('history shows the median against the plan', async ({ page }) => {
   await expect(page.getByText(/^\d+% of your 500 Mbps plan$/)).toBeVisible()
 })
 
+test('the global shortcut is recorded, rejected without a modifier, and removed', async ({ page }) => {
+  await page.goto('/?demo=1&page=settings')
+  const field = page.getByRole('button', { name: /^Shortcut (⌃⌥W|Ctrl\+Alt\+W)$/ })
+  await expect(field).toBeVisible()
+  await expect(field).toHaveText(/⌃⌥W|Ctrl\+Alt\+W/)
+  await field.click()
+  const recorder = page.locator('#shortcut-button')
+  await expect(recorder).toHaveText('Type shortcut…')
+  await page.keyboard.press('Shift+KeyA')
+  await expect(page.getByRole('alert')).toHaveText(/Include (Command, Control or Option|Ctrl, Alt or Win)\./)
+  await page.keyboard.press('Control+Alt+KeyK')
+  await expect(recorder).toHaveText(/⌃⌥K|Ctrl\+Alt\+K/)
+  await expect(page.getByRole('heading', { name: 'Connection' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Remove shortcut' }).click()
+  await expect(recorder).toHaveText('Record shortcut')
+})
+
 test('outage settings explain the cost and gate notifications', async ({ page }) => {
   await page.goto('/?demo=1&page=settings')
   const watch = page.getByRole('switch', { name: 'Watch for outages' })

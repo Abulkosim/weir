@@ -122,6 +122,11 @@ pub async fn export_report(app: AppHandle) -> Result<Option<String>, String> {
 pub fn save_settings(app: AppHandle, settings: Settings) -> Result<View, String> {
     let runtime = runtime(&app);
     let current = runtime.view().settings;
+    crate::shortcut::replace(
+        &app,
+        current.shortcut.as_deref(),
+        settings.shortcut.as_deref(),
+    )?;
     if current.autostart != settings.autostart {
         let launcher = app.autolaunch();
         let changed = if settings.autostart {
@@ -129,7 +134,14 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<View, String>
         } else {
             launcher.disable()
         };
-        changed.map_err(|_| "Weir couldn’t change launch at login.".to_owned())?;
+        if changed.is_err() {
+            let _ = crate::shortcut::replace(
+                &app,
+                settings.shortcut.as_deref(),
+                current.shortcut.as_deref(),
+            );
+            return Err("Weir couldn’t change launch at login.".to_owned());
+        }
     }
     let wake = settings.auto_check_updates && !current.auto_check_updates;
     let watch = settings.watch_outages != current.watch_outages;
