@@ -53,7 +53,7 @@ export function demoSamples(count: number, target: number): number[] {
 
 export function createDemoView(state: string | null, now = Date.now(), error: string | null = null): View {
   const scenario: DemoState = demoStates.includes(state as DemoState) ? state as DemoState : 'result'
-  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, plan: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true, watchOutages: true, notifyOutages: true, scheduledTests: 'every12Hours', planDownloadMbps: 500, planUploadMbps: 50 }, checking: false, diagnosis: null, outageSinceMs: null }
+  const view: View = { revision: 1, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, plan: null, historyCount: 0, notice: null, settings: { theme: 'system', traySpeed: false, autostart: true, autoCheckUpdates: true, watchOutages: true, notifyOutages: true, scheduledTests: 'every12Hours', shortcut: 'Control+Alt+KeyW', planDownloadMbps: 500, planUploadMbps: 50 }, checking: false, diagnosis: null, outageSinceMs: null }
   if (scenario === 'never') return viewSchema.parse(view)
   view.last = demoReport(now)
   view.meaning = demoMeaning

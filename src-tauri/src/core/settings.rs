@@ -46,6 +46,8 @@ pub struct Settings {
     pub notify_outages: bool,
     /// Full tests in the background, never on a metered link.
     pub scheduled_tests: Schedule,
+    /// Opens or closes the popover from any app, for example `Control+Alt+KeyW`.
+    pub shortcut: Option<String>,
     /// The download speed the provider sells, in Mbps.
     pub plan_download_mbps: Option<u32>,
     /// The upload speed the provider sells, in Mbps.
@@ -62,10 +64,31 @@ impl Default for Settings {
             watch_outages: false,
             notify_outages: true,
             scheduled_tests: Schedule::Off,
+            shortcut: None,
             plan_download_mbps: None,
             plan_upload_mbps: None,
         }
     }
+}
+
+/// A shortcut needs Command, Control or Option (Windows: Ctrl, Alt or Win), so it
+/// can't swallow normal typing.
+pub fn parse_shortcut(value: &str) -> Result<tauri_plugin_global_shortcut::Shortcut, String> {
+    use tauri_plugin_global_shortcut::{Modifiers, Shortcut};
+    let shortcut: Shortcut = value
+        .parse()
+        .map_err(|_| "That key combination can’t be used as a shortcut.".to_owned())?;
+    if !shortcut
+        .mods
+        .intersects(Modifiers::SUPER | Modifiers::CONTROL | Modifiers::ALT)
+    {
+        return Err(if cfg!(windows) {
+            "Include Ctrl, Alt or Win in the shortcut.".into()
+        } else {
+            "Include Command, Control or Option in the shortcut.".into()
+        });
+    }
+    Ok(shortcut)
 }
 
 fn field<T: DeserializeOwned>(
@@ -131,6 +154,17 @@ impl Settings {
                 "Scheduled tests",
                 notes,
             ),
+            shortcut: {
+                let shortcut: Option<String> =
+                    field(map, "shortcut", defaults.shortcut, "Shortcut", notes);
+                match shortcut {
+                    Some(value) if parse_shortcut(&value).is_err() => {
+                        notes.push("Shortcut was reset.".into());
+                        None
+                    }
+                    shortcut => shortcut,
+                }
+            },
             plan_download_mbps: plan::valid(field(
                 map,
                 "planDownloadMbps",
@@ -292,6 +326,7 @@ mod tests {
             watch_outages: true,
             notify_outages: false,
             scheduled_tests: Schedule::Every12Hours,
+            shortcut: Some("Control+Alt+KeyW".into()),
             plan_download_mbps: Some(500),
             plan_upload_mbps: Some(50),
         };
@@ -329,6 +364,20 @@ mod tests {
         let (_, settings, notes) = Store::load(path, 1);
         assert_eq!(settings.plan(), Plan::default());
         assert_eq!(notes, ["Plan upload speed was reset."]);
+    }
+
+    #[test]
+    fn shortcuts_need_a_real_modifier() {
+        assert!(parse_shortcut("Control+Alt+KeyW").is_ok());
+        assert!(parse_shortcut("Alt+Super+Space").is_ok());
+        assert!(parse_shortcut("Shift+KeyA").is_err());
+        assert!(parse_shortcut("KeyA").is_err());
+        assert!(parse_shortcut("Super+Nope").is_err());
+        let (_directory, path) =
+            store_with(r#"{"version":1,"settings":{"shortcut":"Shift+KeyA"}}"#);
+        let (_, settings, notes) = Store::load(path, 1);
+        assert_eq!(settings.shortcut, None);
+        assert_eq!(notes, ["Shortcut was reset."]);
     }
 
     #[test]
