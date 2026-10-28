@@ -2,12 +2,20 @@
 
 Downloads: [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest).
 
-Weir is free and open source. Builds are not yet signed with an Apple Developer ID or a Windows publisher certificate, so macOS and Windows warn on first launch. Updates are signed separately and verified in the app. Homebrew and winget packages are not available yet.
+Weir is free and open source. Builds are not yet signed with an Apple Developer ID or a Windows publisher certificate, so macOS and Windows warn on first launch. Updates are signed separately and verified in the app. On macOS you can also install with Homebrew; there is no winget package yet.
 
 | Platform | File |
 | --- | --- |
 | macOS 12+ · Apple Silicon and Intel | `Weir_<version>_universal.dmg` |
 | Windows x64 | `Weir_<version>_x64-setup.exe` (recommended) or `Weir_<version>_x64_en-US.msi` |
+
+## Homebrew
+
+```sh
+brew install --cask abulkosim/tap/weir
+```
+
+The cask installs the same universal DMG from GitHub Releases and checks its SHA-256. macOS still blocks the first launch, as below. Weir updates itself, so `brew upgrade` leaves it alone; `brew uninstall --cask weir` removes the app and `brew uninstall --zap --cask weir` also removes settings and history.
 
 ## macOS
 

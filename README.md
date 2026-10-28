@@ -23,7 +23,7 @@ Interface preview with sample data.
 
 ## Install
 
-Download **v0.4.0** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest). Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
+Download **v0.4.0** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest), or on a Mac: `brew install --cask abulkosim/tap/weir`. Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
 
 | Platform | Download |
 | --- | --- |

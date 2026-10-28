@@ -40,7 +40,7 @@ Actions are pinned by SHA with read-only permissions; only the release job can w
    ```
 
 4. Record what passed, counts, CI run links, checksums and what is still pending in [verification.md](verification.md), newest release on top.
-5. Publish once every check above passes (the owner gave standing approval on 2026-10-24): `gh release edit vX.Y.Z --draft=false --latest`. Date the changelog and release notes by the UTC publish day. Then report to the owner. If any check fails, stop and report instead.
+5. Publish once every check above passes (the owner gave standing approval on 2026-10-24): `gh release edit vX.Y.Z --draft=false --latest`. Date the changelog and release notes by the UTC publish day. Then bump the Homebrew tap ([below](#homebrew-personal-tap)): automatic once its workflow is switched on, by hand until then. Then report to the owner. If any check fails, stop and report instead.
 
 Never edit a published release's files or reuse a version; ship a new patch. To stop offering a bad release, mark it a prerelease so the latest endpoint falls back, then ship a fix.
 
@@ -50,4 +50,22 @@ Created 2026-10-23 with `pnpm tauri signer generate`, password-protected. The pr
 
 ## Package managers
 
-Not set up yet. Margin's `packaging/` (Homebrew tap, winget) is the model; add it gated off by repository variables when there is demand.
+### Homebrew (personal tap)
+
+`packaging/homebrew/Casks/weir.rb` is the seed cask in [`Abulkosim/homebrew-tap`](https://github.com/Abulkosim/homebrew-tap), shared with Wick. `update-cask.mjs` rewrites `version` and `sha256` from the release's `SHA256SUMS.txt` (`node packaging/homebrew/update-cask.mjs <cask.rb> vX.Y.Z SHA256SUMS.txt`); its tests run in CI. Stanzas follow the [Cask Cookbook](https://docs.brew.sh/Cask-Cookbook); `brew style` passes.
+
+`.github/workflows/homebrew.yml` runs when a release is **published** (draft assets are private, so the cask URL would 404) and pushes the bump to the tap with a write deploy key that belongs to the tap only. It refuses drafts and prereleases. Re-run by hand with `gh workflow run homebrew.yml -f tag=vX.Y.Z`.
+
+Until the workflow is switched on, bump the tap by hand after publishing: clone `Abulkosim/homebrew-tap`, run `update-cask.mjs` on `Casks/weir.rb` (copy the seed in the first time), commit as `weir X.Y.Z` and push. Check with `brew install --cask abulkosim/tap/weir` and `brew livecheck --cask abulkosim/tap/weir`.
+
+👤 To switch the workflow on (the same setup Wick uses):
+
+1. `ssh-keygen -t ed25519 -N "" -C "weir homebrew bump" -f weir-tap-key`
+2. `Abulkosim/homebrew-tap` → Settings → Deploy keys → Add `weir-tap-key.pub` with **Allow write access**.
+3. `gh secret set HOMEBREW_TAP_DEPLOY_KEY -R Abulkosim/weir < weir-tap-key`, then `gh variable set HOMEBREW_TAP_ENABLED -R Abulkosim/weir --body true`, then delete both key files.
+
+`auto_updates true` tells `brew upgrade` to leave updates to Weir's own updater. The cask is not notarized; users still see the macOS block on first launch, which the caveats explain.
+
+### winget
+
+Not set up. Margin's `packaging/winget/` is the model if there is demand.
