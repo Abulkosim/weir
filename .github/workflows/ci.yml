@@ -50,7 +50,7 @@ jobs:
       - name: Run unit tests
         run: |
           pnpm test
-          node --test scripts/*.test.mjs
+          node --test scripts/*.test.mjs packaging/homebrew/*.test.mjs
       - name: Install browser engines
         run: pnpm exec playwright install --with-deps chromium webkit
       - name: Run browser tests
