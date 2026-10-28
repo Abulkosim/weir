@@ -163,7 +163,7 @@ Two branches, two pull requests: #14 shortcut, #15 Homebrew.
 - [x] **S.2 Homebrew cask** in `Abulkosim/homebrew-tap`; update script tested in CI; tap-bump workflow ported from Wick, skipped until its deploy key is set.
   Verify: `brew style` clean; script tests; first cask pushed by hand after the v0.5.0 publish and installed with `brew`.
   Findings: creating the tap deploy key was left to the owner (new write access); 👤 steps in `docs/releasing.md`.
-- [ ] **S.3 Release v0.5.0.**
+- [x] **S.3 Release v0.5.0.** Published 2026-10-28 18:21 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 

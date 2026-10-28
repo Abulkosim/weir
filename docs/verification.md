@@ -2,6 +2,17 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.5.0
+
+**[v0.5.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.5.0)** at 2026-10-28 18:21 UTC and marked latest; `latest.json` serves 0.5.0. Published on standing approval. Tag `v0.5.0` builds `44b0e61`.
+
+- Two pull requests, each green before merging: #14 (global shortcut), #15 (Homebrew cask).
+- Locally: 196 browser cases on Playwright 1.60 (cached browsers; hotspot), 32 unit tests, 18 release and cask script tests, 117 Rust tests, fmt, strict Clippy, `cargo deny` licenses and bans, `brew style` on the cask.
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/40741654215) and the [tag build](https://github.com/Abulkosim/weir/actions/runs/40743106017) green on every job.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`; the real updater test rejected altered bytes and a wrong signed version and installed 0.5.0 for x86_64 and arm64.
+- Homebrew: `weir` 0.5.0 pushed to `Abulkosim/homebrew-tap` by hand (`ecdc618`); `brew install --cask abulkosim/tap/weir` installed it on the owner's Mac, replacing 0.4.0, with history and settings kept; `brew livecheck` reports 0.5.0.
+- Pending: pressing the recorded shortcut in the real app (no shortcut recorded on the owner's Mac yet), the shortcut on Windows, and the automatic tap bump (👤 deploy key, `docs/releasing.md`).
+
 ## v0.4.0
 
 **[v0.4.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.4.0)** at 2026-10-26 04:19 UTC and marked latest; `latest.json` serves 0.4.0. Published on standing approval. Tag `v0.4.0` builds `4ec9bff`.
