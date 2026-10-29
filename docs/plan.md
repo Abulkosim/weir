@@ -165,11 +165,20 @@ Two branches, two pull requests: #14 shortcut, #15 Homebrew.
   Findings: creating the tap deploy key was left to the owner (new write access); 👤 steps in `docs/releasing.md`.
 - [x] **S.3 Release v0.5.0.** Published 2026-10-28 18:21 UTC; evidence in `docs/verification.md`.
 
+## Command line (v0.6.0) ⛳
+
+The last planned release. One pull request: #16.
+
+- [x] **J.1 `weir --json`, `weir history`, `weir test`.** The app binary prints JSON with the CSV fields plus health, verdict and notes; reads History without changing it; `test` refuses metered links without `--allow-metered` (exit 3) and never saves. Cask links `weir` onto `PATH`.
+  Verify: Rust tests on parsing, fields, rounding, last/history; on the owner's Mac `weir --json` and `weir history` read the real History, `weir test` refused the hotspot.
+  Findings: after a burst of size probes Cloudflare refused downloads of 15 MB and up from this address (403); `weir test` reported it as `refused`. Not caused by this change; no workaround that imitates a browser.
+- [ ] **J.2 Release v0.6.0.**
+
 ## Phase 5 — Later
 
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.
-- [ ] Scheduled full tests (opt-in, never metered).
-- [ ] `weir --json`.
+- [x] Scheduled full tests (opt-in, never metered). Shipped in v0.4.0.
+- [x] `weir --json`. Shipped in v0.6.0.
 - [ ] winget, gated off (Margin's `packaging/winget`).
 
 ## Not doing
