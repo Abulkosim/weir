@@ -1,4 +1,5 @@
 pub mod backends;
+pub mod cli;
 pub mod diagnose;
 pub mod export;
 pub mod history;

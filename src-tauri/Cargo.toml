@@ -51,7 +51,7 @@ objc2-foundation = { version = "0.3", default-features = false, features = ["NSA
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.100"
-windows = { version = "0.62", features = ["Foundation", "Networking_Connectivity", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock", "Win32_System_Power"] }
+windows = { version = "0.62", features = ["Foundation", "Networking_Connectivity", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock", "Win32_System_Console", "Win32_System_Power"] }
 
 [profile.release]
 codegen-units = 1

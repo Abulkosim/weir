@@ -42,7 +42,8 @@ pub fn error_text(error: TestError) -> &'static str {
     }
 }
 
-fn notes(report: &Report) -> String {
+/// Plain notes on a result, for example "stopped at data limit".
+pub fn notes(report: &Report) -> Vec<String> {
     let mut notes = Vec::new();
     if report.download.capped {
         notes.push("stopped at data limit".to_owned());
@@ -64,7 +65,7 @@ fn notes(report: &Report) -> String {
     if report.scheduled {
         notes.push("scheduled".to_owned());
     }
-    notes.join("; ")
+    notes
 }
 
 fn row(entry: &Entry, offset: &FixedOffset) -> String {
@@ -93,7 +94,7 @@ fn row(entry: &Entry, offset: &FixedOffset) -> String {
             number(Some(report.download.p10)),
             number(Some(report.download.p90)),
             number(Some(report.bytes_used as f64 / 1_000_000.0)),
-            field(&notes(report)),
+            field(&notes(report).join("; ")),
         ],
         Entry::Failed { at_ms, error } => {
             let mut fields = vec![timestamp(*at_ms, offset), "failed".into()];
