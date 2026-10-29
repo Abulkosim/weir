@@ -83,6 +83,19 @@ Weir contacts `speed.cloudflare.com` when you run a test or check your connectio
 
 CSV columns: `tested_at` (local time with UTC offset), `result` (`ok`, `failed` or `outage`), `server`, `download_mbps`, `upload_mbps`, `latency_ms`, `latency_under_load_ms`, `jitter_ms`, `download_low_mbps`, `download_high_mbps`, `data_used_mb`, `notes` (for example "stopped at data limit" or the failure reason).
 
+## Command line
+
+The app binary answers in JSON for scripts. With Homebrew it is on your `PATH` as `weir`; otherwise use `/Applications/Weir.app/Contents/MacOS/weir` (Windows: `Weir.exe` in the install folder).
+
+```sh
+weir --json            # the last test, or null
+weir history           # every test and outage, oldest first
+weir test              # runs a full test now and prints it
+weir test --allow-metered
+```
+
+Fields match the CSV export (`tested_at`, `download_mbps`, `latency_under_load_ms` and so on) plus `health` (`good`, `fair` or `poor`), `verdict`, `notes` and `scheduled`. `weir test` refuses a hotspot or metered connection unless you pass `--allow-metered` (exit code 3), prints `{"error": …, "message": …}` and exits 1 if the test fails, and does not add the result to History. Nothing here changes History or settings.
+
 ## Develop
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Releases: [docs/releasing.md](docs/releasing.md). What was verified: [docs/verification.md](docs/verification.md).

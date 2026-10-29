@@ -71,6 +71,27 @@ fn backup_path(path: &Path, now_ms: u64) -> PathBuf {
     path.with_file_name(format!("history.unreadable-{now_ms}.json"))
 }
 
+/// The entries that parse, oldest first.
+fn readable(raw: Vec<Value>) -> Vec<Entry> {
+    let mut entries: Vec<Entry> = raw
+        .into_iter()
+        .filter_map(|value| serde_json::from_value(value).ok())
+        .collect();
+    entries.sort_by_key(Entry::at_ms);
+    entries
+}
+
+/// Reads entries without changing anything on disk, for the command line. An unreadable
+/// file reads as empty; the app deals with it next time it starts.
+pub fn read_only(path: &Path) -> Vec<Entry> {
+    fs::read_to_string(path)
+        .ok()
+        .and_then(|text| serde_json::from_str::<Value>(&text).ok())
+        .and_then(|value| value.get("entries").and_then(Value::as_array).cloned())
+        .map(readable)
+        .unwrap_or_default()
+}
+
 impl History {
     pub fn load(path: PathBuf, now_ms: u64) -> (Self, Option<Recovery>) {
         let text = match fs::read_to_string(&path) {
@@ -88,12 +109,8 @@ impl History {
             return (Self::empty(path), recovery);
         };
         let total = raw.len();
-        let mut entries: Vec<Entry> = raw
-            .into_iter()
-            .filter_map(|value| serde_json::from_value(value).ok())
-            .collect();
+        let entries = readable(raw);
         let skipped = total - entries.len();
-        entries.sort_by_key(Entry::at_ms);
         let mut history = Self { path, entries };
         history.prune(now_ms);
         (history, (skipped > 0).then_some(Recovery::Skipped(skipped)))

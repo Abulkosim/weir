@@ -1,4 +1,5 @@
 mod activity;
+mod cli;
 mod commands;
 pub mod core;
 mod monitor;
@@ -15,6 +16,14 @@ use tauri::{Manager, WindowEvent};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 pub fn run() {
+    match core::cli::parse(&std::env::args().collect::<Vec<_>>()) {
+        Ok(Some(command)) => std::process::exit(cli::run(command)),
+        Err(usage) => {
+            eprintln!("{usage}");
+            std::process::exit(2);
+        }
+        Ok(None) => {}
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             tray::show(app)
