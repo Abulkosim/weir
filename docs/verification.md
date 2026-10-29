@@ -2,6 +2,19 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.6.0
+
+**[v0.6.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.6.0)** at 2026-10-29 12:29 UTC and marked latest; `latest.json` serves 0.6.0. Published on standing approval. Tag `v0.6.0` builds `8745825`. The last planned release.
+
+- One pull request, green before merging: #16 (`weir --json`, `weir history`, `weir test`).
+- Locally: 32 unit tests, 18 release and cask script tests, 120 Rust tests, fmt, strict Clippy, `check-release.mjs`, `brew style` on the cask. Browser cases ran in CI only (no UI change).
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/40870199428) and the [tag build](https://github.com/Abulkosim/weir/actions/runs/40872062785) green on every job.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`; the real updater test rejected altered bytes and a wrong signed version and installed 0.6.0 for x86_64 and arm64.
+- DMG SHA-256 `0bb722a4b90df395677401da4c8ec52692069c70472005e611feb96134e8a9ab`.
+- Homebrew tap bumped by hand (`weir 0.6.0`, now with the `binary` stanza); `brew upgrade --cask --greedy` installed 0.6.0 on the owner's Mac, `weir` on `PATH`, `weir --json` read the real History.
+- On the owner's Mac before the release: `weir test` refused the hotspot (exit 3). On another connection, after a burst of size probes, Cloudflare refused downloads of 15 MB and up (403); `weir test` reported `refused`. Not caused by this release.
+- Pending: 👤 Windows VM check of `Weir.exe --json` in a terminal; 👤 tap deploy key (`docs/releasing.md`).
+
 ## v0.5.0
 
 **[v0.5.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.5.0)** at 2026-10-28 18:21 UTC and marked latest; `latest.json` serves 0.5.0. Published on standing approval. Tag `v0.5.0` builds `44b0e61`.

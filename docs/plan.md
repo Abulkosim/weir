@@ -172,7 +172,7 @@ The last planned release. One pull request: #16.
 - [x] **J.1 `weir --json`, `weir history`, `weir test`.** The app binary prints JSON with the CSV fields plus health, verdict and notes; reads History without changing it; `test` refuses metered links without `--allow-metered` (exit 3) and never saves. Cask links `weir` onto `PATH`.
   Verify: Rust tests on parsing, fields, rounding, last/history; on the owner's Mac `weir --json` and `weir history` read the real History, `weir test` refused the hotspot.
   Findings: after a burst of size probes Cloudflare refused downloads of 15 MB and up from this address (403); `weir test` reported it as `refused`. Not caused by this change; no workaround that imitates a browser.
-- [ ] **J.2 Release v0.6.0.**
+- [x] **J.2 Release v0.6.0.** Published 2026-10-29 12:29 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 
