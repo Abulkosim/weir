@@ -174,6 +174,14 @@ The last planned release. One pull request: #16.
   Findings: after a burst of size probes Cloudflare refused downloads of 15 MB and up from this address (403); `weir test` reported it as `refused`. Not caused by this change; no workaround that imitates a browser.
 - [x] **J.2 Release v0.6.0.** Published 2026-10-29 12:29 UTC; evidence in `docs/verification.md`.
 
+## This month (v0.7.0) ⛳
+
+One pull request: #20.
+
+- [x] **M.1 This month in History.** First card: calendar month medians (download, upload, latency), offline time clipped to the month, failed tests, last month's download; last month by name until the new month has a test.
+  Verify: unit tests on bounds, clipping, fallback and January; e2e mid-month and on the 1st (Chromium + WebKit); screenshots light + dark looked at; README image refreshed.
+- [ ] **M.2 Release v0.7.0.**
+
 ## Phase 5 — Later
 
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.

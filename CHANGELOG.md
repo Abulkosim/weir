@@ -2,6 +2,7 @@
 
 | Version | Date (UTC) | Changes |
 | --- | --- | --- |
+| [v0.7.0](changelogs/v0.7.0.md) | 2026-11-01 | This month summary in History. |
 | [v0.6.0](changelogs/v0.6.0.md) | 2026-10-29 | `weir --json`, `weir history` and `weir test` for scripts. |
 | [v0.5.0](changelogs/v0.5.0.md) | 2026-10-28 | Global shortcut, Homebrew cask. |
 | [v0.4.0](changelogs/v0.4.0.md) | 2026-10-26 | Plan comparison, PDF report for the provider, scheduled tests. |
