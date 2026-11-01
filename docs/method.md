@@ -132,6 +132,15 @@ Optional, in Settings → Your plan: the download and upload speeds the provider
 - Shown under the download number, under Upload, in History (median of recent tests) and in the tray tooltip. It never changes the plain-meaning verdict, which is about what the line is good for, not what it costs.
 - Wi-Fi often caps a fast plan. A low share on Wi-Fi is a reason to test on a cable before calling the provider.
 
+## This month
+
+The first card in History ([`month.ts`](../src/lib/month.ts)):
+
+- The calendar month in local time. Download, upload and idle latency are medians of that month's results, like everything else here; an average would let one bad test drag the number.
+- Offline time adds up outages that overlap the month, counting only the part inside it. With the outage watch off and nothing recorded it says "Outage watch is off", not "No outages".
+- Failed tests are counted, never averaged in. Last month's median download is shown beside it to compare.
+- Until the new month has a test, the card shows last month under its name, so the 1st doesn't open on an empty card.
+
 ## Provider report
 
 **Report** in History (or Settings → History → Save PDF) writes an A4 PDF of the last 30 days, built in Rust ([`report.rs`](../src-tauri/src/core/report.rs)) with the PDF's built-in Helvetica, so no fonts are embedded and nothing is fetched.

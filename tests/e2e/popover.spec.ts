@@ -131,6 +131,7 @@ for (const [error, title] of Object.entries(failures)) {
 
 for (const theme of themes) {
   test(`history lists tests by day with a summary in ${theme}`, async ({ page }, info) => {
+    await page.clock.setFixedTime(new Date(2026, 10, 20, 20, 0))
     await page.goto(`/?demo=1&theme=${theme}`)
     await page.getByRole('button', { name: 'History' }).click()
     await expect(page.getByRole('heading', { name: 'History' })).toBeVisible()
@@ -252,6 +253,23 @@ test('history shows download by hour of day', async ({ page }) => {
   await expect(page.getByText('Download by hour of day')).toBeVisible()
   await expect(page.locator('.hour-bar')).toHaveCount(24)
   await expect(page.locator('.hours-card .sub')).toContainText(/Slowest around|No hour stands out/)
+})
+
+test('history sums up this month with outage time', async ({ page }) => {
+  await page.clock.install({ time: new Date(2026, 10, 20, 20, 0) })
+  await page.goto('/?demo=1&page=history')
+  const card = page.getByRole('region', { name: /^This month · median of 18 tests$/ })
+  await expect(card).toBeVisible()
+  await expect(card.getByText(/^\d+Mbps$/)).toHaveCount(2)
+  await expect(card.getByText('Offline 7 min · 1 outage')).toBeVisible()
+  await expect(card.getByText('1 test failed')).toBeVisible()
+})
+
+test('early in a month, history sums up the month before', async ({ page }) => {
+  await page.clock.install({ time: new Date(2026, 11, 1, 0, 5) })
+  await page.goto('/?demo=1&page=history')
+  await expect(page.getByRole('region', { name: /^November · median of 18 tests$/ })).toBeVisible()
+  await expect(page.getByText(/^Month before/)).toHaveCount(0)
 })
 
 test('outages appear in history with their length', async ({ page }) => {

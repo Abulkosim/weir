@@ -5,8 +5,9 @@ import AppTooltip from './ui/AppTooltip.vue'
 import { errorCopy, formatMbps, formatMs } from '../lib/format'
 import { entryTime, type Entry } from '../lib/model'
 import { hourLabel, slowHours } from '../lib/hours'
+import { monthSummary, outageText } from '../lib/month'
 
-const props = defineProps<{ entries: Entry[]; now: number; planMbps?: number | null }>()
+const props = defineProps<{ entries: Entry[]; now: number; planMbps?: number | null; watching?: boolean }>()
 defineEmits<{ back: []; export: []; report: [] }>()
 
 const results = computed(() => props.entries.flatMap(entry => entry.kind === 'result' ? [entry.report] : []))
@@ -18,6 +19,7 @@ const median = computed(() => {
   const middle = Math.floor(values.length / 2)
   return values.length % 2 ? values[middle]! : (values[middle - 1]! + values[middle]!) / 2
 })
+const month = computed(() => monthSummary(props.entries, props.now))
 const hours = computed(() => slowHours(props.entries))
 const tallest = computed(() => Math.max(1, ...(hours.value?.buckets.map(bucket => bucket.median ?? 0) ?? [1])))
 const isSlow = (hour: number) => {
@@ -88,6 +90,29 @@ function time(at: number): string {
     </section>
 
     <template v-else>
+      <section v-if="month" class="card month-card" aria-labelledby="month-title">
+        <p id="month-title" class="label num">{{ month.name ?? 'This month' }} · {{ month.tests === 1 ? 'one test' : `median of ${month.tests} tests` }}</p>
+        <div class="month-stats">
+          <div class="stat">
+            <p class="label">Download</p>
+            <p class="value num">{{ month.download === null ? '–' : formatMbps(month.download) }}<small>Mbps</small></p>
+          </div>
+          <div class="stat">
+            <p class="label">Upload</p>
+            <p class="value num">{{ month.upload === null ? '–' : formatMbps(month.upload) }}<small>Mbps</small></p>
+          </div>
+          <div class="stat">
+            <p class="label">Latency</p>
+            <p class="value num">{{ month.latency === null ? '–' : formatMs(month.latency) }}<small>ms</small></p>
+          </div>
+        </div>
+        <ul class="month-notes num">
+          <li :class="{ 'month-offline': month.outages }">{{ outageText(month, watching ?? false) }}</li>
+          <li v-if="month.failed">{{ month.failed }} {{ month.failed === 1 ? 'test' : 'tests' }} failed</li>
+          <li v-if="month.before !== null">{{ month.name ? 'Month before' : 'Last month' }} {{ formatMbps(month.before) }} Mbps</li>
+        </ul>
+      </section>
+
       <section v-if="median !== null" class="card history-summary" aria-label="Download over recent tests">
         <div class="summary-text">
           <p class="label">Download, last {{ recent.length }} tests</p>
