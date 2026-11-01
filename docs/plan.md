@@ -180,7 +180,7 @@ One pull request: #20.
 
 - [x] **M.1 This month in History.** First card: calendar month medians (download, upload, latency), offline time clipped to the month, failed tests, last month's download; last month by name until the new month has a test.
   Verify: unit tests on bounds, clipping, fallback and January; e2e mid-month and on the 1st (Chromium + WebKit); screenshots light + dark looked at; README image refreshed.
-- [ ] **M.2 Release v0.7.0.**
+- [x] **M.2 Release v0.7.0.** Published 2026-11-01 10:21 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 

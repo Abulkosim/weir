@@ -2,6 +2,19 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.7.0
+
+**[v0.7.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.7.0)** at 2026-11-01 10:21 UTC and marked latest; `latest.json` serves 0.7.0. Published on standing approval. Tag `v0.7.0` builds `889ed14`.
+
+- One pull request, green before merging: #20 (This month card in History).
+- Locally: 200 browser cases (Chromium + WebKit), 37 unit tests (5 new for the month), 18 release and cask script tests, 120 Rust tests, fmt, strict Clippy, `check-release.mjs`, `brew style`. One WebKit popover-fit case failed once under load and passed 40/40 on repeat (not History).
+- History screenshots looked at in light and dark; README image refreshed with a fixed mid-month date.
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/41295330605) and the [tag build](https://github.com/Abulkosim/weir/actions/runs/41295930596) green on every job.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`; the real updater test rejected altered bytes and a wrong signed version and installed 0.7.0 for x86_64 and arm64.
+- DMG SHA-256 `a7511cdb66b1c49c215f4a785efe7215ac383699415c3765669ac29ce2c35491`.
+- Homebrew tap bumped by hand (`weir 0.7.0`); `brew upgrade --cask --greedy` installed 0.7.0 on the owner's Mac. A Homebrew reinstall is quarantined again, so the first launch shows the Gatekeeper prompt; answering it with Move to Trash removed the app (system log: `moveItemToTrash`). Reinstalled; 👤 first launch needs Open Anyway.
+- Pending: 👤 open 0.7.0 once through Open Anyway; 👤 Windows VM check; 👤 tap deploy key.
+
 ## v0.6.0
 
 **[v0.6.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.6.0)** at 2026-10-29 12:29 UTC and marked latest; `latest.json` serves 0.6.0. Published on standing approval. Tag `v0.6.0` builds `8745825`. The last planned release.
