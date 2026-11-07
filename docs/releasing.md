@@ -39,6 +39,8 @@ Actions are pinned by SHA with read-only permissions; only the release job can w
    WEIR_UPDATE_ARTIFACT_DIR="$PWD/.cache/release-vX.Y.Z" WEIR_REQUIRE_UNIVERSAL=1 cargo test --manifest-path src-tauri/Cargo.toml --test updater_install --locked -- --ignored --nocapture
    ```
 
+   Without a Mac, run the same test on a macOS runner against the tag build's Mac archive: `gh workflow run updater-test.yml -f tag=vX.Y.Z -f run-id=<tag build run ID>`. Check that the `Weir.app.tar.gz` checksum it prints matches `SHA256SUMS.txt`.
+
 4. Record what passed, counts, CI run links, checksums and what is still pending in [verification.md](verification.md), newest release on top.
 5. Publish once every check above passes (the owner gave standing approval on 2026-10-24): `gh release edit vX.Y.Z --draft=false --latest`. Date the changelog and release notes by the UTC publish day. Then bump the Homebrew tap ([below](#homebrew-personal-tap)): automatic once its workflow is switched on, by hand until then. Then report to the owner. If any check fails, stop and report instead.
 

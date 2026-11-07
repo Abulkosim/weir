@@ -182,6 +182,16 @@ One pull request: #20.
   Verify: unit tests on bounds, clipping, fallback and January; e2e mid-month and on the 1st (Chromium + WebKit); screenshots light + dark looked at; README image refreshed.
 - [x] **M.2 Release v0.7.0.** Published 2026-11-01 10:21 UTC; evidence in `docs/verification.md`.
 
+## Dependencies (v0.7.1) ⛳
+
+Patch. Pull requests #18, #21, #22, #23 (Dependabot) and #24.
+
+- [x] **D.1 Unblock and merge Dependabot.** Yanked `async-executor` 1.14.0 failed `cargo deny` on every pull request; updated to 1.14.1 (#24), then merged the actions, frontend, Tauri plugin and `netdev` 0.47 updates.
+  Verify: each pull request green in CI after rebasing; locally typecheck, unit, 200 browser cases, fmt, strict Clippy, 118 Rust tests, also on main with every update combined.
+- [x] **D.2 Updater test on a macOS runner.** `updater-test.yml` (manual) runs the real updater install test against the tag build's exact Mac archive, so a release can be verified without the owner's Mac.
+  Verify: run against the v0.7.1 tag build; the archive checksum it prints matches `SHA256SUMS.txt`.
+- [ ] **D.3 Release v0.7.1.**
+
 ## Phase 5 — Later
 
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.

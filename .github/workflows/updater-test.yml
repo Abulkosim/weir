@@ -1,0 +1,68 @@
+name: Updater install test
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, for example v0.7.1
+        required: true
+      run-id:
+        description: ID of the tag's "Verify and build" run
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+  CI: true
+
+jobs:
+  updater:
+    name: Install the signed update on macOS
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+        with:
+          cache: true
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
+        with:
+          workspaces: src-tauri -> target
+          key: updater-test
+          save-if: false
+      - name: Prepare frontend assets
+        run: pnpm build
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: installers-universal-apple-darwin
+          path: release-artifacts/
+          run-id: ${{ inputs.run-id }}
+          github-token: ${{ github.token }}
+      - name: Show the tested archive's checksum
+        run: shasum -a 256 release-artifacts/Weir.app.tar.gz
+      - name: Run the updater install test
+        env:
+          WEIR_REQUIRE_UNIVERSAL: "1"
+        run: |
+          export WEIR_UPDATE_ARTIFACT_DIR="$PWD/release-artifacts"
+          cargo test --manifest-path src-tauri/Cargo.toml --test updater_install --locked -- --ignored --nocapture
