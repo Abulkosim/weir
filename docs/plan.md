@@ -190,7 +190,8 @@ Patch. Pull requests #18, #21, #22, #23 (Dependabot) and #24.
   Verify: each pull request green in CI after rebasing; locally typecheck, unit, 200 browser cases, fmt, strict Clippy, 118 Rust tests, also on main with every update combined.
 - [x] **D.2 Updater test on a macOS runner.** `updater-test.yml` (manual) runs the real updater install test against the tag build's exact Mac archive, so a release can be verified without the owner's Mac.
   Verify: run against the v0.7.1 tag build; the archive checksum it prints matches `SHA256SUMS.txt`.
-- [ ] **D.3 Release v0.7.1.**
+  Findings: passed on the first run; installed 0.7.1 for x86_64 and arm64.
+- [x] **D.3 Release v0.7.1.** Published 2026-11-07 15:00 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 
