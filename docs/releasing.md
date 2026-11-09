@@ -20,7 +20,7 @@ Never put IP addresses, cities, SSIDs, history files or keys in commits, screens
 - Windows x64: Rust format, Clippy, tests, NSIS and MSI.
 - Tag pushes in `Abulkosim/weir` only: sign updater artifacts, validate versions and lockfiles, verify every updater signature and signed version, run the real updater install test on a macOS runner against the signed Mac archive (`updater-test.yml`; no draft is created if it fails), write `latest.json` and `SHA256SUMS.txt`, generate an SPDX SBOM, record build provenance and the SBOM attestation, and create or update a **draft** release. It refuses to touch a published release.
 
-Actions are pinned by SHA with read-only permissions; only the release job can write, plus OIDC and attestation permissions. Pull requests, `main` builds and forks get no signing secrets and build without updater artifacts.
+Every pull request and `main` push also runs `security.yml` (cargo deny, pnpm audit) and `codeql.yml` (CodeQL on the Rust, TypeScript and workflow code, security-extended queries; findings in the Security tab). Actions are pinned by SHA with read-only permissions; only the release job can write, plus OIDC and attestation permissions. Pull requests, `main` builds and forks get no signing secrets and build without updater artifacts.
 
 ## Verify the draft
 
