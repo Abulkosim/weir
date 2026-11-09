@@ -1,0 +1,97 @@
+name: Fuzz
+
+on:
+  pull_request:
+    paths:
+      - src-tauri/src/core/settings.rs
+      - src-tauri/src/core/history.rs
+      - src-tauri/src/core/stats.rs
+      - src-tauri/src/core/cli.rs
+      - src-tauri/src/core/backends/cloudflare.rs
+      - src-tauri/fuzz/**
+      - .github/workflows/fuzz.yml
+  schedule:
+    - cron: "53 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      seconds:
+        description: Seconds per target
+        default: "300"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+  CI: true
+
+jobs:
+  fuzz:
+    name: Fuzz parsers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libdbus-1-dev
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+        with:
+          cache: true
+      - name: Build frontend assets
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # v2.90.1
+        with:
+          tool: cargo-fuzz
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
+        with:
+          workspaces: src-tauri/fuzz -> target
+          key: fuzz
+          save-if: ${{ github.event_name != 'pull_request' }}
+      - name: Check formatting
+        working-directory: src-tauri/fuzz
+        run: cargo +nightly fmt --check
+      - name: Build fuzz targets
+        working-directory: src-tauri/fuzz
+        run: cargo +nightly fuzz build
+      - name: Fuzz each parser
+        working-directory: src-tauri/fuzz
+        env:
+          SECONDS_PER_TARGET: ${{ inputs.seconds || (github.event_name == 'schedule' && '300') || '60' }}
+        run: |
+          for target in $(cargo +nightly fuzz list); do
+            mkdir -p "corpus/$target"
+            echo "::group::$target"
+            cargo +nightly fuzz run "$target" "corpus/$target" "seeds/$target" -- -max_total_time="$SECONDS_PER_TARGET" -max_len=8192
+            echo "::endgroup::"
+          done
+      - name: Preserve failing inputs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: fuzz-artifacts
+          path: src-tauri/fuzz/artifacts/
+          if-no-files-found: ignore
+          retention-days: 14

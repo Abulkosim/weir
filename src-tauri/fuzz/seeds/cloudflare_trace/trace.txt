@@ -1,0 +1,14 @@
+fl=1f1
+h=speed.cloudflare.com
+ts=1762500000.000
+visit_scheme=https
+uag=Weir
+colo=FRA
+sliver=none
+http=http/2
+tls=TLSv1.3
+sni=plaintext
+warp=off
+gateway=off
+rbi=off
+kex=X25519

@@ -21,7 +21,7 @@ updates:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: cargo
-    directory: /src-tauri
+    directories: ["/src-tauri", "/src-tauri/fuzz"]
     schedule:
       interval: weekly
     groups:

@@ -41,6 +41,30 @@ fn result(at_ms: u64, down: f64) -> Entry {
 }
 
 #[test]
+fn parse_reads_what_to_text_writes() {
+    let entries = vec![result(DAY, 100.0), result(2 * DAY, 200.0)];
+    let text = to_text(&entries).unwrap();
+    assert_eq!(parse(&text), Some((entries, 0)));
+    assert_eq!(
+        parse(r#"{"entries":[{"kind":"result"}]}"#),
+        Some((vec![], 1))
+    );
+    assert_eq!(parse("[]"), None);
+    assert_eq!(parse("not json"), None);
+}
+
+#[test]
+fn speeds_keep_every_bit_through_a_save() {
+    let text = to_text(&[result(DAY, 100.0)]).unwrap().replacen(
+        "100.0",
+        "100.03333333333333333333333333",
+        1,
+    );
+    let (entries, _) = parse(&text).unwrap();
+    assert_eq!(parse(&to_text(&entries).unwrap()), Some((entries, 0)));
+}
+
+#[test]
 fn saves_and_loads_every_entry_in_order() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("history.json");

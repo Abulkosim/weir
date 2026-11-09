@@ -207,10 +207,46 @@ fn aside(path: &Path, now_ms: u64) -> PathBuf {
     path.with_file_name(format!("settings.unreadable-{now_ms}.json"))
 }
 
+/// What a settings file says, before anything happens on disk.
+#[derive(Debug, PartialEq)]
+pub enum Parsed {
+    /// Not JSON, or not an object.
+    Unreadable,
+    /// Written by a newer Weir.
+    Newer,
+    /// Settings, with a note for each field that had to be reset.
+    Read(Settings, Vec<String>),
+}
+
+pub fn parse(text: &str) -> Parsed {
+    let Ok(Value::Object(root)) = serde_json::from_str::<Value>(text) else {
+        return Parsed::Unreadable;
+    };
+    if root
+        .get("version")
+        .and_then(Value::as_u64)
+        .is_some_and(|version| version > VERSION)
+    {
+        return Parsed::Newer;
+    }
+    let mut notes = Vec::new();
+    let settings = match root.get("settings") {
+        Some(Value::Object(map)) => Settings::recover(map, &mut notes),
+        _ => Settings::default(),
+    };
+    Parsed::Read(settings, notes)
+}
+
+pub fn to_text(settings: &Settings) -> serde_json::Result<String> {
+    serde_json::to_string_pretty(&File {
+        version: VERSION,
+        settings,
+    })
+}
+
 impl Store {
     /// Loads settings and any notes about what had to be reset.
     pub fn load(path: PathBuf, now_ms: u64) -> (Self, Settings, Vec<String>) {
-        let mut notes = Vec::new();
         let Ok(text) = fs::read_to_string(&path) else {
             return (
                 Self {
@@ -218,62 +254,52 @@ impl Store {
                     writable: true,
                 },
                 Settings::default(),
-                notes,
+                Vec::new(),
             );
         };
-        let root = serde_json::from_str::<Value>(&text).ok();
-        let Some(Value::Object(root)) = root else {
-            let backup = aside(&path, now_ms);
-            let moved = fs::rename(&path, &backup).is_ok();
-            notes.push(if moved {
-                format!(
-                    "Settings couldn’t be read and were reset. The old file was kept as {}.",
-                    backup
-                        .file_name()
-                        .map_or_else(String::new, |name| name.to_string_lossy().into_owned())
+        match parse(&text) {
+            Parsed::Unreadable => {
+                let backup = aside(&path, now_ms);
+                let moved = fs::rename(&path, &backup).is_ok();
+                let note = if moved {
+                    format!(
+                        "Settings couldn’t be read and were reset. The old file was kept as {}.",
+                        backup
+                            .file_name()
+                            .map_or_else(String::new, |name| name.to_string_lossy().into_owned())
+                    )
+                } else {
+                    "Settings couldn’t be read and were reset.".into()
+                };
+                (
+                    Self {
+                        path,
+                        writable: moved,
+                    },
+                    Settings::default(),
+                    vec![note],
                 )
-            } else {
-                "Settings couldn’t be read and were reset.".into()
-            });
-            return (
-                Self {
-                    path,
-                    writable: moved,
-                },
-                Settings::default(),
-                notes,
-            );
-        };
-        if root
-            .get("version")
-            .and_then(Value::as_u64)
-            .is_some_and(|version| version > VERSION)
-        {
-            notes.push(
-                "These settings are from a newer version of Weir. Changes here won’t be saved."
-                    .into(),
-            );
-            return (
+            }
+            Parsed::Newer => (
                 Self {
                     path,
                     writable: false,
                 },
                 Settings::default(),
+                vec![
+                    "These settings are from a newer version of Weir. Changes here won’t be saved."
+                        .into(),
+                ],
+            ),
+            Parsed::Read(settings, notes) => (
+                Self {
+                    path,
+                    writable: true,
+                },
+                settings,
                 notes,
-            );
+            ),
         }
-        let settings = match root.get("settings") {
-            Some(Value::Object(map)) => Settings::recover(map, &mut notes),
-            _ => Settings::default(),
-        };
-        (
-            Self {
-                path,
-                writable: true,
-            },
-            settings,
-            notes,
-        )
     }
 
     pub fn save(&self, settings: &Settings) -> io::Result<()> {
@@ -283,11 +309,7 @@ impl Store {
         if let Some(directory) = self.path.parent() {
             fs::create_dir_all(directory)?;
         }
-        let text = serde_json::to_string_pretty(&File {
-            version: VERSION,
-            settings,
-        })
-        .map_err(io::Error::other)?;
+        let text = to_text(settings).map_err(io::Error::other)?;
         let temporary = self.path.with_extension("json.tmp");
         fs::write(&temporary, text)?;
         fs::rename(&temporary, &self.path)
@@ -403,5 +425,22 @@ mod tests {
         assert_eq!(notes.len(), 1);
         assert!(store.save(&Settings::default()).is_err());
         assert_eq!(fs::read_to_string(path).unwrap(), text);
+    }
+
+    #[test]
+    fn parse_reads_what_to_text_writes() {
+        let settings = Settings {
+            theme: Theme::Dark,
+            plan_download_mbps: Some(300),
+            ..Settings::default()
+        };
+        let text = to_text(&settings).unwrap();
+        assert_eq!(parse(&text), Parsed::Read(settings, vec![]));
+        assert_eq!(parse("[]"), Parsed::Unreadable);
+        assert_eq!(parse(r#"{"version":2}"#), Parsed::Newer);
+        assert_eq!(
+            parse(r#"{"settings":{"theme":7}}"#),
+            Parsed::Read(Settings::default(), vec!["Appearance was reset.".into()])
+        );
     }
 }

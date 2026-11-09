@@ -1,0 +1,50 @@
+[package]
+name = "weir-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+weir = { path = ".." }
+
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "settings_file"
+path = "fuzz_targets/settings_file.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "history_file"
+path = "fuzz_targets/history_file.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "cloudflare_trace"
+path = "fuzz_targets/cloudflare_trace.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "server_timing"
+path = "fuzz_targets/server_timing.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "cli_args"
+path = "fuzz_targets/cli_args.rs"
+test = false
+doc = false
+bench = false
