@@ -1,6 +1,14 @@
 name: Updater install test
 
 on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+      run-id:
+        type: string
+        default: ""
   workflow_dispatch:
     inputs:
       tag:
@@ -52,7 +60,15 @@ jobs:
           save-if: false
       - name: Prepare frontend assets
         run: pnpm build
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+      - name: Download the Mac archive from this run
+        if: inputs.run-id == ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: installers-universal-apple-darwin
+          path: release-artifacts/
+      - name: Download the Mac archive from the tag build
+        if: inputs.run-id != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: installers-universal-apple-darwin
           path: release-artifacts/
