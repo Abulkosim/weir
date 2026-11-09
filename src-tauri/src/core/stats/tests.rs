@@ -181,6 +181,14 @@ fn jitter_is_mean_absolute_change() {
 }
 
 #[test]
+fn server_timing_that_overflows_is_ignored() {
+    assert_eq!(
+        server_time_ms("cfSpeedEdge;dur=1e308, cfSpeedWorker;dur=1e308"),
+        None
+    );
+}
+
+#[test]
 fn server_timing_prefers_request_duration_then_sums_speed_metrics() {
     assert_eq!(
         server_time_ms("cfSpeedEdge;dur=3, cfSpeedWorker;dur=17"),

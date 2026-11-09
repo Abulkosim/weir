@@ -19,3 +19,7 @@ design/directions/shots/sheet.html
 **/.credentials.json
 site/app/
 .claude/
+src-tauri/fuzz/target/
+src-tauri/fuzz/corpus/
+src-tauri/fuzz/artifacts/
+src-tauri/fuzz/coverage/

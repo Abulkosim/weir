@@ -64,6 +64,15 @@ Run `pnpm build` once before the Rust checks; they need the frontend assets. CI 
 
 Measurement math is pure and tested on recorded sample fixtures ([`src-tauri/fixtures`](src-tauri/fixtures/README.md)). Backends are tested against a local mock server. Tests never touch the real network. A measurement change needs a fixture and a regression test.
 
+The parsers for settings, History, Cloudflare's trace and `Server-Timing` headers, and command-line arguments have fuzz targets in [`src-tauri/fuzz`](src-tauri/fuzz). They need nightly Rust and `cargo install cargo-fuzz`:
+
+```sh
+cd src-tauri/fuzz
+cargo +nightly fuzz run history_file corpus/history_file seeds/history_file -- -max_total_time=120
+```
+
+`cargo +nightly fuzz list` names every target. [`fuzz.yml`](.github/workflows/fuzz.yml) runs each for a minute on pull requests that touch them and five minutes weekly. A failing input lands in `fuzz/artifacts/`; fix it and add a regression test.
+
 Never commit IP addresses, locations, Wi-Fi names, or real `history.json` files.
 
 ## Layout
@@ -85,6 +94,7 @@ src-tauri/src/
     settings.rs        local settings file
     tray.rs, ring.rs   tray menu and icon rendering
 src-tauri/fixtures/    throughput sample fixtures
+src-tauri/fuzz/        fuzz targets and seed inputs
 src/
   App.vue, components/ popover, testing, history, settings
   design/, styles.css  tokens and controls

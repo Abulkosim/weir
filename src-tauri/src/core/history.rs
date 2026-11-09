@@ -86,10 +86,30 @@ fn readable(raw: Vec<Value>) -> Vec<Entry> {
 pub fn read_only(path: &Path) -> Vec<Entry> {
     fs::read_to_string(path)
         .ok()
-        .and_then(|text| serde_json::from_str::<Value>(&text).ok())
-        .and_then(|value| value.get("entries").and_then(Value::as_array).cloned())
-        .map(readable)
+        .and_then(|text| parse(&text))
+        .map(|(entries, _)| entries)
         .unwrap_or_default()
+}
+
+/// The readable entries, oldest first, and how many were dropped. `None` when the
+/// text is not a history file at all.
+pub fn parse(text: &str) -> Option<(Vec<Entry>, usize)> {
+    let raw = serde_json::from_str::<Value>(text)
+        .ok()?
+        .get("entries")?
+        .as_array()?
+        .clone();
+    let total = raw.len();
+    let entries = readable(raw);
+    let skipped = total - entries.len();
+    Some((entries, skipped))
+}
+
+pub fn to_text(entries: &[Entry]) -> serde_json::Result<String> {
+    serde_json::to_string(&File {
+        version: VERSION,
+        entries,
+    })
 }
 
 impl History {
@@ -98,19 +118,13 @@ impl History {
             Ok(text) => text,
             Err(_) => return (Self::empty(path), None),
         };
-        let raw = serde_json::from_str::<Value>(&text)
-            .ok()
-            .and_then(|value| value.get("entries").and_then(Value::as_array).cloned());
-        let Some(raw) = raw else {
+        let Some((entries, skipped)) = parse(&text) else {
             let backup = backup_path(&path, now_ms);
             let recovery = fs::rename(&path, &backup)
                 .ok()
                 .map(|_| Recovery::BackedUp(backup));
             return (Self::empty(path), recovery);
         };
-        let total = raw.len();
-        let entries = readable(raw);
-        let skipped = total - entries.len();
         let mut history = Self { path, entries };
         history.prune(now_ms);
         (history, (skipped > 0).then_some(Recovery::Skipped(skipped)))
@@ -150,11 +164,7 @@ impl History {
         if let Some(directory) = self.path.parent() {
             fs::create_dir_all(directory)?;
         }
-        let file = File {
-            version: VERSION,
-            entries: &self.entries,
-        };
-        let text = serde_json::to_string(&file).map_err(io::Error::other)?;
+        let text = to_text(&self.entries).map_err(io::Error::other)?;
         let temporary = self.path.with_extension("json.tmp");
         fs::write(&temporary, text)?;
         fs::rename(&temporary, &self.path)

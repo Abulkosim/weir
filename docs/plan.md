@@ -193,6 +193,18 @@ Patch. Pull requests #18, #21, #22, #23 (Dependabot) and #24.
   Findings: passed on the first run; installed 0.7.1 for x86_64 and arm64.
 - [x] **D.3 Release v0.7.1.** Published 2026-11-07 15:00 UTC; evidence in `docs/verification.md`.
 
+## Hardening ⛳
+
+No release; CI and tests. Pull requests #27, #28, #29.
+
+- [x] **H.1 Updater test in every tag build.** `updater-test.yml` is reusable; the tag build runs it after the native jobs and creates the draft only if it passes. The manual run stays for retests.
+  Verify: manual run on the branch against the v0.7.1 build, and a throwaway branch calling it as the tag build does (artifact from the same run); both rejected tampering and installed 0.7.1 for x86_64 and arm64.
+- [x] **H.2 CodeQL.** Rust, TypeScript and workflows, security-extended queries, on pull requests, `main` and weekly.
+  Verify: all three languages analysed on the pull request with 0 findings.
+- [x] **H.3 Fuzz the parsers.** `cargo fuzz` targets for settings, History, Cloudflare's trace, `Server-Timing` and CLI arguments, each with a round-trip or range check; `fuzz.yml` runs them on pull requests that touch them and weekly.
+  Verify: each target 3 min locally after the fixes (2.4M–19M runs, no failures); regression tests for both findings; `fuzz.yml` green on the pull request.
+  Findings: History speeds could change in their last bit after a save and load (serde_json's default float parsing is not exact); now `float_roundtrip`. A `Server-Timing` header whose `cfSpeed*` durations add up past the largest float gave an infinite server time; now ignored. Found while writing the target, not by the fuzzer in 2 min; it is a seed now.
+
 ## Phase 5 — Later
 
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.
