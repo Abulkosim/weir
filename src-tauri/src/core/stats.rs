@@ -61,7 +61,9 @@ pub fn server_time_ms(header: &str) -> Option<f64> {
             found = true;
         }
     }
-    request.or(found.then_some(speed))
+    request
+        .or(found.then_some(speed))
+        .filter(|ms| ms.is_finite())
 }
 
 /// Round trip of a latency probe: time to first byte minus server time.
