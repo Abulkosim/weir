@@ -18,7 +18,7 @@ Never put IP addresses, cities, SSIDs, history files or keys in commits, screens
 - Ubuntu: types, production build, unit and release-script tests, Playwright on Chromium and WebKit.
 - macOS: Rust format, Clippy, tests, universal DMG and `.app.tar.gz`.
 - Windows x64: Rust format, Clippy, tests, NSIS and MSI.
-- Tag pushes in `Abulkosim/weir` only: sign updater artifacts, validate versions and lockfiles, verify every updater signature and signed version, write `latest.json` and `SHA256SUMS.txt`, generate an SPDX SBOM, record build provenance and the SBOM attestation, and create or update a **draft** release. It refuses to touch a published release.
+- Tag pushes in `Abulkosim/weir` only: sign updater artifacts, validate versions and lockfiles, verify every updater signature and signed version, run the real updater install test on a macOS runner against the signed Mac archive (`updater-test.yml`; no draft is created if it fails), write `latest.json` and `SHA256SUMS.txt`, generate an SPDX SBOM, record build provenance and the SBOM attestation, and create or update a **draft** release. It refuses to touch a published release.
 
 Actions are pinned by SHA with read-only permissions; only the release job can write, plus OIDC and attestation permissions. Pull requests, `main` builds and forks get no signing secrets and build without updater artifacts.
 
@@ -33,13 +33,13 @@ Actions are pinned by SHA with read-only permissions; only the release job can w
    done
    ```
 
-3. Real updater install against the exact archive (rejects altered bytes and a wrong signed version, then installs into a disposable app):
+3. Real updater install against the exact archive (rejects altered bytes and a wrong signed version, then installs into a disposable app). The tag build already ran it: check that the `Weir.app.tar.gz` checksum printed by its *Updater install test* job matches `SHA256SUMS.txt`. To run it again on a Mac:
 
    ```sh
    WEIR_UPDATE_ARTIFACT_DIR="$PWD/.cache/release-vX.Y.Z" WEIR_REQUIRE_UNIVERSAL=1 cargo test --manifest-path src-tauri/Cargo.toml --test updater_install --locked -- --ignored --nocapture
    ```
 
-   Without a Mac, run the same test on a macOS runner against the tag build's Mac archive: `gh workflow run updater-test.yml -f tag=vX.Y.Z -f run-id=<tag build run ID>`. Check that the `Weir.app.tar.gz` checksum it prints matches `SHA256SUMS.txt`.
+   Or again on a macOS runner: `gh workflow run updater-test.yml -f tag=vX.Y.Z -f run-id=<tag build run ID>`.
 
 4. Record what passed, counts, CI run links, checksums and what is still pending in [verification.md](verification.md), newest release on top.
 5. Publish once every check above passes (the owner gave standing approval on 2026-10-24): `gh release edit vX.Y.Z --draft=false --latest`. Date the changelog and release notes by the UTC publish day. Then bump the Homebrew tap ([below](#homebrew-personal-tap)): automatic once its workflow is switched on, by hand until then. Then report to the owner. If any check fails, stop and report instead.

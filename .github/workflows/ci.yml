@@ -167,10 +167,21 @@ jobs:
           retention-days: 14
           overwrite: true
 
+  updater:
+    name: Updater install test
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'Abulkosim/weir'
+    needs: [native]
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/updater-test.yml
+    with:
+      tag: ${{ github.ref_name }}
+
   release:
     name: Prepare draft release
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'Abulkosim/weir'
-    needs: [frontend, native]
+    needs: [frontend, native, updater]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
