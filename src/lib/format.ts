@@ -1,10 +1,11 @@
 import { isWindows } from './platform.ts'
 import { loadedMs, type Meaning, type Metered, type PlanComparison, type Report, type TestError } from './model.ts'
 
+/** Three significant figures at most, decided after rounding so 9.97 reads 10, not 10.0. */
 export function formatMbps(value: number): string {
   if (!Number.isFinite(value) || value < 0) return '–'
-  if (value >= 10) return String(Math.round(value))
-  if (value >= 1) return value.toFixed(1)
+  if (Math.round(value * 10) >= 100) return String(Math.round(value))
+  if (Math.round(value * 100) >= 100) return value.toFixed(1)
   return value.toFixed(2)
 }
 
@@ -16,7 +17,7 @@ export function formatMs(value: number): string {
 export function formatMb(bytes: number): string {
   const mb = bytes / 1_000_000
   if (mb < 1) return '<1 MB'
-  return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`
+  return `${Math.round(mb * 10) < 100 ? mb.toFixed(1) : Math.round(mb)} MB`
 }
 
 export function relativeAge(at: number, now: number): string {
