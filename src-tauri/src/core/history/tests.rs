@@ -173,3 +173,28 @@ fn stored_entries_hold_no_address_or_location() {
         );
     }
 }
+
+#[test]
+fn newer_file_is_read_but_never_overwritten() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("history.json");
+    let text =
+        r#"{"version":99,"entries":[{"kind":"outage","startMs":1,"endMs":2},{"kind":"future"}]}"#;
+    std::fs::write(&path, text).unwrap();
+    let (mut history, recovery) = History::load(path.clone(), 3);
+    assert_eq!(recovery, Some(Recovery::Newer));
+    assert_eq!(history.len(), 1);
+    assert!(history.push(result(3, 100.0), 3).is_err());
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), text);
+}
+
+#[test]
+fn file_that_cannot_be_opened_is_left_alone() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("history.json");
+    std::fs::create_dir(&path).unwrap();
+    let (mut history, recovery) = History::load(path.clone(), NOW);
+    assert_eq!(recovery, Some(Recovery::Unopened));
+    assert!(history.push(result(NOW, 100.0), NOW).is_err());
+    assert!(path.is_dir());
+}

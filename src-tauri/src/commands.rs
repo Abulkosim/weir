@@ -145,7 +145,7 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<View, String>
     }
     let wake = settings.auto_check_updates && !current.auto_check_updates;
     let watch = settings.watch_outages != current.watch_outages;
-    runtime.save_settings(&app, settings)?;
+    let saved = runtime.save_settings(&app, settings);
     if wake {
         app.state::<std::sync::Arc<tokio::sync::Notify>>()
             .notify_one();
@@ -153,7 +153,7 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<View, String>
     if watch {
         runtime.monitor_wake.notify_one();
     }
-    Ok(runtime.view())
+    saved.map(|()| runtime.view())
 }
 
 #[tauri::command]
