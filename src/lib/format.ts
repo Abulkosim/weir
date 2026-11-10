@@ -1,3 +1,4 @@
+import { isWindows } from './platform.ts'
 import { loadedMs, type Meaning, type Metered, type PlanComparison, type Report, type TestError } from './model.ts'
 
 export function formatMbps(value: number): string {
@@ -85,11 +86,9 @@ export const meteredLabel: Record<Metered, string> = {
   overLimit: 'Over data limit',
 }
 
-const mac = typeof navigator === 'undefined' || !navigator.userAgent.includes('Windows')
-
 /** Keyboard shortcut label for this platform, e.g. ⌘T or Ctrl+T. */
 export function shortcut(key: string): string {
-  return mac ? `⌘${key}` : `Ctrl+${key}`
+  return isWindows ? `Ctrl+${key}` : `⌘${key}`
 }
 
 /** Plain-text result for a chat with an internet provider or a note. */

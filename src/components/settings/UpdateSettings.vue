@@ -5,7 +5,7 @@ import { updateAvailable, type UpdateState } from '../../lib/updater'
 import AppIcon from '../AppIcon.vue'
 import AppSwitch from '../ui/AppSwitch.vue'
 
-const props = defineProps<{ state: UpdateState; busy: boolean; demo: boolean; autoCheck: boolean; settingsBusy: boolean }>()
+const props = defineProps<{ state: UpdateState; busy: boolean; demo: boolean; autoCheck: boolean }>()
 const emit = defineEmits<{ check: []; install: []; autoCheck: [value: boolean] }>()
 const available = computed(() => updateAvailable(props.state))
 const progress = computed(() => props.state.kind === 'downloading' && props.state.total
@@ -41,7 +41,7 @@ function activate(): void {
 <template>
   <section class="settings-section update-settings" aria-labelledby="updates-title">
     <h2 id="updates-title" class="updates-title">Updates<span v-if="available" class="update-dot" aria-hidden="true"/></h2>
-    <div class="setting-row update-auto"><span id="update-auto-label" class="setting-label">Check for updates daily</span><AppSwitch :model-value="autoCheck" aria-labelledby="update-auto-label" :disabled="settingsBusy" @update:model-value="emit('autoCheck', $event)"/></div>
+    <div class="setting-row update-auto"><span id="update-auto-label" class="setting-label">Check for updates daily</span><AppSwitch :model-value="autoCheck" aria-labelledby="update-auto-label" @update:model-value="emit('autoCheck', $event)"/></div>
     <div class="update-card">
       <div class="update-heading"><span class="update-mark"><AppIcon name="weir" :size="19"/></span><div><span class="setting-label">Weir</span><span class="update-version">Version {{ version }}</span></div><AppIcon v-if="state.kind === 'current' && !demo" class="update-current" name="tick" :size="16"/></div>
       <p class="update-message" :class="{ 'update-error': state.kind === 'error' }" :role="state.kind === 'error' ? 'alert' : 'status'">{{ copy }}</p>

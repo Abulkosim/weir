@@ -1,3 +1,5 @@
+import { isWindows } from './platform.ts'
+
 const modifierOrder = ['Control', 'Alt', 'Shift', 'Super'] as const
 type Modifier = (typeof modifierOrder)[number]
 const macSymbols: Record<Modifier, string> = { Control: '⌃', Alt: '⌥', Shift: '⇧', Super: '⌘' }
@@ -12,10 +14,8 @@ const modifierCodes = new Set(['ShiftLeft', 'ShiftRight', 'ControlLeft', 'Contro
 export type ShortcutEvent = Pick<KeyboardEvent, 'code' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>
 export type Recorded = { kind: 'shortcut'; value: string } | { kind: 'pending' } | { kind: 'error'; message: string }
 
-const onWindows = () => typeof navigator !== 'undefined' && navigator.userAgent.includes('Windows')
-
 /** A key press while recording, as the Rust side parses it, for example `Control+Alt+KeyW`. */
-export function recordShortcut(event: ShortcutEvent, windows = onWindows()): Recorded {
+export function recordShortcut(event: ShortcutEvent, windows = isWindows): Recorded {
   if (modifierCodes.has(event.code) || !event.code) return { kind: 'pending' }
   const key = /^(Key[A-Z]|Digit\d|F\d{1,2})$/.test(event.code) || event.code in keyNames ? event.code : null
   if (!key) return { kind: 'error', message: 'That key can’t be used in a shortcut.' }
@@ -24,7 +24,7 @@ export function recordShortcut(event: ShortcutEvent, windows = onWindows()): Rec
   return { kind: 'shortcut', value: [...modifierOrder.filter(name => pressed[name]), key].join('+') }
 }
 
-export function formatShortcut(value: string, windows = onWindows()): string {
+export function formatShortcut(value: string, windows = isWindows): string {
   const parts = value.split('+')
   const key = parts.at(-1) ?? ''
   const label = key.startsWith('Key') ? key.slice(3) : key.startsWith('Digit') ? key.slice(5) : keyNames[key] ?? key

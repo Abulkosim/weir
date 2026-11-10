@@ -9,11 +9,12 @@ import ScheduleSettings from './settings/ScheduleSettings.vue'
 import PlanSettings from './settings/PlanSettings.vue'
 import ShortcutField from './settings/ShortcutField.vue'
 import type { UpdateState } from '../lib/updater'
+import { isWindows } from '../lib/platform'
 
-const props = defineProps<{ settings: Settings; estimateMb: number; lastTestMs: number | null; now: number; metered: boolean; historyCount: number; busy?: boolean; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
+const props = defineProps<{ settings: Settings; estimateMb: number; lastTestMs: number | null; now: number; metered: boolean; historyCount: number; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
 const emit = defineEmits<{ back: []; save: [settings: Settings]; export: []; report: []; clear: []; checkUpdate: []; installUpdate: [] }>()
 const confirmClear = ref(false)
-const isMac = navigator.userAgent.includes('Mac')
+const isMac = !isWindows
 const themes: { id: Settings['theme']; label: string; icon: 'system' | 'sun' | 'moon' }[] = [
   { id: 'system', label: 'System', icon: 'system' },
   { id: 'light', label: 'Light', icon: 'sun' },
@@ -37,7 +38,7 @@ function patch(change: Partial<Settings>): void {
       <section class="settings-section">
         <h2>Appearance</h2>
         <div class="theme-options" role="group" aria-label="Appearance">
-          <button v-for="theme in themes" :key="theme.id" class="theme-option" :class="{ selected: settings.theme === theme.id }" :aria-pressed="settings.theme === theme.id" :disabled="busy" @click="patch({ theme: theme.id })">
+          <button v-for="theme in themes" :key="theme.id" class="theme-option" :class="{ selected: settings.theme === theme.id }" :aria-pressed="settings.theme === theme.id" @click="patch({ theme: theme.id })">
             <span class="theme-thumbnail" :class="`thumbnail-${theme.id}`"><span/><span/><span/></span>
             <span><AppIcon :name="theme.icon" :size="13"/>{{ theme.label }}</span>
             <span v-if="settings.theme === theme.id" class="theme-check"><AppIcon name="tick" :size="10"/></span>
@@ -49,31 +50,31 @@ function patch(change: Partial<Settings>): void {
         <h2>Tray &amp; startup</h2>
         <div v-if="isMac" class="setting-row">
           <div><span id="tray-speed-label" class="setting-label">Show speed next to icon</span><p>The last download speed, in Mbps.</p></div>
-          <AppSwitch :model-value="settings.traySpeed" aria-labelledby="tray-speed-label" :disabled="busy" @update:model-value="patch({ traySpeed: $event })"/>
+          <AppSwitch :model-value="settings.traySpeed" aria-labelledby="tray-speed-label" @update:model-value="patch({ traySpeed: $event })"/>
         </div>
         <div class="setting-row">
           <div><span id="shortcut-label" class="setting-label">Shortcut</span><p>Opens Weir from any app.</p></div>
-          <ShortcutField :model-value="settings.shortcut" labelledby="shortcut-label" :disabled="busy" @update:model-value="patch({ shortcut: $event })"/>
+          <ShortcutField :model-value="settings.shortcut" labelledby="shortcut-label" @update:model-value="patch({ shortcut: $event })"/>
         </div>
         <div class="setting-row">
           <span id="autostart-label" class="setting-label">Launch at login</span>
-          <AppSwitch :model-value="settings.autostart" aria-labelledby="autostart-label" :disabled="busy" @update:model-value="patch({ autostart: $event })"/>
+          <AppSwitch :model-value="settings.autostart" aria-labelledby="autostart-label" @update:model-value="patch({ autostart: $event })"/>
         </div>
       </section>
 
-      <PlanSettings :download="settings.planDownloadMbps" :upload="settings.planUploadMbps" :disabled="busy" @save="patch"/>
+      <PlanSettings :download="settings.planDownloadMbps" :upload="settings.planUploadMbps" @save="patch"/>
 
-      <ScheduleSettings :schedule="settings.scheduledTests" :estimate-mb="estimateMb" :last-test-ms="lastTestMs" :now="now" :metered="metered" :disabled="busy" @save="patch({ scheduledTests: $event })"/>
+      <ScheduleSettings :schedule="settings.scheduledTests" :estimate-mb="estimateMb" :last-test-ms="lastTestMs" :now="now" :metered="metered" @save="patch({ scheduledTests: $event })"/>
 
       <section class="settings-section">
         <h2>Outages</h2>
         <div class="setting-row">
           <div><span id="watch-label" class="setting-label">Watch for outages</span><p>A tiny check about once a minute, under 2 kB. Outages go into History.</p></div>
-          <AppSwitch :model-value="settings.watchOutages" aria-labelledby="watch-label" :disabled="busy" @update:model-value="patch({ watchOutages: $event })"/>
+          <AppSwitch :model-value="settings.watchOutages" aria-labelledby="watch-label" @update:model-value="patch({ watchOutages: $event })"/>
         </div>
         <div class="setting-row">
           <span id="notify-label" class="setting-label">Notify when it drops and returns</span>
-          <AppSwitch :model-value="settings.notifyOutages" aria-labelledby="notify-label" :disabled="busy || !settings.watchOutages" @update:model-value="patch({ notifyOutages: $event })"/>
+          <AppSwitch :model-value="settings.notifyOutages" aria-labelledby="notify-label" :disabled="!settings.watchOutages" @update:model-value="patch({ notifyOutages: $event })"/>
         </div>
       </section>
 
@@ -81,19 +82,19 @@ function patch(change: Partial<Settings>): void {
         <h2>History</h2>
         <div class="setting-row">
           <div><span class="setting-label num">{{ historyCount === 1 ? '1 test' : `${historyCount} tests` }}</span><p>Kept on this computer for a year.</p></div>
-          <button class="button button-small" :disabled="busy || !historyCount" @click="$emit('export')"><AppIcon name="export" :size="13"/>Export CSV</button>
+          <button class="button button-small" :disabled="!historyCount" @click="$emit('export')"><AppIcon name="export" :size="13"/>Export CSV</button>
         </div>
         <div class="setting-row">
           <div><span class="setting-label">Report for your provider</span><p>A PDF of the last 30 days: speeds against your plan, slow hours and outages.</p></div>
-          <button class="button button-small" :disabled="busy || !historyCount" @click="$emit('report')"><AppIcon name="report" :size="13"/>Save PDF</button>
+          <button class="button button-small" :disabled="!historyCount" @click="$emit('report')"><AppIcon name="report" :size="13"/>Save PDF</button>
         </div>
         <div class="setting-row">
           <span class="setting-label">Clear history</span>
-          <button class="button button-small" :disabled="busy || !historyCount" @click="confirmClear = true">Clear…</button>
+          <button class="button button-small" :disabled="!historyCount" @click="confirmClear = true">Clear…</button>
         </div>
       </section>
 
-      <UpdateSettings :state="updateState" :busy="updateBusy" :demo="demo" :auto-check="settings.autoCheckUpdates" :settings-busy="Boolean(busy)" @check="$emit('checkUpdate')" @install="$emit('installUpdate')" @auto-check="patch({ autoCheckUpdates: $event })"/>
+      <UpdateSettings :state="updateState" :busy="updateBusy" :demo="demo" :auto-check="settings.autoCheckUpdates" @check="$emit('checkUpdate')" @install="$emit('installUpdate')" @auto-check="patch({ autoCheckUpdates: $event })"/>
 
       <section class="settings-section about">
         <h2>About</h2>

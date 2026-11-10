@@ -3,7 +3,7 @@ import { nextTick, ref } from 'vue'
 import AppIcon from '../AppIcon.vue'
 import { formatShortcut, recordShortcut } from '../../lib/shortcut'
 
-const props = defineProps<{ modelValue: string | null; disabled?: boolean; labelledby: string }>()
+const props = defineProps<{ modelValue: string | null; labelledby: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string | null] }>()
 const recording = ref(false)
 const error = ref<string | null>(null)
@@ -45,12 +45,12 @@ function onKeydown(event: KeyboardEvent): void {
 <template>
   <div class="shortcut-field">
     <div class="shortcut-controls">
-      <button id="shortcut-button" ref="button" class="shortcut-button" :class="{ recording }" type="button" :aria-labelledby="`${labelledby} shortcut-button`" :aria-describedby="error ? 'shortcut-error' : undefined" :disabled="disabled" @click="recording ? recording = false : start()" @keydown="onKeydown" @blur="recording = false">
+      <button id="shortcut-button" ref="button" class="shortcut-button" :class="{ recording }" type="button" :aria-labelledby="`${labelledby} shortcut-button`" :aria-describedby="error ? 'shortcut-error' : undefined" @click="recording ? recording = false : start()" @keydown="onKeydown" @blur="recording = false">
         <span v-if="recording">Type shortcut…</span>
         <kbd v-else-if="modelValue">{{ formatShortcut(modelValue) }}</kbd>
         <span v-else>Record shortcut</span>
       </button>
-      <button v-if="modelValue && !recording" class="icon-button shortcut-clear" type="button" aria-label="Remove shortcut" :disabled="disabled" @click="emit('update:modelValue', null)"><AppIcon name="close" :size="13"/></button>
+      <button v-if="modelValue && !recording" class="icon-button shortcut-clear" type="button" aria-label="Remove shortcut" @click="emit('update:modelValue', null)"><AppIcon name="close" :size="13"/></button>
     </div>
     <p v-if="error" id="shortcut-error" class="settings-error shortcut-error" role="alert">{{ error }}</p>
   </div>

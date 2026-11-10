@@ -164,6 +164,7 @@ export function useWeir() {
     try {
       const result = startSchema.safeParse(await invoke('start_test', { confirmed }))
       if (result.success && result.data === 'needsConfirmation') confirming.value = true
+      if (result.success && result.data === 'offline') say('No internet connection.')
     } catch {
       connectionError.value = 'Weir couldn’t start the test.'
     }
