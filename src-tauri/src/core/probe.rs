@@ -7,6 +7,7 @@ use super::{
     network::Path,
     stats::median,
 };
+use futures_util::{stream::FuturesUnordered, StreamExt};
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     time::{Duration, Instant},
@@ -88,6 +89,21 @@ pub async fn tcp_ms(address: SocketAddr) -> Option<f64> {
     }
 }
 
+/// The first common port to answer. Tried together, so ports that drop packets
+/// cost one timeout per probe, not one each.
+async fn first_port(gateway: Ipv4Addr) -> Option<f64> {
+    let mut attempts: FuturesUnordered<_> = [80, 443, 53]
+        .into_iter()
+        .map(|port| tcp_ms((gateway, port).into()))
+        .collect();
+    while let Some(answer) = attempts.next().await {
+        if answer.is_some() {
+            return answer;
+        }
+    }
+    None
+}
+
 /// Router round trips: ICMP where the OS allows it, else TCP connects to common ports.
 pub async fn router(gateway: Ipv4Addr) -> Router {
     let mut times = Vec::new();
@@ -100,14 +116,7 @@ pub async fn router(gateway: Ipv4Addr) -> Router {
         Some(replies) if !replies.is_empty() => times = replies,
         _ => {
             for _ in 0..sent {
-                let mut answered = None;
-                for port in [80, 443, 53] {
-                    answered = tcp_ms((gateway, port).into()).await;
-                    if answered.is_some() {
-                        break;
-                    }
-                }
-                if let Some(ms) = answered {
+                if let Some(ms) = first_port(gateway).await {
                     times.push(ms);
                 }
             }
@@ -257,5 +266,15 @@ mod tests {
         let address = closed.local_addr().unwrap();
         drop(closed);
         assert!(tcp_ms(address).await.is_some());
+    }
+
+    #[tokio::test]
+    async fn router_ports_answer_with_the_first_reply() {
+        if cfg!(windows) {
+            return;
+        }
+        let started = Instant::now();
+        assert!(first_port(Ipv4Addr::LOCALHOST).await.is_some());
+        assert!(started.elapsed() < TCP_TIMEOUT);
     }
 }
