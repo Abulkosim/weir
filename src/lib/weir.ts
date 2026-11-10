@@ -2,7 +2,8 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { demo, desktop, invoke, listen, query } from './bridge.ts'
 import { comparePlan } from './plan.ts'
 import { createDemoView, demoDiagnosis, demoHistory, demoMeaning, demoProgress, demoReport, demoSamples } from './demo.ts'
-import { emptyView, historySchema, startSchema, viewSchema, type Entry, type Phase, type Settings, type View } from './model.ts'
+import { emptyView, historySchema, startSchema, viewSchema, type Entry, type Settings, type View } from './model.ts'
+import { historyKey, nextSamples, noSamples, type Samples } from './live.ts'
 
 export function useWeir() {
   const view = ref<View>(demo ? createDemoView(query.get('state'), Date.now(), query.get('error')) : emptyView)
@@ -14,30 +15,22 @@ export function useWeir() {
   const message = ref<string | null>(null)
   let messageTimer: ReturnType<typeof setTimeout> | undefined
   const history = ref<Entry[]>(demo ? demoHistory(Date.now()) : [])
-  let samplePhase: Phase | null = null
+  let live: Samples = noSamples
+  let historyRequest = 0
   let stopListening: (() => void) | undefined
   let simulation: ReturnType<typeof setInterval> | undefined
   let destroyed = false
   const clock = setInterval(() => { now.value = Date.now() }, 15_000)
 
   if (demo && view.value.testing?.liveMbps) {
-    const phase = view.value.testing.phase
-    samplePhase = phase
-    samples.value = demoSamples(view.value.testing.phaseMs / 100, phase === 'upload' ? 41 : 300)
+    const { phase, phaseMs } = view.value.testing
+    live = { phase, phaseMs, values: demoSamples(phaseMs / 100, phase === 'upload' ? 41 : 300) }
+    samples.value = live.values
   }
 
   function track(next: View): void {
-    const progress = next.testing
-    if (!progress || (progress.phase !== 'download' && progress.phase !== 'upload')) {
-      samplePhase = progress?.phase ?? null
-      samples.value = []
-      return
-    }
-    if (progress.phase !== samplePhase) {
-      samplePhase = progress.phase
-      samples.value = []
-    }
-    if (progress.liveMbps !== null) samples.value = [...samples.value, progress.liveMbps]
+    live = nextSamples(live, next)
+    samples.value = live.values
   }
 
   function accept(payload: unknown): void {
@@ -47,7 +40,7 @@ export function useWeir() {
       return
     }
     if (result.data.revision < view.value.revision) return
-    const historyChanged = result.data.historyCount !== view.value.historyCount
+    const historyChanged = historyKey(result.data) !== historyKey(view.value)
     track(result.data)
     view.value = result.data
     connectionError.value = null
@@ -57,8 +50,9 @@ export function useWeir() {
 
   async function loadHistory(): Promise<void> {
     if (demo || !desktop) return
+    const request = ++historyRequest
     const result = historySchema.safeParse(await invoke('get_history', { limit: 500 }).catch(() => null))
-    if (result.success) history.value = result.data
+    if (result.success && request === historyRequest) history.value = result.data
   }
 
   function say(text: string): void {
@@ -120,9 +114,12 @@ export function useWeir() {
       view.value = { ...view.value, revision: view.value.revision + 1, settings, plan: view.value.last && comparePlan(view.value.last, settings) }
       return
     }
+    const previous = view.value.settings
+    view.value = { ...view.value, settings }
     try {
       accept(await invoke('save_settings', { settings }))
     } catch (error) {
+      if (view.value.settings === settings) view.value = { ...view.value, settings: previous }
       say(typeof error === 'string' ? error : 'Weir couldn’t save settings.')
     }
   }
@@ -176,6 +173,7 @@ export function useWeir() {
     if (demo) {
       clearInterval(simulation)
       view.value = { ...view.value, revision: view.value.revision + 1, testing: null }
+      live = noSamples
       samples.value = []
       return
     }
