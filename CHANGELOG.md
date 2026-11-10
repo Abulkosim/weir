@@ -2,6 +2,7 @@
 
 | Version | Date (UTC) | Changes |
 | --- | --- | --- |
+| [v0.7.3](changelogs/v0.7.3.md) | 2026-11-10 | Safer files, honest data estimate on hotspots, steadier Windows popover, keyboard focus. |
 | [v0.7.2](changelogs/v0.7.2.md) | 2026-11-10 | Two parser fixes and library updates. |
 | [v0.7.1](changelogs/v0.7.1.md) | 2026-11-07 | Dependency updates, steadier router detection and single-instance start on Windows. |
 | [v0.7.0](changelogs/v0.7.0.md) | 2026-11-01 | This month summary in History. |

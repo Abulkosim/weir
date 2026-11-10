@@ -206,6 +206,17 @@ Patch for the two fixes the fuzzing found. Pull requests #27, #28, #29, #30 and 
   Findings: History speeds could change in their last bit after a save and load (serde_json's default float parsing is not exact); now `float_roundtrip`. A `Server-Timing` header whose `cfSpeed*` durations add up past the largest float gave an infinite server time; now ignored. Found while writing the target, not by the fuzzer in 2 min; it is a seed now.
 - [x] **H.4 Release v0.7.2.** Published 2026-11-10 16:28 UTC; evidence in `docs/verification.md`.
 
+## Sweep (v0.7.3) ⛳
+
+Patch. A read-only audit of the Rust core and the frontend, then one pull request per finding: #34–#49.
+
+- [x] **S.1 Fix what the audit found.** Deadlock between the view lock and the tray on Windows (#36); settings or History that couldn't be opened, or came from a newer Weir, were overwritten (#37); data estimate on metered links (#43); per-date UTC offsets in exports and the PDF (#39); outage-watch jitter (#39); update checks after a failure (#41); shortcut that fails at launch (#41); router check up to 15 s (#46); schedule stalled by a future-dated test (#47); History summary and slow hours across midnight (#35); live chart, History reload and settings races (#38); focus and toast announcements (#44); copy and rounding (#45, #48).
+  Verify: each pull request green in CI; locally on main with all of them: types, 46 unit and 14 script tests, fmt, strict Clippy, 131 Rust tests, 202 browser cases (Chromium + WebKit).
+- [x] **S.2 Pay down debt.** Release job runner pinned (#34); dead props, icons and error text removed; one platform check, one median, one clock, one `unix_ms` (#35, #39, #40, #42); IPC contract test between Rust and the Zod schemas (#49).
+  Verify: the contract test fails when a Rust field is added without a schema change.
+  Not done, on purpose: ESLint and a split tsconfig (vue-tsc strict covers the risk), splitting `report.rs` and `tray.rs` (churn without a fix), sending phase lengths from Rust (cosmetic), honouring `Retry-After` (scheduled tests are hours apart), pruning History around clock jumps (a real year away and a wrong clock look the same).
+- [ ] **S.3 Release v0.7.3.**
+
 ## Phase 5 — Later
 
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.
