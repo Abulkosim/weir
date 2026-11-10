@@ -23,6 +23,8 @@ pub const TRAY_ID: &str = "weir";
 
 #[derive(Default)]
 struct Presentation {
+    /// Views are published outside the view lock, so an older one can arrive late.
+    revision: u64,
     pixels: Vec<u8>,
     tooltip: String,
     #[cfg(target_os = "macos")]
@@ -428,6 +430,7 @@ pub fn update(app: &AppHandle, view: &View) {
     let tooltip = tooltip(view, glyph);
     #[cfg(target_os = "macos")]
     let title = title(view, glyph);
+    let revision = view.revision;
     let handle = app.clone();
     let _ = app.run_on_main_thread(move || {
         let Some(tray) = handle.tray_by_id(TRAY_ID) else {
@@ -437,6 +440,10 @@ pub fn update(app: &AppHandle, view: &View) {
         let Ok(mut shown) = visibility.presentation.lock() else {
             return;
         };
+        if revision < shown.revision {
+            return;
+        }
+        shown.revision = revision;
         if shown.pixels != pixels
             && tray
                 .set_icon_with_as_template(
