@@ -10,7 +10,7 @@ declare global {
 export const query = new URLSearchParams(window.location.search)
 export const demo = query.get('demo') === '1'
 export const desktop = typeof window.__TAURI__?.core.invoke === 'function'
-export const isWindows = navigator.userAgent.includes('Windows')
+export { isWindows } from './platform.ts'
 
 export function invoke(command: string, args?: Record<string, unknown>): Promise<unknown> {
   const tauri = window.__TAURI__

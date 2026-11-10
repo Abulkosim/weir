@@ -7,7 +7,7 @@ import { clock, errorCopy, estimateText, formatMb, shortcut, summaryText, format
 import { loadedMs, type View } from '../lib/model'
 import { shareText } from '../lib/plan'
 
-const props = defineProps<{ view: View; now: number; busy?: boolean; confirming?: boolean; updateAvailable?: boolean }>()
+const props = defineProps<{ view: View; now: number; confirming?: boolean; updateAvailable?: boolean }>()
 defineEmits<{ test: [confirmed: boolean]; dismiss: []; history: []; settings: []; check: []; copy: [text: string] }>()
 const notNow = ref<HTMLButtonElement | null>(null)
 const details = ref(false)
@@ -119,7 +119,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </section>
     <footer v-else class="foot">
       <span class="note num" :class="{ 'note-warning': metered }">{{ note }}</span>
-      <AppTooltip :text="`Run a speed test (${shortcut('T')})`"><button class="button button-primary" :disabled="busy || !view.network.online" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button></AppTooltip>
+      <AppTooltip :text="`Run a speed test (${shortcut('T')})`"><button class="button button-primary" :disabled="!view.network.online" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button></AppTooltip>
     </footer>
   </div>
 </template>

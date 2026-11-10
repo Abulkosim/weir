@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { parsePlan } from '../../lib/plan'
 
-const props = defineProps<{ download: number | null; upload: number | null; disabled?: boolean }>()
+const props = defineProps<{ download: number | null; upload: number | null }>()
 const emit = defineEmits<{ save: [change: { planDownloadMbps?: number | null; planUploadMbps?: number | null }] }>()
 const fields = [
   { key: 'planDownloadMbps', label: 'Download' },
@@ -32,7 +32,7 @@ function commit(key: (typeof fields)[number]['key']): void {
     <div v-for="field in fields" :key="field.key" class="setting-row">
       <label :for="field.key" class="setting-label">{{ field.label }}<span class="sr-only"> speed in Mbps</span></label>
       <span class="speed-field">
-        <input :id="field.key" v-model="text[field.key]" class="text-input num" inputmode="numeric" autocomplete="off" placeholder="Not set" :aria-invalid="invalid[field.key] || undefined" :aria-describedby="invalid[field.key] ? 'plan-error' : undefined" :disabled="disabled" @change="commit(field.key)" @keydown.enter="commit(field.key)">
+        <input :id="field.key" v-model="text[field.key]" class="text-input num" inputmode="numeric" autocomplete="off" placeholder="Not set" :aria-invalid="invalid[field.key] || undefined" :aria-describedby="invalid[field.key] ? 'plan-error' : undefined" @change="commit(field.key)" @keydown.enter="commit(field.key)">
         <span class="speed-unit" aria-hidden="true">Mbps</span>
       </span>
     </div>
