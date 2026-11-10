@@ -137,6 +137,10 @@ fn notice(recovery: Recovery) -> String {
             path.file_name()
                 .map_or_else(String::new, |name| name.to_string_lossy().into_owned())
         ),
+        Recovery::Unopened => "History couldn’t be opened. New tests won’t be saved to it.".into(),
+        Recovery::Newer => {
+            "History is from a newer version of Weir. New tests won’t be saved to it.".into()
+        }
     }
 }
 

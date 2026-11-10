@@ -193,7 +193,7 @@ impl Settings {
 #[derive(Debug)]
 pub struct Store {
     path: PathBuf,
-    /// False when the file is from a newer Weir: never overwrite it.
+    /// False when the file is from a newer Weir or couldn't be opened: never overwrite it.
     writable: bool,
 }
 
@@ -247,15 +247,23 @@ pub fn to_text(settings: &Settings) -> serde_json::Result<String> {
 impl Store {
     /// Loads settings and any notes about what had to be reset.
     pub fn load(path: PathBuf, now_ms: u64) -> (Self, Settings, Vec<String>) {
-        let Ok(text) = fs::read_to_string(&path) else {
-            return (
-                Self {
-                    path,
-                    writable: true,
-                },
-                Settings::default(),
-                Vec::new(),
-            );
+        let text = match fs::read_to_string(&path) {
+            Ok(text) => text,
+            Err(error) => {
+                let missing = error.kind() == io::ErrorKind::NotFound;
+                return (
+                    Self {
+                        path,
+                        writable: missing,
+                    },
+                    Settings::default(),
+                    if missing {
+                        Vec::new()
+                    } else {
+                        vec!["Settings couldn’t be opened. Changes here won’t be saved.".into()]
+                    },
+                );
+            }
         };
         match parse(&text) {
             Parsed::Unreadable => {
@@ -304,15 +312,10 @@ impl Store {
 
     pub fn save(&self, settings: &Settings) -> io::Result<()> {
         if !self.writable {
-            return Err(io::Error::other("settings file is from a newer version"));
-        }
-        if let Some(directory) = self.path.parent() {
-            fs::create_dir_all(directory)?;
+            return Err(io::Error::other("settings file is read-only"));
         }
         let text = to_text(settings).map_err(io::Error::other)?;
-        let temporary = self.path.with_extension("json.tmp");
-        fs::write(&temporary, text)?;
-        fs::rename(&temporary, &self.path)
+        super::files::replace(&self.path, &text)
     }
 }
 
@@ -442,5 +445,17 @@ mod tests {
             parse(r#"{"settings":{"theme":7}}"#),
             Parsed::Read(Settings::default(), vec!["Appearance was reset.".into()])
         );
+    }
+
+    #[test]
+    fn file_that_cannot_be_opened_is_left_alone() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("settings.json");
+        fs::create_dir(&path).unwrap();
+        let (store, settings, notes) = Store::load(path.clone(), 1);
+        assert_eq!(settings, Settings::default());
+        assert_eq!(notes.len(), 1);
+        assert!(store.save(&settings).is_err());
+        assert!(path.is_dir());
     }
 }

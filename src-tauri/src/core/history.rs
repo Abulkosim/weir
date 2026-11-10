@@ -57,6 +57,9 @@ struct File<'a> {
 pub struct History {
     path: PathBuf,
     entries: Vec<Entry>,
+    /// False when the file is from a newer Weir or couldn't be opened or moved
+    /// aside: never overwrite it.
+    writable: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -65,6 +68,10 @@ pub enum Recovery {
     Skipped(usize),
     /// The file could not be read at all; it was moved aside.
     BackedUp(PathBuf),
+    /// The file couldn't be opened, or couldn't be moved aside when unreadable.
+    Unopened,
+    /// Written by a newer Weir.
+    Newer,
 }
 
 fn backup_path(path: &Path, now_ms: u64) -> PathBuf {
@@ -105,6 +112,18 @@ pub fn parse(text: &str) -> Option<(Vec<Entry>, usize)> {
     Some((entries, skipped))
 }
 
+/// Written by a newer Weir, which may store entries this one can't read.
+fn is_newer(text: &str) -> bool {
+    #[derive(Deserialize)]
+    struct Header {
+        version: Option<u64>,
+    }
+    serde_json::from_str::<Header>(text)
+        .ok()
+        .and_then(|header| header.version)
+        .is_some_and(|version| version > u64::from(VERSION))
+}
+
 pub fn to_text(entries: &[Entry]) -> serde_json::Result<String> {
     serde_json::to_string(&File {
         version: VERSION,
@@ -116,24 +135,38 @@ impl History {
     pub fn load(path: PathBuf, now_ms: u64) -> (Self, Option<Recovery>) {
         let text = match fs::read_to_string(&path) {
             Ok(text) => text,
-            Err(_) => return (Self::empty(path), None),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                return (Self::empty(path, true), None)
+            }
+            Err(_) => return (Self::empty(path, false), Some(Recovery::Unopened)),
         };
         let Some((entries, skipped)) = parse(&text) else {
             let backup = backup_path(&path, now_ms);
-            let recovery = fs::rename(&path, &backup)
-                .ok()
-                .map(|_| Recovery::BackedUp(backup));
-            return (Self::empty(path), recovery);
+            return match fs::rename(&path, &backup) {
+                Ok(()) => (Self::empty(path, true), Some(Recovery::BackedUp(backup))),
+                Err(_) => (Self::empty(path, false), Some(Recovery::Unopened)),
+            };
         };
-        let mut history = Self { path, entries };
+        let newer = is_newer(&text);
+        let mut history = Self {
+            path,
+            entries,
+            writable: !newer,
+        };
         history.prune(now_ms);
-        (history, (skipped > 0).then_some(Recovery::Skipped(skipped)))
+        let recovery = if newer {
+            Some(Recovery::Newer)
+        } else {
+            (skipped > 0).then_some(Recovery::Skipped(skipped))
+        };
+        (history, recovery)
     }
 
-    fn empty(path: PathBuf) -> Self {
+    fn empty(path: PathBuf, writable: bool) -> Self {
         Self {
             path,
             entries: Vec::new(),
+            writable,
         }
     }
 
@@ -159,15 +192,12 @@ impl History {
         self.save()
     }
 
-    /// Writes a temporary file and renames it over the old one.
     pub fn save(&self) -> io::Result<()> {
-        if let Some(directory) = self.path.parent() {
-            fs::create_dir_all(directory)?;
+        if !self.writable {
+            return Err(io::Error::other("history file is read-only"));
         }
         let text = to_text(&self.entries).map_err(io::Error::other)?;
-        let temporary = self.path.with_extension("json.tmp");
-        fs::write(&temporary, text)?;
-        fs::rename(&temporary, &self.path)
+        super::files::replace(&self.path, &text)
     }
 
     pub fn len(&self) -> usize {
