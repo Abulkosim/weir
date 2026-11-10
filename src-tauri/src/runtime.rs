@@ -9,12 +9,12 @@ use crate::core::{
     settings::{Settings, Store},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
     stats::{data_estimate, DataEstimate},
+    time::{clock, unix_ms},
 };
 use serde::Serialize;
 use std::{
     path::PathBuf,
     sync::{atomic::Ordering, Arc, Mutex},
-    time::{SystemTime, UNIX_EPOCH},
 };
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -115,16 +115,6 @@ pub struct Runtime {
     pub monitor_wake: tokio::sync::Notify,
 }
 
-fn clock(ms: u64) -> String {
-    chrono::DateTime::from_timestamp_millis(ms as i64)
-        .map(|time| {
-            time.with_timezone(&chrono::Local)
-                .format("%H:%M")
-                .to_string()
-        })
-        .unwrap_or_default()
-}
-
 fn notice(recovery: Recovery) -> String {
     match recovery {
         Recovery::Skipped(count) => format!(
@@ -142,12 +132,6 @@ fn notice(recovery: Recovery) -> String {
             "History is from a newer version of Weir. New tests won’t be saved to it.".into()
         }
     }
-}
-
-fn unix_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0, |time| time.as_millis() as u64)
 }
 
 impl Runtime {

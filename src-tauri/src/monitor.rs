@@ -14,7 +14,7 @@ const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 fn next_wait() -> Duration {
     let jitter = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |time| time.subsec_millis() as u64 % 12_000);
+        .map_or(0, |time| u64::from(time.subsec_nanos()) % 12_000);
     INTERVAL - Duration::from_secs(6) + Duration::from_millis(jitter)
 }
 

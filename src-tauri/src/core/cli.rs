@@ -1,13 +1,14 @@
 //! `weir last`, `weir history` and `weir test` for scripts. Every command prints JSON with
 //! the same fields as the CSV export. Fields: README "Command line".
 
+use super::time::Zone;
 use super::{
     export::{error_text, notes},
     history::Entry,
     meaning::meaning,
     speedtest::{Report, TestError},
 };
-use chrono::{DateTime, FixedOffset, SecondsFormat};
+use chrono::SecondsFormat;
 use serde_json::{json, Value};
 
 pub const USAGE: &str =
@@ -57,21 +58,18 @@ pub fn parse(args: &[String]) -> Result<Option<Command>, String> {
     Ok(Some(command))
 }
 
-fn timestamp(ms: u64, offset: &FixedOffset) -> String {
-    DateTime::from_timestamp_millis(ms as i64)
-        .unwrap_or_default()
-        .with_timezone(offset)
-        .to_rfc3339_opts(SecondsFormat::Secs, false)
+fn timestamp(ms: u64, zone: Zone) -> String {
+    zone.at(ms).to_rfc3339_opts(SecondsFormat::Secs, false)
 }
 
 fn tenths(value: f64) -> f64 {
     (value * 10.0).round() / 10.0
 }
 
-pub fn result(report: &Report, offset: &FixedOffset) -> Value {
+pub fn result(report: &Report, zone: Zone) -> Value {
     let verdict = meaning(report);
     json!({
-        "tested_at": timestamp(report.started_at_ms, offset),
+        "tested_at": timestamp(report.started_at_ms, zone),
         "result": "ok",
         "server": format!("{} {}", report.provider, report.colo.as_deref().unwrap_or("")).trim_end(),
         "download_mbps": tenths(report.download.mbps),
@@ -93,35 +91,35 @@ pub fn failure(error: TestError) -> Value {
     json!({ "error": error, "message": error_text(error) })
 }
 
-pub fn entry(entry: &Entry, offset: &FixedOffset) -> Value {
+pub fn entry(entry: &Entry, zone: Zone) -> Value {
     match entry {
-        Entry::Result { report } => result(report, offset),
+        Entry::Result { report } => result(report, zone),
         Entry::Failed { at_ms, error } => json!({
-            "tested_at": timestamp(*at_ms, offset),
+            "tested_at": timestamp(*at_ms, zone),
             "result": "failed",
             "error": error,
             "message": error_text(*error),
         }),
         Entry::Outage { start_ms, end_ms } => json!({
-            "tested_at": timestamp(*start_ms, offset),
+            "tested_at": timestamp(*start_ms, zone),
             "result": "outage",
-            "until": timestamp(*end_ms, offset),
+            "until": timestamp(*end_ms, zone),
             "minutes": end_ms.saturating_sub(*start_ms).div_ceil(60_000),
         }),
     }
 }
 
 /// The newest result, or `null` before the first test.
-pub fn last(entries: &[Entry], offset: &FixedOffset) -> Value {
+pub fn last(entries: &[Entry], zone: Zone) -> Value {
     entries
         .iter()
         .rev()
         .find_map(Entry::report)
-        .map_or(Value::Null, |report| result(report, offset))
+        .map_or(Value::Null, |report| result(report, zone))
 }
 
-pub fn history(entries: &[Entry], offset: &FixedOffset) -> Value {
-    Value::Array(entries.iter().map(|item| entry(item, offset)).collect())
+pub fn history(entries: &[Entry], zone: Zone) -> Value {
+    Value::Array(entries.iter().map(|item| entry(item, zone)).collect())
 }
 
 #[cfg(test)]
@@ -198,8 +196,8 @@ mod tests {
 
     #[test]
     fn a_result_has_the_csv_fields_and_the_verdict() {
-        let offset = FixedOffset::east_opt(5 * 3600).unwrap();
-        let value = result(&report(), &offset);
+        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(5 * 3600).unwrap());
+        let value = result(&report(), zone);
         assert_eq!(value["tested_at"], "2026-10-23T21:00:00+05:00");
         assert_eq!(value["server"], "Cloudflare FRA");
         assert_eq!(value["download_mbps"], 312.4);
@@ -215,7 +213,7 @@ mod tests {
 
     #[test]
     fn last_skips_failures_and_history_keeps_everything() {
-        let offset = FixedOffset::east_opt(0).unwrap();
+        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(0).unwrap());
         let entries = vec![
             Entry::Result {
                 report: Box::new(report()),
@@ -229,9 +227,9 @@ mod tests {
                 end_ms: 1_792_771_400_000 + 7 * 60_000,
             },
         ];
-        assert_eq!(last(&entries, &offset)["download_mbps"], 312.4);
-        assert_eq!(last(&[], &offset), Value::Null);
-        let all = history(&entries, &offset);
+        assert_eq!(last(&entries, zone)["download_mbps"], 312.4);
+        assert_eq!(last(&[], zone), Value::Null);
+        let all = history(&entries, zone);
         assert_eq!(all[1]["result"], "failed");
         assert_eq!(all[1]["error"], "stalled");
         assert_eq!(all[1]["message"], "Connection stalled");

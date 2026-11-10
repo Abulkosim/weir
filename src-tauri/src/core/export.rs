@@ -1,20 +1,16 @@
 //! History as CSV for a spreadsheet or an internet provider. Columns: README "Export".
 
+use super::time::Zone;
 use super::{
     history::Entry,
     speedtest::{Report, TestError},
 };
-use chrono::{DateTime, FixedOffset, Local, SecondsFormat};
+use chrono::SecondsFormat;
 
 pub const HEADER: &str = "tested_at,result,server,download_mbps,upload_mbps,latency_ms,latency_under_load_ms,jitter_ms,download_low_mbps,download_high_mbps,data_used_mb,notes";
 
-fn timestamp(ms: u64, offset: &FixedOffset) -> String {
-    DateTime::from_timestamp_millis(ms as i64)
-        .map(|time| {
-            time.with_timezone(offset)
-                .to_rfc3339_opts(SecondsFormat::Secs, false)
-        })
-        .unwrap_or_default()
+fn timestamp(ms: u64, zone: Zone) -> String {
+    zone.at(ms).to_rfc3339_opts(SecondsFormat::Secs, false)
 }
 
 fn number(value: Option<f64>) -> String {
@@ -68,10 +64,10 @@ pub fn notes(report: &Report) -> Vec<String> {
     notes
 }
 
-fn row(entry: &Entry, offset: &FixedOffset) -> String {
+fn row(entry: &Entry, zone: Zone) -> String {
     let fields: Vec<String> = match entry {
         Entry::Result { report } => vec![
-            timestamp(report.started_at_ms, offset),
+            timestamp(report.started_at_ms, zone),
             "ok".into(),
             field(
                 format!(
@@ -97,17 +93,17 @@ fn row(entry: &Entry, offset: &FixedOffset) -> String {
             field(&notes(report).join("; ")),
         ],
         Entry::Failed { at_ms, error } => {
-            let mut fields = vec![timestamp(*at_ms, offset), "failed".into()];
+            let mut fields = vec![timestamp(*at_ms, zone), "failed".into()];
             fields.extend(std::iter::repeat_n(String::new(), 9));
             fields.push(field(error_text(*error)));
             fields
         }
         Entry::Outage { start_ms, end_ms } => {
-            let mut fields = vec![timestamp(*start_ms, offset), "outage".into()];
+            let mut fields = vec![timestamp(*start_ms, zone), "outage".into()];
             fields.extend(std::iter::repeat_n(String::new(), 9));
             fields.push(format!(
                 "no internet until {} ({} min)",
-                timestamp(*end_ms, offset),
+                timestamp(*end_ms, zone),
                 end_ms.saturating_sub(*start_ms).div_ceil(60_000)
             ));
             fields
@@ -116,19 +112,19 @@ fn row(entry: &Entry, offset: &FixedOffset) -> String {
     fields.join(",")
 }
 
-/// Oldest first, times in the given offset with the offset written out.
-pub fn csv_at(entries: &[Entry], offset: &FixedOffset) -> String {
+/// Oldest first, each time with its own offset written out.
+pub fn csv_at(entries: &[Entry], zone: Zone) -> String {
     let mut text = String::from(HEADER);
     text.push('\n');
     for entry in entries {
-        text.push_str(&row(entry, offset));
+        text.push_str(&row(entry, zone));
         text.push('\n');
     }
     text
 }
 
 pub fn csv(entries: &[Entry]) -> String {
-    csv_at(entries, Local::now().offset())
+    csv_at(entries, Zone::Local)
 }
 
 #[cfg(test)]
@@ -186,8 +182,8 @@ mod tests {
                 error: TestError::NetworkChanged,
             },
         ];
-        let offset = FixedOffset::east_opt(5 * 3600).unwrap();
-        let text = csv_at(&entries, &offset);
+        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(5 * 3600).unwrap());
+        let text = csv_at(&entries, zone);
         let lines: Vec<&str> = text.lines().collect();
         assert_eq!(lines[0], HEADER);
         assert_eq!(

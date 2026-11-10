@@ -35,10 +35,6 @@ fn entries() -> Vec<Entry> {
         .unwrap_or_default()
 }
 
-fn offset() -> chrono::FixedOffset {
-    *chrono::Local::now().offset()
-}
-
 /// A release build on Windows has no console of its own; borrow the terminal's.
 fn attach_console() {
     #[cfg(windows)]
@@ -103,7 +99,7 @@ fn test(allow_metered: bool) -> i32 {
     ));
     match outcome {
         Ok(report) => {
-            print(&cli::result(&report, &offset()));
+            print(&cli::result(&report, crate::core::time::Zone::Local));
             OK
         }
         Err(error) => {
@@ -121,11 +117,11 @@ pub fn run(command: Command) -> i32 {
             OK
         }
         Command::Last => {
-            print(&cli::last(&entries(), &offset()));
+            print(&cli::last(&entries(), crate::core::time::Zone::Local));
             OK
         }
         Command::History => {
-            print(&cli::history(&entries(), &offset()));
+            print(&cli::history(&entries(), crate::core::time::Zone::Local));
             OK
         }
         Command::Test { allow_metered } => test(allow_metered),

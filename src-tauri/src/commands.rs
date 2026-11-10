@@ -107,7 +107,7 @@ pub async fn export_report(app: AppHandle) -> Result<Option<String>, String> {
     let version = app.package_info().version.to_string();
     let options = report::Options {
         now_ms: chrono::Utc::now().timestamp_millis().max(0) as u64,
-        offset: chrono::Local::now().fixed_offset().offset().to_owned(),
+        zone: crate::core::time::Zone::Local,
         plan: settings.plan(),
         watching: settings.watch_outages,
         version: &version,
