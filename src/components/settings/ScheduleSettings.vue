@@ -2,13 +2,13 @@
 import { computed } from 'vue'
 import AppSelect from '../ui/AppSelect.vue'
 import { monthlyText, nextText, scheduleOptions } from '../../lib/schedule'
-import { scheduleSchema, type Schedule } from '../../lib/model'
+import { scheduleSchema, type Schedule, type View } from '../../lib/model'
 import { isWindows } from '../../lib/platform'
 
-const props = defineProps<{ schedule: Schedule; estimateMb: number; lastTestMs: number | null; now: number; metered: boolean }>()
+const props = defineProps<{ schedule: Schedule; estimate: View['estimate']; lastTestMs: number | null; now: number; metered: boolean }>()
 const emit = defineEmits<{ save: [schedule: Schedule] }>()
 const powerSaving = isWindows ? 'Battery Saver' : 'Low Power Mode'
-const status = computed(() => [monthlyText(props.schedule, props.estimateMb), nextText(props.schedule, props.lastTestMs, props.now, props.metered)].filter(Boolean).join(' · '))
+const status = computed(() => [monthlyText(props.schedule, props.estimate), nextText(props.schedule, props.lastTestMs, props.now, props.metered)].filter(Boolean).join(' · '))
 
 function choose(value: string): void {
   const parsed = scheduleSchema.safeParse(value)
