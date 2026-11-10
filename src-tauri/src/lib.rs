@@ -70,8 +70,11 @@ pub fn run() {
             }
             app.manage(runtime.clone());
             let saved = runtime.view().settings.shortcut;
-            if let Err(error) = shortcut::replace(app.handle(), None, saved.as_deref()) {
-                eprintln!("weir: {error}");
+            if shortcut::replace(app.handle(), None, saved.as_deref()).is_err() {
+                runtime.note(
+                    app.handle(),
+                    "Your shortcut couldn’t be set. Another app may be using it. Choose another in Settings.",
+                );
             }
             let wake = Arc::new(tokio::sync::Notify::new());
             app.manage(wake.clone());
