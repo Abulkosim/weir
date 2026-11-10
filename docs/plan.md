@@ -204,7 +204,7 @@ Patch for the two fixes the fuzzing found. Pull requests #27, #28, #29, #30 and 
 - [x] **H.3 Fuzz the parsers.** `cargo fuzz` targets for settings, History, Cloudflare's trace, `Server-Timing` and CLI arguments, each with a round-trip or range check; `fuzz.yml` runs them on pull requests that touch them and weekly.
   Verify: each target 3 min locally after the fixes (2.4M–19M runs, no failures); regression tests for both findings; `fuzz.yml` green on the pull request.
   Findings: History speeds could change in their last bit after a save and load (serde_json's default float parsing is not exact); now `float_roundtrip`. A `Server-Timing` header whose `cfSpeed*` durations add up past the largest float gave an infinite server time; now ignored. Found while writing the target, not by the fuzzer in 2 min; it is a seed now.
-- [ ] **H.4 Release v0.7.2.**
+- [x] **H.4 Release v0.7.2.** Published 2026-11-10 16:28 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 

@@ -2,6 +2,19 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.7.2
+
+**[v0.7.2 is published](https://github.com/Abulkosim/weir/releases/tag/v0.7.2)** at 2026-11-10 16:28 UTC and marked latest; `latest.json` serves 0.7.2. Published by the owner's go-ahead in chat. Tag `v0.7.2` builds `188b559`. Patch for the two fuzzing findings.
+
+- Pull requests, each green before merging: #27 (updater test in tag builds), #28 (CodeQL), #29 (fuzzing, History float round trip, `Server-Timing` overflow), #30 (frontend), #31 (actions), #32 (release prep).
+- Locally on Linux: types, 37 unit tests, 14 release script tests, `check-release.mjs`. Rust fmt, Clippy and tests were stopped (the machine ran out of memory) and WebKit cases could not run (the new Playwright's WebKit did not download); both ran green in CI on #32, main and the tag.
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/42842967246) green after rerunning the macOS job, which GitHub cancelled for lack of a macOS runner. [Tag build](https://github.com/Abulkosim/weir/actions/runs/42851160362) green on every job.
+- First tag build with the [updater test built in](https://github.com/Abulkosim/weir/actions/runs/42851160362/job/129956945441): rejected altered bytes and a wrong signed version and installed 0.7.2 for x86_64 and arm64. Its archive checksum `2981ffafeddcf0885c50ab9a422386072fb59ae845328079d2f0d62bb4cc5ff7` matches `SHA256SUMS.txt`.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`.
+- DMG SHA-256 `b432e698ef4df100f697b80670bbe03961389cf241c13b9f27d99ab2c3aa6c8a`.
+- Homebrew tap bumped by hand (`weir 0.7.2`, `38dad7c`); release DMG URL answers 200. `brew style` not run (no Homebrew on this machine).
+- Pending: 👤 update the installed app in-app (or `brew upgrade --cask --greedy`); 👤 Windows VM check; 👤 tap deploy key.
+
 ## v0.7.1
 
 **[v0.7.1 is published](https://github.com/Abulkosim/weir/releases/tag/v0.7.1)** at 2026-11-07 15:00 UTC and marked latest; `latest.json` serves 0.7.1. Published on standing approval. Tag `v0.7.1` builds `c060972`. Dependency patch.
