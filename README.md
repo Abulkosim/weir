@@ -23,12 +23,12 @@ Interface preview with sample data.
 
 ## Install
 
-Download **v0.7.1** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest), or on a Mac: `brew install --cask abulkosim/tap/weir`. Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
+Download **v0.7.2** from [GitHub Releases](https://github.com/Abulkosim/weir/releases/latest), or on a Mac: `brew install --cask abulkosim/tap/weir`. Step-by-step guide with uninstall: [docs/install.md](docs/install.md).
 
 | Platform | Download |
 | --- | --- |
-| macOS 12+ · Apple Silicon and Intel | [Universal DMG](https://github.com/Abulkosim/weir/releases/download/v0.7.1/Weir_0.7.1_universal.dmg) |
-| Windows x64 | [Setup EXE](https://github.com/Abulkosim/weir/releases/download/v0.7.1/Weir_0.7.1_x64-setup.exe) · [MSI](https://github.com/Abulkosim/weir/releases/download/v0.7.1/Weir_0.7.1_x64_en-US.msi) |
+| macOS 12+ · Apple Silicon and Intel | [Universal DMG](https://github.com/Abulkosim/weir/releases/download/v0.7.2/Weir_0.7.2_universal.dmg) |
+| Windows x64 | [Setup EXE](https://github.com/Abulkosim/weir/releases/download/v0.7.2/Weir_0.7.2_x64-setup.exe) · [MSI](https://github.com/Abulkosim/weir/releases/download/v0.7.2/Weir_0.7.2_x64_en-US.msi) |
 
 Builds are not signed with an Apple Developer ID or a Windows publisher certificate, so the first launch shows a warning. Updates are signed and verified in the app.
 
