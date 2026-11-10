@@ -37,18 +37,6 @@ pub enum BackendError {
     Timeout,
 }
 
-impl BackendError {
-    pub fn message(&self) -> &'static str {
-        match self {
-            Self::Offline => "No internet",
-            Self::Refused { .. } => "Cloudflare refused the test",
-            Self::ServerError { .. } => "Cloudflare server error",
-            Self::Interrupted => "Connection kept dropping",
-            Self::Timeout => "Connection stalled",
-        }
-    }
-}
-
 /// A finished upload request, timed from the client side.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Sent {
