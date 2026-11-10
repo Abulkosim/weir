@@ -1,4 +1,5 @@
 import { entryTime, type Entry } from './model.ts'
+import { median } from './stats.ts'
 
 export interface MonthSummary {
   /** `null` for the current month, else the month's name, e.g. "October". */
@@ -13,13 +14,6 @@ export interface MonthSummary {
   outages: number
   /** Median download of the month before, to compare against. */
   before: number | null
-}
-
-function median(values: number[]): number | null {
-  if (!values.length) return null
-  const sorted = [...values].sort((a, b) => a - b)
-  const middle = Math.floor(sorted.length / 2)
-  return sorted.length % 2 ? sorted[middle]! : (sorted[middle - 1]! + sorted[middle]!) / 2
 }
 
 function bounds(now: number, back: number): [number, number] {

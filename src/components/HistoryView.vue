@@ -6,19 +6,15 @@ import { errorCopy, formatMbps, formatMs } from '../lib/format'
 import { entryTime, type Entry } from '../lib/model'
 import { hourLabel, slowHours } from '../lib/hours'
 import { monthSummary, outageText } from '../lib/month'
+import { median as medianOf } from '../lib/stats'
 
 const props = defineProps<{ entries: Entry[]; now: number; planMbps?: number | null; watching?: boolean }>()
 defineEmits<{ back: []; export: []; report: [] }>()
 
 const results = computed(() => props.entries.flatMap(entry => entry.kind === 'result' ? [entry.report] : []))
 const recent = computed(() => results.value.slice(0, 30).reverse())
-const sorted = computed(() => results.value.map(report => report.download.mbps).sort((a, b) => a - b))
-const median = computed(() => {
-  const values = sorted.value
-  if (!values.length) return null
-  const middle = Math.floor(values.length / 2)
-  return values.length % 2 ? values[middle]! : (values[middle - 1]! + values[middle]!) / 2
-})
+const sorted = computed(() => recent.value.map(report => report.download.mbps).sort((a, b) => a - b))
+const median = computed(() => medianOf(sorted.value))
 const month = computed(() => monthSummary(props.entries, props.now))
 const hours = computed(() => slowHours(props.entries))
 const tallest = computed(() => Math.max(1, ...(hours.value?.buckets.map(bucket => bucket.median ?? 0) ?? [1])))

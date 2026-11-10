@@ -36,3 +36,11 @@ test('a steady line has no slow hours', () => {
   const entries = Array.from({ length: 12 }, (_, index) => at(8 + index, 300 + (index % 3) * 5))
   assert.equal(slowHours(entries, utcHour)!.slow, null)
 })
+
+test('a slow run across midnight is one run', () => {
+  const entries: Entry[] = []
+  for (let day = 0; day < 3; day++) {
+    entries.push(at(22, 120, day), at(23, 110, day), at(0, 100, day), at(1, 130, day), at(9, 300, day), at(12, 300, day), at(14, 310, day), at(17, 300, day))
+  }
+  assert.deepEqual(slowHours(entries, utcHour)!.slow, { from: 22, to: 2, median: 115 })
+})
