@@ -2,6 +2,20 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.7.3
+
+**[v0.7.3 is published](https://github.com/Abulkosim/weir/releases/tag/v0.7.3)** at 2026-11-10 20:34 UTC and marked latest; `latest.json` serves 0.7.3. Published on standing approval. Tag `v0.7.3` builds `acfcee2`. Sweep patch.
+
+- A read-only audit of the Rust core and the frontend, then one pull request per finding, each green before merging: #34–#49, and #50 (release prep). What each fixed is in [plan.md](plan.md) under S.1 and S.2.
+- Locally on Linux, on main with every change combined: types, 46 unit tests, 14 release script tests, fmt, strict Clippy, 131 Rust tests, 202 browser cases (Chromium + WebKit), `check-release.mjs`. Two WebKit dark accessibility cases failed once under load on the #44 branch and passed 20/20 on repeat; they passed in the combined run. Windows and macOS code built and tested in CI only.
+- New checks: the Rust IPC fixture and `tests/unit/ipc.test.ts` keep the Zod schemas in step with what Rust sends; format, live-chart, History-key and median unit tests; store tests for files that can't be opened or come from a newer Weir.
+- [Main CI](https://github.com/Abulkosim/weir/actions/runs/42892985547) and the [tag build](https://github.com/Abulkosim/weir/actions/runs/42894329987) green on every job.
+- The [updater test in the tag build](https://github.com/Abulkosim/weir/actions/runs/42894329987/job/130107636554) rejected altered bytes and a wrong signed version and installed 0.7.3 for x86_64 and arm64. Its archive checksum `154311b551cb8601dc3593033542283d493e775b2bdf1394196025f787821412` matches `SHA256SUMS.txt`.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`.
+- DMG SHA-256 `056250c045a8a534d77fef20cf76b7828d071b973971014141a011efcf50ae90`.
+- Homebrew tap bumped by hand (`weir 0.7.3`, `94b8720`); release DMG URL answers 200. `brew style` not run (no Homebrew on this machine).
+- Pending: 👤 update the installed app in-app (or `brew upgrade --cask --greedy`); 👤 Windows VM check; 👤 real-network check (1.6); 👤 tap deploy key; 👤 branch protection.
+
 ## v0.7.2
 
 **[v0.7.2 is published](https://github.com/Abulkosim/weir/releases/tag/v0.7.2)** at 2026-11-10 16:28 UTC and marked latest; `latest.json` serves 0.7.2. Published by the owner's go-ahead in chat. Tag `v0.7.2` builds `188b559`. Patch for the two fuzzing findings.
