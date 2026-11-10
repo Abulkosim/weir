@@ -63,10 +63,12 @@ for (const theme of themes) {
     await shoot(page, 'metered', info.outputPath(`metered-${theme}.png`))
     await page.keyboard.press('Escape')
     await expect(dialog).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Test again' })).toBeFocused()
     await page.getByRole('button', { name: 'Test again' }).click()
     await page.getByRole('button', { name: 'Test anyway' }).click()
     await page.clock.runFor(1_000)
     await expect(page.getByRole('status')).toHaveText('Measuring latency')
+    await expect(page.getByRole('button', { name: 'Cancel' })).toBeFocused()
   })
 }
 
@@ -455,3 +457,13 @@ for (const theme of themes) {
     await shoot(page, 'design', info.outputPath(`design-${theme}.png`))
   })
 }
+
+test('switching pages keeps keyboard focus in the popover', async ({ page }) => {
+  await page.goto('/?demo=1&state=result')
+  await page.getByRole('button', { name: 'History' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { name: 'History' })).toBeFocused()
+  await page.getByRole('button', { name: 'Back' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('button', { name: 'Test again' })).toBeFocused()
+})

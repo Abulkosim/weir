@@ -119,7 +119,7 @@ const varied = computed(() => report.value?.download.varied ? `Varied ${formatMb
     </section>
     <footer v-else class="foot">
       <span class="note num" :class="{ 'note-warning': metered }">{{ note }}</span>
-      <AppTooltip :text="`Run a speed test (${shortcut('T')})`"><button class="button button-primary" :disabled="!view.network.online" @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button></AppTooltip>
+      <AppTooltip :text="`Run a speed test (${shortcut('T')})`"><button class="button button-primary" :disabled="!view.network.online" data-autofocus @click="$emit('test', false)"><AppIcon name="play" :size="13"/>{{ report || failure ? (failure ? 'Try again' : 'Test again') : 'Test' }}</button></AppTooltip>
     </footer>
   </div>
 </template>

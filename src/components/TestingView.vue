@@ -70,7 +70,7 @@ const status = computed(() => ({ connecting: 'Connecting to Cloudflare', latency
     </section>
     <footer class="foot">
       <span class="note num">Used {{ formatMb(progress.bytesUsed) }} so far</span>
-      <button class="button" @click="$emit('cancel')">Cancel</button>
+      <button class="button" data-autofocus @click="$emit('cancel')">Cancel</button>
     </footer>
   </div>
 </template>

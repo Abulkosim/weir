@@ -779,6 +779,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   grid-column: 2 / -1;
   color: var(--danger);
 }
+h1[tabindex="-1"]:focus { outline: none; }
 .toast {
   position: absolute;
   left: 50%;
@@ -790,7 +791,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background: var(--ink);
   color: var(--surface);
   font-size: 12.5px;
-  white-space: nowrap;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  overflow-wrap: anywhere;
+  text-align: center;
   transform: translateX(-50%);
   box-shadow: 0 8px 24px -8px rgba(0,0,0,.4);
 }
