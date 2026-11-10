@@ -215,7 +215,7 @@ Patch. A read-only audit of the Rust core and the frontend, then one pull reques
 - [x] **S.2 Pay down debt.** Release job runner pinned (#34); dead props, icons and error text removed; one platform check, one median, one clock, one `unix_ms` (#35, #39, #40, #42); IPC contract test between Rust and the Zod schemas (#49).
   Verify: the contract test fails when a Rust field is added without a schema change.
   Not done, on purpose: ESLint and a split tsconfig (vue-tsc strict covers the risk), splitting `report.rs` and `tray.rs` (churn without a fix), sending phase lengths from Rust (cosmetic), honouring `Retry-After` (scheduled tests are hours apart), pruning History around clock jumps (a real year away and a wrong clock look the same).
-- [ ] **S.3 Release v0.7.3.**
+- [x] **S.3 Release v0.7.3.** Published 2026-11-10 20:34 UTC; evidence in `docs/verification.md`.
 
 ## Phase 5 — Later
 
