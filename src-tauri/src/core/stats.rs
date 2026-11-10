@@ -425,7 +425,7 @@ fn round_up(mb: f64) -> u32 {
     ((mb / step).ceil() * step).max(step) as u32
 }
 
-/// Data a test will use, from recent results on this network `(down, up)` in Mbps.
+/// Data a test will use, from recent results `(down, up)` in Mbps.
 pub fn data_estimate(recent: &[(f64, f64)]) -> DataEstimate {
     let last: Vec<&(f64, f64)> = recent.iter().rev().take(3).collect();
     let down = median(&last.iter().map(|pair| pair.0).collect::<Vec<_>>());

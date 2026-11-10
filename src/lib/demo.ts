@@ -68,7 +68,10 @@ export function createDemoView(state: string | null, now = Date.now(), error: st
   if (scenario === 'testing-upload') {
     view.testing = { phase: 'upload', phaseMs: 2_900, liveMbps: 39.6, downloadMbps: 312.4, latencyMs: 14, loadedMs: 51, bytesUsed: 214_000_000, colo: 'FRA' }
   }
-  if (scenario === 'metered') view.network.metered = 'hotspot'
+  if (scenario === 'metered') {
+    view.network.metered = 'hotspot'
+    view.estimate = { upTo: true, mb: 600 }
+  }
   if (scenario.startsWith('check-')) view.diagnosis = demoDiagnosis(scenario.slice(6), now)
   if (scenario === 'checking') view.checking = true
   if (scenario === 'outage') view.outageSinceMs = new Date(now).setHours(14, 2, 0, 0)
