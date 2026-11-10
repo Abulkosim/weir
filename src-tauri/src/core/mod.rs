@@ -15,4 +15,5 @@ pub mod schedule;
 pub mod settings;
 pub mod speedtest;
 pub mod stats;
+pub mod time;
 pub mod tray;

@@ -43,7 +43,7 @@ fn result(at_ms: u64, down: f64) -> Entry {
 fn options(plan: Plan) -> Options<'static> {
     Options {
         now_ms: NOW,
-        offset: FixedOffset::east_opt(0).unwrap(),
+        zone: Zone::Fixed(FixedOffset::east_opt(0).unwrap()),
         plan,
         watching: true,
         version: "0.4.0",
@@ -185,6 +185,6 @@ fn chart_tops_are_round_numbers() {
 fn sample_report() {
     let path = std::env::var("WEIR_REPORT_SAMPLE").expect("WEIR_REPORT_SAMPLE");
     let mut options = options(PLAN);
-    options.offset = FixedOffset::east_opt(5 * 3600).unwrap();
+    options.zone = Zone::Fixed(FixedOffset::east_opt(5 * 3600).unwrap());
     std::fs::write(path, pdf(&month(), &options).unwrap()).unwrap();
 }

@@ -1,6 +1,7 @@
 //! Runs the opt-in scheduled tests about once a minute. The rules live in `core::schedule`.
 
 use crate::{
+    core::time::unix_ms,
     core::{schedule::Scheduler, settings::Schedule},
     runtime::Runtime,
 };
@@ -8,12 +9,6 @@ use std::{sync::Arc, time::Duration};
 use tauri::AppHandle;
 
 const INTERVAL: Duration = Duration::from_secs(60);
-
-fn unix_ms() -> u64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |time| time.as_millis() as u64)
-}
 
 pub fn start(app: AppHandle, runtime: Arc<Runtime>) {
     tauri::async_runtime::spawn(async move {

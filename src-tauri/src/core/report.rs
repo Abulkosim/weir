@@ -5,6 +5,7 @@ mod canvas;
 #[cfg(test)]
 mod tests;
 
+use super::time::Zone;
 use super::{
     export::error_text,
     history::Entry,
@@ -28,7 +29,7 @@ const SLOW_SHARE: f64 = 0.8;
 
 pub struct Options<'a> {
     pub now_ms: u64,
-    pub offset: FixedOffset,
+    pub zone: Zone,
     pub plan: Plan,
     /// The outage watch is on now, so a period without outages means none were seen.
     pub watching: bool,
@@ -127,10 +128,8 @@ pub fn slow_hours(reports: &[&Report], hour_of: impl Fn(u64) -> u32) -> (bool, O
     (true, slow)
 }
 
-fn local(ms: u64, offset: &FixedOffset) -> DateTime<FixedOffset> {
-    DateTime::from_timestamp_millis(ms as i64)
-        .unwrap_or_default()
-        .with_timezone(offset)
+fn local(ms: u64, zone: Zone) -> DateTime<FixedOffset> {
+    zone.at(ms)
 }
 
 pub fn summarize<'a>(entries: &'a [Entry], options: &Options) -> Option<Summary<'a>> {
@@ -169,7 +168,7 @@ pub fn summarize<'a>(entries: &'a [Entry], options: &Options) -> Option<Summary<
             })
             .count()
     });
-    let (enough_for_hours, slow) = slow_hours(&reports, |ms| local(ms, &options.offset).hour());
+    let (enough_for_hours, slow) = slow_hours(&reports, |ms| local(ms, options.zone).hour());
     let mut failed = Vec::new();
     let mut outages = Vec::new();
     for entry in &period {
@@ -225,9 +224,9 @@ fn plural(count: usize, one: &str, many: &str) -> String {
 
 /// Plain sentences for the "What this shows" section.
 pub fn findings(summary: &Summary, options: &Options) -> Vec<String> {
-    let offset = &options.offset;
-    let day = |ms: u64| local(ms, offset).format("%-d %b").to_string();
-    let clock = |ms: u64| local(ms, offset).format("%H:%M").to_string();
+    let zone = options.zone;
+    let day = |ms: u64| local(ms, zone).format("%-d %b").to_string();
+    let clock = |ms: u64| local(ms, zone).format("%H:%M").to_string();
     let mut lines = Vec::new();
     if let (Some(paid), Some(under)) = (plan::valid(options.plan.download_mbps), summary.under_half)
     {
@@ -562,8 +561,8 @@ fn chart(writer: &mut Writer, summary: &Summary, options: &Options) {
         let color = if under_half { DANGER } else { ACCENT };
         page.dot(*point, 2.2, color);
     }
-    let offset = &options.offset;
-    let date = |ms: u64| local(ms, offset).format("%-d %b").to_string();
+    let zone = options.zone;
+    let date = |ms: u64| local(ms, zone).format("%-d %b").to_string();
     let label_y = bottom + 13.0;
     page.text(
         left,
@@ -657,13 +656,13 @@ fn table_header(writer: &mut Writer) {
 fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
     writer.heading("Every test");
     table_header(writer);
-    let offset = &options.offset;
+    let zone = options.zone;
     for entry in &summary.entries {
         if !writer.room(ROW) {
             table_header(writer);
         }
         let y = writer.y + 12.0;
-        let at = local(entry.at_ms(), offset);
+        let at = local(entry.at_ms(), zone);
         let page = writer.page();
         page.text(
             MARGIN,
@@ -713,7 +712,7 @@ fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
                 );
             }
             Entry::Outage { start_ms, end_ms } => {
-                let end = local(*end_ms, offset);
+                let end = local(*end_ms, zone);
                 let until = if end.date_naive() == at.date_naive() {
                     end.format("%H:%M").to_string()
                 } else {
@@ -747,8 +746,8 @@ pub fn pdf(entries: &[Entry], options: &Options) -> Option<Vec<u8>> {
         y: 0.0,
     };
     writer.new_page();
-    let offset = &options.offset;
-    let date = |ms: u64| local(ms, offset).format("%-d %b %Y").to_string();
+    let zone = options.zone;
+    let date = |ms: u64| local(ms, zone).format("%-d %b %Y").to_string();
     let page = writer.page();
     page.text(
         MARGIN,
@@ -762,10 +761,10 @@ pub fn pdf(entries: &[Entry], options: &Options) -> Option<Vec<u8>> {
         MARGIN,
         86.0,
         &format!(
-            "{} – {} · Last {DAYS} days · Times in UTC{}",
+            "{} – {} · Last {DAYS} days · Local times, now UTC{}",
             date(summary.from_ms),
             date(summary.to_ms),
-            offset
+            local(summary.to_ms, zone).offset()
         ),
         Font::Regular,
         10.0,

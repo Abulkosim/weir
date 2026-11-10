@@ -6,6 +6,7 @@ use super::{
         self, idle_latency, loaded_latency, upload_mbps, Completed, Decision, Latency, Limits,
         Probe, Reading, Stop, Throughput, Tracker,
     },
+    time::unix_ms,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -13,7 +14,7 @@ use std::{
         atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering},
         Arc, Mutex,
     },
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 use tokio::{
     task::JoinHandle,
@@ -210,12 +211,6 @@ impl Report {
             (down, up) => down.or(up),
         }
     }
-}
-
-fn unix_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0, |time| time.as_millis() as u64)
 }
 
 fn millis(since: Instant) -> u64 {

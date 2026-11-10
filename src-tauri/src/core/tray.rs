@@ -1,3 +1,4 @@
+use super::time::{clock, unix_ms};
 use super::{
     meaning::health,
     popover::{popover_height, Bounds, PopoverPlacement},
@@ -357,16 +358,6 @@ pub fn glyph(view: &View, now_ms: u64) -> Glyph {
     }
 }
 
-fn clock(ms: u64) -> String {
-    chrono::DateTime::from_timestamp_millis(ms as i64)
-        .map(|time| {
-            time.with_timezone(&chrono::Local)
-                .format("%H:%M")
-                .to_string()
-        })
-        .unwrap_or_default()
-}
-
 /// The last result at a glance, without opening the popover.
 pub fn tooltip(view: &View, glyph: Glyph) -> String {
     let summary = |report: &crate::core::speedtest::Report| {
@@ -404,9 +395,7 @@ pub fn tooltip(view: &View, glyph: Glyph) -> String {
 }
 
 pub fn update(app: &AppHandle, view: &View) {
-    let now_ms = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |time| time.as_millis() as u64);
+    let now_ms = unix_ms();
     let glyph = glyph(view, now_ms);
     let size = icon_size(app);
     let visibility = app.state::<Visibility>();
