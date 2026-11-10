@@ -344,15 +344,20 @@ impl Runtime {
             .unwrap_or_default()
     }
 
+    /// Publishes outside the lock: on Windows and Linux the tray update waits for
+    /// the main thread, which may itself be waiting for `view()`.
     fn change(&self, app: &AppHandle, update: impl FnOnce(&mut View)) {
-        let Ok(mut view) = self.view.lock() else {
-            return;
+        let view = {
+            let Ok(mut view) = self.view.lock() else {
+                return;
+            };
+            update(&mut view);
+            view.derive();
+            view.revision += 1;
+            view.clone()
         };
-        update(&mut view);
-        view.derive();
-        view.revision += 1;
-        let _ = app.emit(STATE_EVENT, view.clone());
         crate::core::tray::update(app, &view);
+        let _ = app.emit(STATE_EVENT, view);
     }
 
     pub fn cancel(&self) {
