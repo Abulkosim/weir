@@ -51,7 +51,9 @@ impl Scheduler {
             return false;
         }
         let since = *self.suitable_since_ms.get_or_insert(now_ms);
-        let elapsed = |at: Option<u64>| at.is_none_or(|at| now_ms.saturating_sub(at) >= interval);
+        // A time ahead of now was recorded under a wrong clock; waiting for it
+        // would stall the schedule until real time caught up.
+        let elapsed = |at: Option<u64>| at.is_none_or(|at| at > now_ms || now_ms - at >= interval);
         if now_ms.saturating_sub(since) < SETTLE_MS
             || !elapsed(last_test_ms)
             || !elapsed(self.last_started_ms)
@@ -92,6 +94,21 @@ mod tests {
         let mut scheduler = Scheduler::default();
         assert_eq!(
             run(&mut scheduler, Schedule::Every6Hours, 0..300, None),
+            [2]
+        );
+    }
+
+    #[test]
+    fn a_test_dated_in_the_future_does_not_stall_the_schedule() {
+        let mut scheduler = Scheduler::default();
+        let wrong_clock = DAY + 30 * DAY;
+        assert_eq!(
+            run(
+                &mut scheduler,
+                Schedule::Every6Hours,
+                0..300,
+                Some(wrong_clock)
+            ),
             [2]
         );
     }
