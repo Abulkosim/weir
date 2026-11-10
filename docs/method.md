@@ -93,7 +93,7 @@ Not reported in v0.1. Cloudflare's loss test needs a TURN server; ICMP loss misr
 ## Data use
 
 - Ceiling: 380 MB down + 190 MB up + 1 MB probes, plus 5 % for headers ≈ **600 MB**.
-- **Estimate before a test:** `E = (min(380, R_d/8 × 7) + min(190, R_u/8 × 6) + 1) × 1.05` MB, where `R` is the median of the last 3 results on this network (Mbps). No history → "Uses up to 600 MB". Rounded up to 5 MB below 50 MB, else up to 10 MB, so the estimate never understates.
+- **Estimate before a test:** `E = (min(380, R_d/8 × 7) + min(190, R_u/8 × 6) + 1) × 1.05` MB, where `R` is the median of the last 3 results (Mbps). No history, or a metered link (whose recent results may come from a slower network) → "Uses up to 600 MB". Rounded up to 5 MB below 50 MB, else up to 10 MB, so the estimate never understates.
   - 100/20 Mbps → about 110 MB. 300/40 → about 310 MB. 1000/100 → about 480 MB.
 - After the test: actual bytes counted, "Used 212 MB".
 - Metered, hotspot or Low Data Mode → the Test button asks first: "You're on a hotspot. Test anyway? Uses about 110 MB".

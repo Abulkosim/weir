@@ -50,7 +50,11 @@ pub struct View {
     pub testing: Option<Progress>,
     pub last: Option<Report>,
     pub failure: Option<Failure>,
+    /// From recent results, except on a metered link, where those results may
+    /// come from a slower network and understate: then the most a test uses.
     pub estimate: Estimate,
+    #[serde(skip)]
+    pub(crate) recent_estimate: Estimate,
     pub network: Network,
     pub meaning: Option<Meaning>,
     /// The last result against the speed the provider sells, when it is set.
@@ -72,6 +76,7 @@ impl Default for View {
             last: None,
             failure: None,
             estimate: data_estimate(&[]).into(),
+            recent_estimate: data_estimate(&[]).into(),
             network: Network::default(),
             meaning: None,
             plan: None,
@@ -88,6 +93,11 @@ impl Default for View {
 impl View {
     /// Fields that follow from the last result and the settings.
     fn derive(&mut self) {
+        self.estimate = if self.network.metered.is_some() {
+            data_estimate(&[]).into()
+        } else {
+            self.recent_estimate.clone()
+        };
         self.meaning = self.last.as_ref().map(meaning);
         self.plan = self
             .last
@@ -142,7 +152,7 @@ impl Runtime {
         let mut view = View {
             last: history.last_report().cloned(),
             history_count: history.len(),
-            estimate: data_estimate(&history.speeds(3)).into(),
+            recent_estimate: data_estimate(&history.speeds(3)).into(),
             notice: (!notes.is_empty()).then(|| notes.join(" ")),
             settings,
             ..View::default()
@@ -306,7 +316,7 @@ impl Runtime {
         drop(history);
         self.change(app, |view| {
             view.history_count = 0;
-            view.estimate = data_estimate(&[]).into();
+            view.recent_estimate = data_estimate(&[]).into();
         });
         Ok(())
     }
@@ -452,7 +462,7 @@ impl Runtime {
                 view.testing = None;
                 if let Some((count, estimate, problem)) = recorded {
                     view.history_count = count;
-                    view.estimate = estimate;
+                    view.recent_estimate = estimate;
                     view.notice = problem.or(view.notice.take());
                 }
                 match outcome {
@@ -477,4 +487,23 @@ impl Runtime {
 
 pub fn runtime(app: &AppHandle) -> Arc<Runtime> {
     app.state::<Arc<Runtime>>().inner().clone()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::network::Metered;
+
+    #[test]
+    fn metered_link_shows_the_most_a_test_uses() {
+        let mut view = View {
+            recent_estimate: data_estimate(&[(20.0, 5.0)]).into(),
+            ..View::default()
+        };
+        view.derive();
+        assert!(!view.estimate.up_to && view.estimate.mb < 100);
+        view.network.metered = Some(Metered::Hotspot);
+        view.derive();
+        assert!(view.estimate.up_to && view.estimate.mb == 600);
+    }
 }
