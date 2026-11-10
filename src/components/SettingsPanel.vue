@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogOverlay, AlertDialogPortal, AlertDialogRoot, AlertDialogTitle } from 'reka-ui'
-import type { Settings } from '../lib/model'
+import type { Settings, View } from '../lib/model'
 import AppIcon from './AppIcon.vue'
 import AppSwitch from './ui/AppSwitch.vue'
 import UpdateSettings from './settings/UpdateSettings.vue'
@@ -11,7 +11,7 @@ import ShortcutField from './settings/ShortcutField.vue'
 import type { UpdateState } from '../lib/updater'
 import { isWindows } from '../lib/platform'
 
-const props = defineProps<{ settings: Settings; estimateMb: number; lastTestMs: number | null; now: number; metered: boolean; historyCount: number; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
+const props = defineProps<{ settings: Settings; estimate: View['estimate']; lastTestMs: number | null; now: number; metered: boolean; historyCount: number; updateState: UpdateState; updateBusy: boolean; demo: boolean }>()
 const emit = defineEmits<{ back: []; save: [settings: Settings]; export: []; report: []; clear: []; checkUpdate: []; installUpdate: [] }>()
 const confirmClear = ref(false)
 const isMac = !isWindows
@@ -64,7 +64,7 @@ function patch(change: Partial<Settings>): void {
 
       <PlanSettings :download="settings.planDownloadMbps" :upload="settings.planUploadMbps" @save="patch"/>
 
-      <ScheduleSettings :schedule="settings.scheduledTests" :estimate-mb="estimateMb" :last-test-ms="lastTestMs" :now="now" :metered="metered" @save="patch({ scheduledTests: $event })"/>
+      <ScheduleSettings :schedule="settings.scheduledTests" :estimate="estimate" :last-test-ms="lastTestMs" :now="now" :metered="metered" @save="patch({ scheduledTests: $event })"/>
 
       <section class="settings-section">
         <h2>Outages</h2>

@@ -63,7 +63,7 @@ export const errorCopy: Record<TestError, { title: string; detail: string }> = {
   offline: { title: 'No internet', detail: 'Weir couldn’t reach Cloudflare. Check your connection.' },
   refused: { title: 'Cloudflare refused the test', detail: 'Try again in a few minutes.' },
   serverError: { title: 'Cloudflare server error', detail: 'Try again in a few minutes.' },
-  stalled: { title: 'Connection stalled', detail: 'No data arrived for 3 seconds.' },
+  stalled: { title: 'Connection stalled', detail: 'Data stopped arriving before the test could finish.' },
   tooShort: { title: 'Test too short to measure', detail: 'The connection didn’t settle long enough for a fair number.' },
   dropped: { title: 'Connection kept dropping', detail: 'More than half the connections failed.' },
   networkChanged: { title: 'Network changed during the test', detail: 'Test again on the new network.' },
