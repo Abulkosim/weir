@@ -516,4 +516,117 @@ mod tests {
         view.derive();
         assert!(view.estimate.up_to && view.estimate.mb == 600);
     }
+
+    /// Everything the popover reads, with every optional part filled in. The
+    /// frontend's Zod schemas parse the same file in `tests/unit/ipc.test.ts`.
+    #[test]
+    fn ipc_fixture_matches_what_the_app_sends() {
+        use crate::core::{
+            diagnose::{Readings, Router},
+            speedtest::{IdleLatency, Phase, Speed},
+        };
+        let at = 1_792_771_200_000;
+        let speed = |mbps, loaded_ms| Speed {
+            mbps,
+            p10: mbps * 0.9,
+            p90: mbps * 1.1,
+            varied: false,
+            capped: false,
+            ramped_slowly: false,
+            rough: false,
+            loaded_ms,
+        };
+        let report = Report {
+            started_at_ms: at,
+            duration_ms: 15_400,
+            provider: "Cloudflare".into(),
+            colo: Some("FRA".into()),
+            latency: Some(IdleLatency {
+                median_ms: 14.0,
+                jitter_ms: Some(2.1),
+                answered: 19,
+                sent: 20,
+            }),
+            download: speed(312.4, Some(62.0)),
+            upload: Some(speed(41.2, Some(48.0))),
+            upload_error: Some(TestError::Stalled),
+            bytes_used: 238_400_000,
+            scheduled: true,
+        };
+        let readings = Readings {
+            online: true,
+            wired: false,
+            wifi: None,
+            router: Some(Router {
+                sent: 5,
+                answered: 5,
+                median_ms: Some(2.0),
+            }),
+            dns_ms: Some(Some(12.0)),
+            internet_ms: Some(Some(14.0)),
+        };
+        let mut view = View {
+            revision: 7,
+            testing: Some(Progress {
+                phase: Phase::Download,
+                phase_ms: 2_400,
+                live_mbps: Some(298.5),
+                download_mbps: None,
+                latency_ms: Some(14.0),
+                loaded_ms: Some(60.0),
+                bytes_used: 90_000_000,
+                colo: Some("FRA".into()),
+            }),
+            last: Some(report.clone()),
+            failure: Some(Failure {
+                error: TestError::Dropped,
+                at_ms: at + 60_000,
+            }),
+            recent_estimate: data_estimate(&[(312.4, 41.2)]).into(),
+            history_count: 3,
+            notice: Some("Settings couldn’t be opened. Changes here won’t be saved.".into()),
+            settings: Settings {
+                plan_download_mbps: Some(500),
+                plan_upload_mbps: Some(50),
+                shortcut: Some("Control+Alt+KeyW".into()),
+                ..Settings::default()
+            },
+            checking: true,
+            diagnosis: Some(diagnose(&readings, at)),
+            outage_since_ms: Some(at + 120_000),
+            ..View::default()
+        };
+        view.network.metered = Some(crate::core::network::Metered::Hotspot);
+        view.derive();
+        let history = [
+            Entry::Result {
+                report: Box::new(report),
+            },
+            Entry::Failed {
+                at_ms: at + 60_000,
+                error: TestError::Dropped,
+            },
+            Entry::Outage {
+                start_ms: at + 120_000,
+                end_ms: at + 180_000,
+            },
+        ];
+        let text = serde_json::to_string_pretty(&serde_json::json!({
+            "view": view,
+            "history": history,
+        }))
+        .unwrap()
+            + "\n";
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("fixtures/ipc.json");
+        if std::env::var_os("WEIR_UPDATE_FIXTURES").is_some() {
+            std::fs::write(&path, &text).unwrap();
+        }
+        let saved = std::fs::read_to_string(&path)
+            .unwrap()
+            .replace("\r\n", "\n");
+        assert!(
+            saved == text,
+            "fixtures/ipc.json is out of date: run `WEIR_UPDATE_FIXTURES=1 cargo test ipc_fixture` and `pnpm test`"
+        );
+    }
 }

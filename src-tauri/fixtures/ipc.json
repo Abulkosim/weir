@@ -1,0 +1,194 @@
+{
+  "history": [
+    {
+      "kind": "result",
+      "report": {
+        "bytesUsed": 238400000,
+        "colo": "FRA",
+        "download": {
+          "capped": false,
+          "loadedMs": 62.0,
+          "mbps": 312.4,
+          "p10": 281.15999999999997,
+          "p90": 343.64,
+          "rampedSlowly": false,
+          "rough": false,
+          "varied": false
+        },
+        "durationMs": 15400,
+        "latency": {
+          "answered": 19,
+          "jitterMs": 2.1,
+          "medianMs": 14.0,
+          "sent": 20
+        },
+        "provider": "Cloudflare",
+        "scheduled": true,
+        "startedAtMs": 1792771200000,
+        "upload": {
+          "capped": false,
+          "loadedMs": 48.0,
+          "mbps": 41.2,
+          "p10": 37.080000000000005,
+          "p90": 45.32000000000001,
+          "rampedSlowly": false,
+          "rough": false,
+          "varied": false
+        },
+        "uploadError": "stalled"
+      }
+    },
+    {
+      "atMs": 1792771260000,
+      "error": "dropped",
+      "kind": "failed"
+    },
+    {
+      "endMs": 1792771380000,
+      "kind": "outage",
+      "startMs": 1792771320000
+    }
+  ],
+  "view": {
+    "checking": true,
+    "diagnosis": {
+      "checkedAtMs": 1792771200000,
+      "headline": "Everything looks fine from here.",
+      "status": "good",
+      "steps": [
+        {
+          "key": "router",
+          "label": "Router",
+          "status": "good",
+          "text": "Answers in 2 ms"
+        },
+        {
+          "key": "dns",
+          "label": "DNS",
+          "status": "good",
+          "text": "Lookups in 12 ms"
+        },
+        {
+          "key": "internet",
+          "label": "Internet",
+          "status": "good",
+          "text": "Cloudflare in 14 ms"
+        }
+      ]
+    },
+    "estimate": {
+      "mb": 600,
+      "upTo": true
+    },
+    "failure": {
+      "atMs": 1792771260000,
+      "error": "dropped"
+    },
+    "historyCount": 3,
+    "last": {
+      "bytesUsed": 238400000,
+      "colo": "FRA",
+      "download": {
+        "capped": false,
+        "loadedMs": 62.0,
+        "mbps": 312.4,
+        "p10": 281.15999999999997,
+        "p90": 343.64,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+      },
+      "durationMs": 15400,
+      "latency": {
+        "answered": 19,
+        "jitterMs": 2.1,
+        "medianMs": 14.0,
+        "sent": 20
+      },
+      "provider": "Cloudflare",
+      "scheduled": true,
+      "startedAtMs": 1792771200000,
+      "upload": {
+        "capped": false,
+        "loadedMs": 48.0,
+        "mbps": 41.2,
+        "p10": 37.080000000000005,
+        "p90": 45.32000000000001,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+      },
+      "uploadError": "stalled"
+    },
+    "meaning": {
+      "headline": "Good for 4K video and calls",
+      "health": "good",
+      "lines": [
+        {
+          "health": "good",
+          "text": "Good for 4K video",
+          "topic": "Video"
+        },
+        {
+          "health": "good",
+          "text": "Good for video calls",
+          "topic": "Calls"
+        },
+        {
+          "health": "good",
+          "text": "Fine for online games",
+          "topic": "Games"
+        },
+        {
+          "health": "fair",
+          "text": "Slows under load: +48 ms",
+          "topic": "Under load"
+        }
+      ]
+    },
+    "network": {
+      "metered": "hotspot",
+      "offlineSinceMs": null,
+      "online": true
+    },
+    "notice": "Settings couldn’t be opened. Changes here won’t be saved.",
+    "outageSinceMs": 1792771320000,
+    "plan": {
+      "download": {
+        "atLeast": false,
+        "health": "fair",
+        "paidMbps": 500,
+        "percent": 62
+      },
+      "upload": {
+        "atLeast": false,
+        "health": "good",
+        "paidMbps": 50,
+        "percent": 82
+      }
+    },
+    "revision": 7,
+    "settings": {
+      "autoCheckUpdates": true,
+      "autostart": false,
+      "notifyOutages": true,
+      "planDownloadMbps": 500,
+      "planUploadMbps": 50,
+      "scheduledTests": "off",
+      "shortcut": "Control+Alt+KeyW",
+      "theme": "system",
+      "traySpeed": false,
+      "watchOutages": false
+    },
+    "testing": {
+      "bytesUsed": 90000000,
+      "colo": "FRA",
+      "downloadMbps": null,
+      "latencyMs": 14.0,
+      "liveMbps": 298.5,
+      "loadedMs": 60.0,
+      "phase": "download",
+      "phaseMs": 2400
+    }
+  }
+}
