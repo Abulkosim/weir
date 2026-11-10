@@ -1,6 +1,6 @@
 import { onUnmounted, ref, watch, type Ref } from 'vue'
 
-const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const motion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null
 
 export function easeOut(t: number): number {
   return 1 - (1 - t) ** 3
@@ -12,7 +12,7 @@ export function useTween(source: () => number | null, duration = 420): Ref<numbe
   let frame = 0
   watch(source, target => {
     cancelAnimationFrame(frame)
-    if (target === null || shown.value === null || reduced) {
+    if (target === null || shown.value === null || motion?.matches) {
       shown.value = target
       return
     }

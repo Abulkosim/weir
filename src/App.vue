@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { TooltipProvider } from 'reka-ui'
 import { entryTime, navigateSchema } from './lib/model'
 import { demo, desktop, invoke, isWindows, listen, query } from './lib/bridge'
@@ -53,6 +53,17 @@ const shell = ref<HTMLElement | null>(null)
 const popover = ref<HTMLElement | null>(null)
 const scroller = ref<HTMLElement | null>(null)
 const content = ref<HTMLElement | null>(null)
+
+/** When a view change removes the focused control, move focus into the new view instead of dropping it. */
+watch([page, () => Boolean(view.value.testing), confirming], async () => {
+  if (!popover.value?.contains(document.activeElement)) return
+  await nextTick()
+  if (popover.value?.contains(document.activeElement)) return
+  const target = content.value?.querySelector<HTMLElement>('[data-autofocus]') ?? content.value?.querySelector<HTMLElement>('h1')
+  if (!target) return
+  if (target.tagName === 'H1') target.tabIndex = -1
+  target.focus({ preventScroll: true })
+})
 const framed = desktop && !demo || demo && query.get('frame') === '1'
 const embedded = demo && query.get('embed') === '1'
 const measured = ref(0)
@@ -169,7 +180,7 @@ onUnmounted(() => {
           <ResultView v-else :view="view" :now="now" :update-available="updater.available.value" :confirming="confirming" @test="start" @dismiss="confirming = false" @history="page = 'history'" @settings="page = 'settings'" @check="openCheck" @copy="copy"/>
           </div>
         </main>
-        <Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition>
+        <div class="toast-region" aria-live="polite"><Transition name="toast"><p v-if="message" class="toast" role="status">{{ message }}</p></Transition></div>
         <div v-if="!desktop || demo" class="preview-ribbon">Interface preview<span>Sample data</span></div>
       </div>
     </div>
