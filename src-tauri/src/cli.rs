@@ -4,7 +4,7 @@
 use crate::core::{
     backends::cloudflare::Cloudflare,
     cli::{self, Command, USAGE},
-    history::{read_only, Entry},
+    history::{read_only, speeds, Entry},
     speedtest::{self, Control, Plan},
     stats::{data_estimate, DataEstimate},
 };
@@ -75,16 +75,7 @@ fn test(allow_metered: bool) -> i32 {
         return METERED;
     }
     if std::io::stderr().is_terminal() {
-        let history = entries();
-        let mut speeds: Vec<(f64, f64)> = history
-            .iter()
-            .rev()
-            .filter_map(Entry::report)
-            .filter_map(|report| Some((report.download.mbps, report.upload.as_ref()?.mbps)))
-            .take(3)
-            .collect();
-        speeds.reverse();
-        let estimate = match data_estimate(&speeds) {
+        let estimate = match data_estimate(&speeds(&entries(), 3)) {
             DataEstimate::UpTo(mb) => format!("up to {mb} MB"),
             DataEstimate::About(mb) => format!("about {mb} MB"),
         };

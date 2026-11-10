@@ -736,7 +736,7 @@ fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
     }
 }
 
-const METHOD: &str = "Each test downloads and uploads over 6 parallel connections to the nearest Cloudflare server (speed.cloudflare.com), discards the warm-up and reports the steady average. Latency is the median round trip while the line is idle; under load is measured during the download and upload. Wi-Fi, other devices on the network and the server all affect a single test; tests on a cable are the strongest evidence.";
+const METHOD: &str = "Each test downloads over 6 parallel connections and uploads over 4, with 2 more each when the server is far, to the nearest Cloudflare server (speed.cloudflare.com), discards the warm-up and reports the steady average. Latency is the median round trip while the line is idle; under load is measured during the download and upload. Wi-Fi, other devices on the network and the server all affect a single test; tests on a cable are the strongest evidence.";
 
 /// The report as PDF bytes, or `None` when the last 30 days have no tests or outages.
 pub fn pdf(entries: &[Entry], options: &Options) -> Option<Vec<u8>> {

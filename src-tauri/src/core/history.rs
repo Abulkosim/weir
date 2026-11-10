@@ -90,6 +90,19 @@ fn readable(raw: Vec<Value>) -> Vec<Entry> {
 
 /// Reads entries without changing anything on disk, for the command line. An unreadable
 /// file reads as empty; the app deals with it next time it starts.
+/// `(down, up)` of the last `limit` results with an upload, oldest first.
+pub fn speeds(entries: &[Entry], limit: usize) -> Vec<(f64, f64)> {
+    let mut speeds: Vec<(f64, f64)> = entries
+        .iter()
+        .rev()
+        .filter_map(Entry::report)
+        .filter_map(|report| Some((report.download.mbps, report.upload.as_ref()?.mbps)))
+        .take(limit)
+        .collect();
+    speeds.reverse();
+    speeds
+}
+
 pub fn read_only(path: &Path) -> Vec<Entry> {
     fs::read_to_string(path)
         .ok()
@@ -231,16 +244,7 @@ impl History {
 
     /// `(down, up)` of recent results, oldest first, for the data estimate.
     pub fn speeds(&self, limit: usize) -> Vec<(f64, f64)> {
-        let mut speeds: Vec<(f64, f64)> = self
-            .entries
-            .iter()
-            .rev()
-            .filter_map(Entry::report)
-            .filter_map(|report| Some((report.download.mbps, report.upload.as_ref()?.mbps)))
-            .take(limit)
-            .collect();
-        speeds.reverse();
-        speeds
+        speeds(&self.entries, limit)
     }
 }
 
