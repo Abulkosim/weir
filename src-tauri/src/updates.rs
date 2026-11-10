@@ -134,9 +134,8 @@ async fn check(app: &AppHandle, updates: &Updates, quiet: bool) -> Result<Update
         Err(_) => "Couldn’t check for updates. Check your connection and try again.",
     };
     if quiet {
-        #[cfg(debug_assertions)]
-        eprintln!("Background update check failed: {message}");
-        return updates.publish(app, previous);
+        updates.publish(app, previous)?;
+        return Err(message.to_owned());
     }
     updates.fail(app, message)
 }
@@ -184,8 +183,9 @@ async fn background_check(app: &AppHandle, runtime: &Runtime, last: &mut Option<
     }) {
         return;
     }
-    *last = Some(now.to_rfc3339());
-    let _ = check(app, &updates, true).await;
+    if check(app, &updates, true).await.is_ok() {
+        *last = Some(now.to_rfc3339());
+    }
 }
 
 #[tauri::command]

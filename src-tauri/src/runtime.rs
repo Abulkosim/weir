@@ -325,6 +325,16 @@ impl Runtime {
         )
     }
 
+    /// Adds a line to the notice at the top of the popover.
+    pub fn note(&self, app: &AppHandle, text: &str) {
+        self.change(app, |view| {
+            view.notice = Some(match view.notice.take() {
+                Some(notice) => format!("{notice} {text}"),
+                None => text.to_owned(),
+            });
+        });
+    }
+
     pub fn view(&self) -> View {
         self.view
             .lock()
