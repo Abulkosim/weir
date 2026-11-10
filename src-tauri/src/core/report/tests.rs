@@ -188,3 +188,12 @@ fn sample_report() {
     options.zone = Zone::Fixed(FixedOffset::east_opt(5 * 3600).unwrap());
     std::fs::write(path, pdf(&month(), &options).unwrap()).unwrap();
 }
+
+#[test]
+fn speeds_switch_precision_after_rounding() {
+    assert_eq!(mbps(312.4), "312");
+    assert_eq!(mbps(9.97), "10");
+    assert_eq!(mbps(9.94), "9.9");
+    assert_eq!(mbps(0.996), "1.0");
+    assert_eq!(mbps(0.42), "0.42");
+}

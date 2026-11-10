@@ -196,10 +196,11 @@ pub fn summarize<'a>(entries: &'a [Entry], options: &Options) -> Option<Summary<
     })
 }
 
+/// Three significant figures at most, decided after rounding so 9.97 reads 10.
 pub fn mbps(value: f64) -> String {
-    if value >= 10.0 {
+    if (value * 10.0).round() >= 100.0 {
         format!("{value:.0}")
-    } else if value >= 1.0 {
+    } else if (value * 100.0).round() >= 100.0 {
         format!("{value:.1}")
     } else {
         format!("{value:.2}")
