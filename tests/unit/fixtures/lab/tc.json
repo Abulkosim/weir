@@ -1,0 +1,1 @@
+[{"kind":"netem","handle":"1:","root":true,"refcnt":2,"options":{"limit":1000000},"bytes":1514000,"packets":1000,"drops":10,"overlimits":0,"requeues":0,"backlog":0,"qlen":0},{"kind":"tbf","handle":"10:","parent":"1:1","options":{},"bytes":1514000,"packets":1000,"drops":3,"overlimits":40,"requeues":0,"backlog":3028,"qlen":2}]

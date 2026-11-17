@@ -1,0 +1,15 @@
+{
+  "start": { "timestamp": { "timesecs": 1700000100 }, "test_start": { "num_streams": 4, "reverse": 0 } },
+  "intervals": [
+    { "sum": { "start": 0, "end": 1, "seconds": 1, "bytes": 3000000, "omitted": false } }
+  ],
+  "end": { "sum_received": { "bits_per_second": 23900000 }, "sum_sent": { "retransmits": 3 } },
+  "server_output_json": {
+    "start": { "test_start": { "num_streams": 4, "reverse": 0 } },
+    "intervals": [
+      { "sum": { "start": 0, "end": 1, "seconds": 1, "bytes": 1000000, "omitted": true } },
+      { "sum": { "start": 0, "end": 1, "seconds": 1, "bytes": 2990000, "omitted": false } },
+      { "sum": { "start": 1, "end": 2, "seconds": 1, "bytes": 2990000, "omitted": false } }
+    ]
+  }
+}

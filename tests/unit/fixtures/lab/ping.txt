@@ -1,0 +1,10 @@
+PING 10.77.2.2 (10.77.2.2) 56(84) bytes of data.
+[1700000000.050000] 64 bytes from 10.77.2.2: icmp_seq=1 ttl=63 time=50.0 ms
+[1700000000.152000] 64 bytes from 10.77.2.2: icmp_seq=2 ttl=63 time=52.0 ms
+[1700000000.300000] no answer yet for icmp_seq=3
+[1700000000.400000] no answer yet for icmp_seq=4
+[1700000002.700000] 64 bytes from 10.77.2.2: icmp_seq=4 ttl=63 time=2400 ms
+[1700000002.800000] 64 bytes from 10.77.2.2: icmp_seq=26 ttl=63 time=60.0 ms
+[1700000002.900000] no answer yet for icmp_seq=27
+
+--- 10.77.2.2 ping statistics ---
