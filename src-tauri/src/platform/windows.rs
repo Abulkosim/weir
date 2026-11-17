@@ -7,13 +7,18 @@ use windows::Networking::Connectivity::{
     NetworkConnectivityLevel, NetworkCostType, NetworkInformation, NetworkStatusChangedEventHandler,
 };
 
+/// Any network path, like "satisfied" on macOS. NCSI drops to LocalAccess when the
+/// provider is down (and behind some proxies), which the outage watch must not read
+/// as this computer having no network.
+fn has_path(level: NetworkConnectivityLevel) -> bool {
+    level != NetworkConnectivityLevel::None
+}
+
 fn read() -> Path {
     let Ok(profile) = NetworkInformation::GetInternetConnectionProfile() else {
         return Path::default();
     };
-    let online = profile
-        .GetNetworkConnectivityLevel()
-        .is_ok_and(|level| level == NetworkConnectivityLevel::InternetAccess);
+    let online = profile.GetNetworkConnectivityLevel().is_ok_and(has_path);
     let cost = profile.GetConnectionCost().ok();
     let flag = |read: fn(
         &windows::Networking::Connectivity::ConnectionCost,
@@ -108,4 +113,21 @@ pub fn low_power() -> bool {
     let mut status = SYSTEM_POWER_STATUS::default();
     // SAFETY: `status` is a valid, writable SYSTEM_POWER_STATUS for the call.
     unsafe { GetSystemPowerStatus(&mut status) }.is_ok() && status.SystemStatusFlag == 1
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_provider_outage_still_has_a_network_path() {
+        assert!(!has_path(NetworkConnectivityLevel::None));
+        for level in [
+            NetworkConnectivityLevel::LocalAccess,
+            NetworkConnectivityLevel::ConstrainedInternetAccess,
+            NetworkConnectivityLevel::InternetAccess,
+        ] {
+            assert!(has_path(level), "{level:?}");
+        }
+    }
 }
