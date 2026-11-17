@@ -7,7 +7,7 @@
       "unknown": 0
     },
     "key": null,
-    "name": "no checks",
+    "name": "empty",
     "notice": null,
     "place": null,
     "sentence": null,
@@ -21,7 +21,7 @@
       "unknown": 3
     },
     "key": null,
-    "name": "only unclear",
+    "name": "unclear only",
     "notice": null,
     "place": null,
     "sentence": null,
@@ -31,15 +31,15 @@
     "causes": {
       "noNetwork": 0,
       "pastRouter": 0,
-      "router": 2,
+      "router": 4,
       "unknown": 0
     },
     "key": "router",
-    "name": "all at the router",
+    "name": "all router",
     "notice": "Your router didn’t answer.",
     "place": "at your router",
     "sentence": "Your router didn’t answer. The problem was at home: the Wi-Fi, a cable or the router.",
-    "tally": "checks: 2 at your router"
+    "tally": "checks: 4 at your router"
   },
   {
     "causes": {
@@ -49,7 +49,7 @@
       "unknown": 0
     },
     "key": "past_router",
-    "name": "all past the router",
+    "name": "all past router",
     "notice": "The break was past your router.",
     "place": "past your router",
     "sentence": "Your router was reachable throughout. The break was past it.",
@@ -57,7 +57,7 @@
   },
   {
     "causes": {
-      "noNetwork": 1,
+      "noNetwork": 3,
       "pastRouter": 0,
       "router": 0,
       "unknown": 0
@@ -67,7 +67,7 @@
     "notice": "Your computer had no network connection.",
     "place": "no network on this computer",
     "sentence": "Your computer had no network connection.",
-    "tally": "checks: 1 with no network"
+    "tally": "checks: 3 with no network"
   },
   {
     "causes": {
@@ -77,7 +77,7 @@
       "unknown": 1
     },
     "key": "router",
-    "name": "mostly at the router",
+    "name": "mostly router",
     "notice": "Mostly at your router.",
     "place": "mostly at your router",
     "sentence": "Mostly at your router: 5 of 7 checks.",
@@ -91,7 +91,7 @@
       "unknown": 0
     },
     "key": "past_router",
-    "name": "mostly past the router",
+    "name": "mostly past router",
     "notice": "Mostly past your router.",
     "place": "mostly past your router",
     "sentence": "Mostly past your router: 5 of 7 checks.",
@@ -114,26 +114,12 @@
   {
     "causes": {
       "noNetwork": 0,
-      "pastRouter": 3,
-      "router": 0,
-      "unknown": 4
-    },
-    "key": "past_router",
-    "name": "partly past the router",
-    "notice": null,
-    "place": "partly past your router",
-    "sentence": "Past your router in 3 of 7 checks. The rest were unclear.",
-    "tally": "checks: 3 past your router, 4 unclear"
-  },
-  {
-    "causes": {
-      "noNetwork": 0,
       "pastRouter": 0,
       "router": 3,
       "unknown": 4
     },
-    "key": "router",
-    "name": "partly at the router",
+    "key": null,
+    "name": "partly router",
     "notice": null,
     "place": "partly at your router",
     "sentence": "At your router in 3 of 7 checks. The rest were unclear.",
@@ -141,17 +127,17 @@
   },
   {
     "causes": {
-      "noNetwork": 1,
-      "pastRouter": 0,
+      "noNetwork": 0,
+      "pastRouter": 1,
       "router": 0,
       "unknown": 1
     },
-    "key": "no_network",
-    "name": "partly no network",
+    "key": null,
+    "name": "partly past router, 2 checks",
     "notice": null,
-    "place": "partly no network on this computer",
-    "sentence": "No network connection in 1 of 2 checks. The rest were unclear.",
-    "tally": "checks: 1 with no network, 1 unclear"
+    "place": "partly past your router",
+    "sentence": "Past your router in 1 of 2 checks. The other was unclear.",
+    "tally": "checks: 1 past your router, 1 unclear"
   },
   {
     "causes": {
@@ -169,27 +155,13 @@
   },
   {
     "causes": {
-      "noNetwork": 2,
-      "pastRouter": 2,
-      "router": 0,
-      "unknown": 0
-    },
-    "key": "mixed",
-    "name": "mixed without unclear",
-    "notice": null,
-    "place": "checks disagreed",
-    "sentence": "Checks disagreed: 2 of 4 past your router, 2 with no network.",
-    "tally": "checks: 2 past your router, 2 with no network"
-  },
-  {
-    "causes": {
       "noNetwork": 0,
       "pastRouter": 1,
       "router": 1,
       "unknown": 0
     },
     "key": "mixed",
-    "name": "two checks that disagree",
+    "name": "mixed, 2 checks",
     "notice": null,
     "place": "checks disagreed",
     "sentence": "Checks disagreed: 1 of 2 at your router, 1 past it.",
@@ -197,16 +169,16 @@
   },
   {
     "causes": {
-      "noNetwork": 0,
+      "noNetwork": 2,
       "pastRouter": 2,
       "router": 0,
-      "unknown": 0
+      "unknown": 1
     },
-    "key": "past_router",
-    "name": "two checks past the router",
-    "notice": "The break was past your router.",
-    "place": "past your router",
-    "sentence": "Your router was reachable throughout. The break was past it.",
-    "tally": "checks: 2 past your router"
+    "key": "mixed",
+    "name": "mixed past router and no network",
+    "notice": null,
+    "place": "checks disagreed",
+    "sentence": "Checks disagreed: 2 of 5 past your router, 2 with no network, 1 unclear.",
+    "tally": "checks: 2 past your router, 2 with no network, 1 unclear"
   }
 ]

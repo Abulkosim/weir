@@ -1,6 +1,8 @@
 use super::*;
-use crate::core::outage::Causes;
-use crate::core::speedtest::{IdleLatency, Speed};
+use crate::core::{
+    outage::Causes,
+    speedtest::{IdleLatency, Speed},
+};
 
 const DAY: u64 = 24 * 60 * 60 * 1000;
 const NOW: u64 = 400 * DAY;
@@ -200,6 +202,14 @@ fn file_that_cannot_be_opened_is_left_alone() {
     assert!(path.is_dir());
 }
 
+fn outage(start_ms: u64, causes: Causes) -> Entry {
+    Entry::Outage {
+        start_ms,
+        end_ms: start_ms + 7 * 60_000,
+        causes,
+    }
+}
+
 #[test]
 fn outages_from_before_causes_load_without_one() {
     let text = r#"{"version":1,"entries":[{"kind":"outage","startMs":1,"endMs":2}]}"#;
@@ -209,7 +219,7 @@ fn outages_from_before_causes_load_without_one() {
             vec![Entry::Outage {
                 start_ms: 1,
                 end_ms: 2,
-                causes: Causes::default(),
+                causes: Causes::default()
             }],
             0
         ))
@@ -217,63 +227,71 @@ fn outages_from_before_causes_load_without_one() {
 }
 
 #[test]
-fn causes_with_missing_or_unknown_keys_still_load() {
-    let text = r#"{"version":1,"entries":[{"kind":"outage","startMs":1,"endMs":2,"causes":{"pastRouter":3,"later":9}}]}"#;
+fn causes_with_missing_or_unknown_counts_still_load() {
+    let text = r#"{"version":1,"entries":[{"kind":"outage","startMs":1,"endMs":2,"causes":{"router":2,"vpn":4}}]}"#;
+    let (entries, skipped) = parse(text).unwrap();
+    assert_eq!(skipped, 0);
     assert_eq!(
-        parse(text),
-        Some((
-            vec![Entry::Outage {
-                start_ms: 1,
-                end_ms: 2,
-                causes: Causes {
-                    past_router: 3,
-                    ..Causes::default()
-                },
-            }],
-            0
-        ))
-    );
-}
-
-/// Weir 0.7.3's entry, copied from `git show v0.7.3:src-tauri/src/core/history.rs`.
-#[derive(Debug, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
-#[allow(dead_code)]
-enum Release073 {
-    Result {
-        report: Box<Report>,
-    },
-    #[serde(rename_all = "camelCase")]
-    Failed {
-        at_ms: u64,
-        error: TestError,
-    },
-    #[serde(rename_all = "camelCase")]
-    Outage {
-        start_ms: u64,
-        end_ms: u64,
-    },
-}
-
-#[test]
-fn weir_0_7_3_reads_and_keeps_writing_a_file_with_causes() {
-    let entries = vec![
-        result(DAY, 100.0),
-        Entry::Outage {
-            start_ms: 2 * DAY,
-            end_ms: 2 * DAY + 7 * 60_000,
+        entries,
+        [Entry::Outage {
+            start_ms: 1,
+            end_ms: 2,
             causes: Causes {
+                router: 2,
+                ..Causes::default()
+            }
+        }]
+    );
+    let saved = to_text(&[outage(DAY, Causes::default())]).unwrap();
+    assert!(saved.contains(r#""causes":{"noNetwork":0,"router":0,"pastRouter":0,"unknown":0}"#));
+}
+
+/// Weir 0.7.3 reads files this version writes: every entry parses and the file
+/// stays writable, so a downgrade loses only the causes.
+#[test]
+fn weir_0_7_3_reads_and_keeps_writing_new_files() {
+    #[derive(Debug, Deserialize)]
+    #[serde(tag = "kind", rename_all = "camelCase")]
+    #[allow(dead_code)]
+    enum Entry073 {
+        Result {
+            report: Box<Report>,
+        },
+        #[serde(rename_all = "camelCase")]
+        Failed {
+            at_ms: u64,
+            error: TestError,
+        },
+        #[serde(rename_all = "camelCase")]
+        Outage {
+            start_ms: u64,
+            end_ms: u64,
+        },
+    }
+    let entries = [
+        result(DAY, 100.0),
+        Entry::Failed {
+            at_ms: 2 * DAY,
+            error: TestError::Stalled,
+        },
+        outage(
+            3 * DAY,
+            Causes {
                 router: 2,
                 past_router: 5,
                 ..Causes::default()
             },
-        },
+        ),
     ];
     let text = to_text(&entries).unwrap();
-    assert!(text.contains(r#""causes":{"noNetwork":0,"router":2,"pastRouter":5,"unknown":0}"#));
-    let raw: Value = serde_json::from_str(&text).unwrap();
-    for entry in raw["entries"].as_array().unwrap() {
-        serde_json::from_value::<Release073>(entry.clone()).unwrap();
+    let raw = serde_json::from_str::<Value>(&text).unwrap()["entries"]
+        .as_array()
+        .unwrap()
+        .clone();
+    assert_eq!(raw.len(), 3);
+    for value in raw {
+        serde_json::from_value::<Entry073>(value.clone())
+            .unwrap_or_else(|error| panic!("0.7.3 can't read {value}: {error}"));
     }
-    assert!(!is_newer(&text), "0.7.3 must not treat it as read-only");
+    assert!(!is_newer(&text), "0.7.3 must not go read-only");
 }

@@ -276,22 +276,31 @@ test('early in a month, history sums up the month before', async ({ page }) => {
 
 test('outages appear in history with their length and where they broke', async ({ page }) => {
   await page.goto('/?demo=1&page=history')
-  await expect(page.getByText(/No internet until .* · 7 min/)).toBeVisible()
-  await expect(page.locator('.history-row').filter({ hasText: '· 7 min' }).locator('.history-cause')).toHaveText('Your router was reachable throughout. The break was past it.')
+  const row = page.getByRole('listitem').filter({ hasText: /No internet until .* · 7 min/ })
+  await expect(row).toBeVisible()
+  await expect(row.locator('.history-cause')).toHaveText('Your router was reachable throughout. The break was past it.')
 })
 
 for (const theme of themes) {
-  test(`each outage cause reads plainly in history in ${theme}`, async ({ page }, info) => {
+  test(`history says where each outage broke in ${theme}`, async ({ page }, info) => {
     await page.clock.setFixedTime(new Date(2026, 10, 20, 20, 0))
     await page.goto(`/?demo=1&page=history&state=outages&theme=${theme}`)
-    const cause = (minutes: number) => page.locator('.history-row').filter({ hasText: `· ${minutes} min` }).locator('.history-cause')
-    await expect(cause(12)).toHaveText('Your router didn’t answer. The problem was at home: the Wi-Fi, a cable or the router.')
-    await expect(cause(3)).toHaveText('Your computer had no network connection.')
-    await expect(cause(9)).toHaveText('Mostly past your router: 5 of 7 checks.')
-    await expect(cause(5)).toHaveText('At your router in 3 of 7 checks. The rest were unclear.')
-    await expect(cause(6)).toHaveText('Checks disagreed: 3 of 7 at your router, 3 past it, 1 unclear.')
-    await expect(cause(4)).toHaveCount(0)
-    await page.locator('.history-row').filter({ hasText: '· 12 min' }).scrollIntoViewIfNeeded()
+    const causes = [
+      ['12 min', 'Your router didn’t answer. The problem was at home: the Wi-Fi, a cable or the router.'],
+      ['3 min', 'Your computer had no network connection.'],
+      ['9 min', 'Mostly past your router: 5 of 7 checks.'],
+      ['5 min', 'At your router in 3 of 7 checks. The rest were unclear.'],
+      ['6 min', 'Checks disagreed: 3 of 7 at your router, 3 past it, 1 unclear.'],
+      ['7 min', 'Your router was reachable throughout. The break was past it.'],
+    ] as const
+    for (const [length, cause] of causes) {
+      const row = page.getByRole('listitem').filter({ hasText: new RegExp(`· ${length}`) })
+      await expect(row.locator('.history-cause')).toHaveText(cause)
+    }
+    const legacy = page.getByRole('listitem').filter({ hasText: /No internet until .* · 4 min/ })
+    await expect(legacy).toBeVisible()
+    await expect(legacy.locator('.history-cause')).toHaveCount(0)
+    await legacy.scrollIntoViewIfNeeded()
     await shoot(page, 'outages', info.outputPath(`outages-${theme}.png`))
   })
 }

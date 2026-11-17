@@ -1,5 +1,5 @@
-//! Outage tracking for the opt-in watch: tiny checks once a minute plus OS path changes,
-//! and where each failed check broke.
+//! Outage tracking for the opt-in watch: tiny checks once a minute plus OS path changes.
+//! Each failed check is classified by where the connection broke; only counts are kept.
 
 use serde::{Deserialize, Serialize};
 
@@ -11,17 +11,18 @@ pub const SLEEP_GAP_MS: u64 = 5 * 60 * 1000;
 /// Where one failed check broke.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cause {
-    /// The OS had no network path: Wi-Fi off or cable out.
+    /// The OS reported no network path: Wi-Fi off or cable out.
     NoNetwork,
     /// The router did not answer.
     Router,
-    /// The router or its DNS server answered; the internet did not.
+    /// The router or the DNS server answered; the internet past them did not.
     PastRouter,
+    /// No usable router to ask, or the probes ran out of time.
     Unknown,
 }
 
-/// What the probes saw. `router: None` means there was no usable gateway
-/// (none, IPv6-only, a tunnel or VPN) or its probe ran out of time.
+/// What the probes saw. `router: None` means there was no usable gateway to ask
+/// (none, IPv6 only, a VPN tunnel) or the probe ran out of time.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Signals {
     pub router: Option<bool>,
@@ -44,7 +45,16 @@ pub fn classify(signals: Signals) -> Cause {
     }
 }
 
-/// How many checks of one outage broke where. Only counts are stored.
+/// A check whose probes straddled a network change can't say where it broke.
+pub fn classify_on(signals: Signals, same_network: bool) -> Cause {
+    if same_network {
+        classify(signals)
+    } else {
+        Cause::Unknown
+    }
+}
+
+/// How many checks of one outage broke where. Stored in History.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Causes {
@@ -57,13 +67,11 @@ pub struct Causes {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Verdict {
     All(Cause),
-    /// More than half the checks.
     Mostly {
         cause: Cause,
         count: u32,
         total: u32,
     },
-    /// The only known cause, in at most half the checks; the rest were unclear.
     Partly {
         cause: Cause,
         count: u32,
@@ -74,31 +82,15 @@ pub enum Verdict {
 
 const KNOWN: [Cause; 3] = [Cause::Router, Cause::PastRouter, Cause::NoNetwork];
 
-fn phrase(cause: Cause) -> &'static str {
-    match cause {
-        Cause::Router => "at your router",
-        Cause::PastRouter => "past your router",
-        Cause::NoNetwork => "no network connection",
-        Cause::Unknown => "unclear",
-    }
-}
-
-fn capitalized(text: &str) -> String {
-    let mut chars = text.chars();
-    chars.next().map_or_else(String::new, |first| {
-        first.to_uppercase().chain(chars).collect()
-    })
-}
-
 impl Causes {
     pub fn add(&mut self, cause: Cause) {
-        let count = match cause {
+        let slot = match cause {
             Cause::NoNetwork => &mut self.no_network,
             Cause::Router => &mut self.router,
             Cause::PastRouter => &mut self.past_router,
             Cause::Unknown => &mut self.unknown,
         };
-        *count = count.saturating_add(1);
+        *slot = slot.saturating_add(1);
     }
 
     pub fn count(&self, cause: Cause) -> u32 {
@@ -121,7 +113,7 @@ impl Causes {
         self.total() == 0
     }
 
-    /// Router silence that could not be confirmed proves nothing about the router.
+    /// Router blame that could not be confirmed becomes unclear.
     fn demote_router(&mut self) {
         self.unknown = self.unknown.saturating_add(self.router);
         self.router = 0;
@@ -141,27 +133,28 @@ impl Causes {
         );
         let known = KNOWN.iter().filter(|cause| self.count(**cause) > 0).count();
         if count == 0 {
-            None
-        } else if count == total {
-            Some(Verdict::All(cause))
-        } else if u64::from(count) * 2 > u64::from(total) {
-            Some(Verdict::Mostly {
-                cause,
-                count,
-                total,
-            })
-        } else if known == 1 {
-            Some(Verdict::Partly {
-                cause,
-                count,
-                total,
-            })
-        } else {
-            Some(Verdict::Mixed)
+            return None;
         }
+        Some(if count == total {
+            Verdict::All(cause)
+        } else if u64::from(count) * 2 > u64::from(total) {
+            Verdict::Mostly {
+                cause,
+                count,
+                total,
+            }
+        } else if known == 1 {
+            Verdict::Partly {
+                cause,
+                count,
+                total,
+            }
+        } else {
+            Verdict::Mixed
+        })
     }
 
-    /// One plain sentence for History and `weir history`.
+    /// One plain sentence for History and the command line.
     pub fn sentence(&self) -> Option<String> {
         Some(match self.verdict()? {
             Verdict::All(Cause::Router) => {
@@ -182,48 +175,46 @@ impl Causes {
                 count,
                 total,
             } => format!(
-                "{} in {count} of {total} checks. The rest were unclear.",
-                capitalized(phrase(cause))
+                "{} in {count} of {total} checks. {}",
+                capitalized(phrase(cause)),
+                if total - count == 1 {
+                    "The other was unclear."
+                } else {
+                    "The rest were unclear."
+                }
             ),
             Verdict::Mixed => {
                 let total = self.total();
-                let mut parts = Vec::new();
-                if self.router > 0 {
-                    parts.push((self.router, "at your router"));
-                }
-                if self.past_router > 0 {
-                    parts.push((
+                let parts: Vec<String> = [
+                    (self.router, "at your router"),
+                    (
                         self.past_router,
                         if self.router > 0 {
                             "past it"
                         } else {
                             "past your router"
                         },
-                    ));
-                }
-                if self.no_network > 0 {
-                    parts.push((self.no_network, "with no network"));
-                }
-                if self.unknown > 0 {
-                    parts.push((self.unknown, "unclear"));
-                }
-                let text: Vec<String> = parts
-                    .iter()
-                    .enumerate()
-                    .map(|(index, (count, words))| {
-                        if index == 0 {
-                            format!("{count} of {total} {words}")
-                        } else {
-                            format!("{count} {words}")
-                        }
-                    })
-                    .collect();
-                format!("Checks disagreed: {}.", text.join(", "))
+                    ),
+                    (self.no_network, "with no network"),
+                    (self.unknown, "unclear"),
+                ]
+                .into_iter()
+                .filter(|(count, _)| *count > 0)
+                .enumerate()
+                .map(|(index, (count, label))| {
+                    if index == 0 {
+                        format!("{count} of {total} {label}")
+                    } else {
+                        format!("{count} {label}")
+                    }
+                })
+                .collect();
+                format!("Checks disagreed: {}.", parts.join(", "))
             }
         })
     }
 
-    /// The short extra sentence for the "Connection back" notification.
+    /// At most one short sentence for the "Connection back" notification.
     pub fn notice(&self) -> Option<String> {
         match self.verdict()? {
             Verdict::All(Cause::Router) => Some("Your router didn’t answer.".into()),
@@ -234,7 +225,7 @@ impl Causes {
         }
     }
 
-    /// Where it broke, in a few words for the provider report.
+    /// A short place for the provider report, for example "past your router".
     pub fn place(&self) -> Option<String> {
         Some(match self.verdict()? {
             Verdict::All(cause) => place(cause).into(),
@@ -244,7 +235,7 @@ impl Causes {
         })
     }
 
-    /// Every non-zero count, for the CSV export.
+    /// Every non-zero count, for the CSV notes.
     pub fn tally(&self) -> Option<String> {
         let parts: Vec<String> = [
             (self.router, "at your router"),
@@ -252,34 +243,55 @@ impl Causes {
             (self.no_network, "with no network"),
             (self.unknown, "unclear"),
         ]
-        .iter()
+        .into_iter()
         .filter(|(count, _)| *count > 0)
-        .map(|(count, words)| format!("{count} {words}"))
+        .map(|(count, label)| format!("{count} {label}"))
         .collect();
         (!parts.is_empty()).then(|| format!("checks: {}", parts.join(", ")))
     }
 
-    /// The dominant cause for `weir history`; the counts carry the detail.
+    /// A stable key for scripts: `router`, `past_router`, `no_network` or `mixed`.
+    /// `None` when most checks were unclear: one place in a minority is no verdict.
     pub fn key(&self) -> Option<&'static str> {
-        Some(match self.verdict()? {
-            Verdict::All(cause) | Verdict::Mostly { cause, .. } | Verdict::Partly { cause, .. } => {
-                match cause {
-                    Cause::Router => "router",
-                    Cause::PastRouter => "past_router",
-                    Cause::NoNetwork | Cause::Unknown => "no_network",
-                }
-            }
-            Verdict::Mixed => "mixed",
-        })
+        match self.verdict()? {
+            Verdict::All(cause) | Verdict::Mostly { cause, .. } => Some(key(cause)),
+            Verdict::Mixed => Some("mixed"),
+            Verdict::Partly { .. } => None,
+        }
     }
 }
 
-/// The report's words for one cause.
+fn phrase(cause: Cause) -> &'static str {
+    match cause {
+        Cause::Router => "at your router",
+        Cause::PastRouter => "past your router",
+        Cause::NoNetwork => "no network connection",
+        Cause::Unknown => "unclear",
+    }
+}
+
 pub fn place(cause: Cause) -> &'static str {
     match cause {
         Cause::NoNetwork => "no network on this computer",
         other => phrase(other),
     }
+}
+
+fn key(cause: Cause) -> &'static str {
+    match cause {
+        Cause::Router => "router",
+        Cause::PastRouter => "past_router",
+        Cause::NoNetwork => "no_network",
+        Cause::Unknown => "unknown",
+    }
+}
+
+fn capitalized(text: &str) -> String {
+    let mut chars = text.chars();
+    chars
+        .next()
+        .map(|first| first.to_uppercase().chain(chars).collect())
+        .unwrap_or_default()
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -294,19 +306,16 @@ pub enum Event {
     },
 }
 
-/// One observation of the watch.
+/// One input to the watch.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Check {
     /// The internet answered. `router_now` is the router re-check, when one was due.
-    Up {
-        router_now: Option<bool>,
-    },
+    Up { router_now: Option<bool> },
+    /// The internet did not answer, and this is where it broke.
     Down(Cause),
-    /// The OS reports no path: from the minute tick, or from a path update. Path
-    /// updates come in bursts, so they count only as the first sign of an outage.
-    Offline {
-        from_path: bool,
-    },
+    /// The OS reports no network path: from the minute check, or from a path update,
+    /// which can arrive in bursts and is counted once per spell without a network.
+    Offline { from_path: bool },
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -316,7 +325,10 @@ pub struct Watch {
     outage_since_ms: Option<u64>,
     last_seen_ms: Option<u64>,
     causes: Causes,
+    /// The network changed since the first failure, so router silence can't be re-checked.
     router_unverifiable: bool,
+    /// This spell without a network is already counted.
+    offline_counted: bool,
 }
 
 impl Watch {
@@ -324,17 +336,8 @@ impl Watch {
         self.outage_since_ms
     }
 
-    /// Router blame stands only if the router answers once the internet is back on
-    /// the same network, so the next good check asks it.
-    pub fn router_recheck_due(&self) -> bool {
-        self.outage_since_ms.is_some() && self.causes.router > 0 && !self.router_unverifiable
-    }
-
-    /// The network changed: the router now may not be the one that was silent.
-    pub fn network_changed(&mut self) {
-        if self.outage_since_ms.is_some() || !self.causes.is_empty() {
-            self.router_unverifiable = true;
-        }
+    pub fn causes(&self) -> Causes {
+        self.causes
     }
 
     fn forget_failures(&mut self) {
@@ -342,10 +345,11 @@ impl Watch {
         self.first_failure_ms = None;
         self.causes = Causes::default();
         self.router_unverifiable = false;
+        self.offline_counted = false;
     }
 
-    /// Closes an outage across a sleep at the last moment it was observed. Nothing
-    /// can be re-checked across a sleep, so router blame goes.
+    /// Closes an outage across a sleep at the last moment it was observed. Router
+    /// blame can't be re-checked across a sleep, so it becomes unclear.
     fn after_gap(&mut self, at_ms: u64) -> Option<Event> {
         let last = self.last_seen_ms.replace(at_ms)?;
         if at_ms.saturating_sub(last) < SLEEP_GAP_MS {
@@ -362,50 +366,65 @@ impl Watch {
     }
 
     pub fn on(&mut self, check: Check, at_ms: u64) -> Vec<Event> {
-        let at_ms = self.last_seen_ms.map_or(at_ms, |last| at_ms.max(last));
+        let at_ms = at_ms.max(self.last_seen_ms.unwrap_or(0));
         let mut events: Vec<Event> = self.after_gap(at_ms).into_iter().collect();
-        match check {
-            Check::Up { router_now } => self.on_up(router_now, at_ms, &mut events),
-            Check::Down(cause) => self.on_down(cause, at_ms, &mut events),
-            Check::Offline { from_path } => self.on_offline(from_path, at_ms, &mut events),
-        }
+        events.extend(match check {
+            Check::Up { router_now } => self.on_up(router_now, at_ms),
+            Check::Down(cause) => self.on_down(cause, at_ms),
+            Check::Offline { from_path } => self.on_offline(from_path, at_ms),
+        });
         events
     }
 
-    fn on_up(&mut self, router_now: Option<bool>, at_ms: u64, events: &mut Vec<Event>) {
+    fn on_up(&mut self, router_now: Option<bool>, at_ms: u64) -> Option<Event> {
         let mut causes = self.causes;
         if self.router_unverifiable || router_now != Some(true) {
             causes.demote_router();
         }
         self.forget_failures();
-        if let Some(start_ms) = self.outage_since_ms.take() {
-            events.push(Event::Back {
-                start_ms,
-                end_ms: at_ms,
-                causes,
-            });
-        }
+        self.outage_since_ms.take().map(|start_ms| Event::Back {
+            start_ms,
+            end_ms: at_ms,
+            causes,
+        })
     }
 
-    fn on_down(&mut self, cause: Cause, at_ms: u64, events: &mut Vec<Event>) {
+    fn on_down(&mut self, cause: Cause, at_ms: u64) -> Option<Event> {
         self.failures += 1;
         self.causes.add(cause);
+        self.offline_counted = false;
         let first = *self.first_failure_ms.get_or_insert(at_ms);
         if self.outage_since_ms.is_none() && self.failures >= FAILURES_TO_START {
             self.outage_since_ms = Some(first);
-            events.push(Event::Lost { since_ms: first });
+            return Some(Event::Lost { since_ms: first });
         }
+        None
     }
 
     /// The OS lost every network path: that is an outage at once, no second check needed.
-    fn on_offline(&mut self, from_path: bool, at_ms: u64, events: &mut Vec<Event>) {
-        if !from_path || self.causes.is_empty() {
+    fn on_offline(&mut self, from_path: bool, at_ms: u64) -> Option<Event> {
+        if !from_path || !self.offline_counted {
             self.causes.add(Cause::NoNetwork);
+            self.offline_counted = true;
         }
-        if self.outage_since_ms.is_none() {
-            let since_ms = self.first_failure_ms.unwrap_or(at_ms);
-            self.outage_since_ms = Some(since_ms);
-            events.push(Event::Lost { since_ms });
+        if self.outage_since_ms.is_some() {
+            return None;
+        }
+        let since_ms = *self.first_failure_ms.get_or_insert(at_ms);
+        self.outage_since_ms = Some(since_ms);
+        Some(Event::Lost { since_ms })
+    }
+
+    /// A re-check of the router is due once the internet is back: router blame
+    /// stands only if the router answers then.
+    pub fn router_recheck_due(&self) -> bool {
+        self.outage_since_ms.is_some() && self.causes.router > 0 && !self.router_unverifiable
+    }
+
+    /// The OS moved to another network: a router re-check would ask a different router.
+    pub fn network_changed(&mut self) {
+        if self.outage_since_ms.is_some() || !self.causes.is_empty() {
+            self.router_unverifiable = true;
         }
     }
 

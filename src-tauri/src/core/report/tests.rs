@@ -1,14 +1,8 @@
 use super::*;
-use crate::core::speedtest::{IdleLatency, Speed};
-
-fn causes(router: u32, past_router: u32, unknown: u32) -> Causes {
-    Causes {
-        router,
-        past_router,
-        unknown,
-        ..Causes::default()
-    }
-}
+use crate::core::{
+    outage::Causes,
+    speedtest::{IdleLatency, Speed},
+};
 
 const HOUR: u64 = 3_600_000;
 const NOW: u64 = 1_792_771_200_000;
@@ -52,7 +46,7 @@ fn result(at_ms: u64, down: f64) -> Entry {
 fn options(plan: Plan) -> Options<'static> {
     Options {
         now_ms: NOW,
-        zone: Zone::Fixed(FixedOffset::east_opt(0).unwrap()),
+        zone: Zone::hours(0),
         plan,
         watching: true,
         version: "0.4.0",
@@ -179,6 +173,80 @@ fn text_is_winansi_and_fits() {
     );
 }
 
+fn causes(no_network: u32, router: u32, past_router: u32, unknown: u32) -> Causes {
+    Causes {
+        no_network,
+        router,
+        past_router,
+        unknown,
+    }
+}
+
+fn outage(days_ago: u64, causes: Causes) -> Entry {
+    let start_ms = NOW - days_ago * 24 * HOUR;
+    Entry::Outage {
+        start_ms,
+        end_ms: start_ms + 7 * 60_000,
+        causes,
+    }
+}
+
+#[test]
+fn findings_say_where_outages_broke() {
+    let entries = vec![
+        outage(1, causes(0, 0, 7, 0)),
+        outage(2, causes(0, 0, 5, 2)),
+        outage(3, causes(0, 0, 3, 4)),
+        outage(4, causes(0, 3, 0, 0)),
+        outage(5, causes(0, 3, 3, 1)),
+        outage(6, causes(0, 0, 0, 2)),
+        outage(7, Causes::default()),
+    ];
+    let summary = summarize(&entries, &options(Plan::default())).unwrap();
+    let lines = findings(&summary, &options(Plan::default()));
+    assert_eq!(
+        lines.last().map(String::as_str),
+        Some("Where it broke: past your router in 2, at your router in 1, checks disagreed in 1. Not known for 3.")
+    );
+    let unknown = [
+        outage(1, causes(0, 0, 0, 2)),
+        outage(2, Causes::default()),
+        outage(3, causes(0, 0, 3, 4)),
+    ];
+    let summary = summarize(&unknown, &options(Plan::default())).unwrap();
+    assert!(findings(&summary, &options(Plan::default()))
+        .iter()
+        .all(|line| !line.starts_with("Where it broke")));
+    let one = [outage(1, causes(3, 0, 0, 0))];
+    let summary = summarize(&one, &options(Plan::default())).unwrap();
+    assert_eq!(
+        findings(&summary, &options(Plan::default()))
+            .last()
+            .map(String::as_str),
+        Some("Where it broke: no network on this computer in 1.")
+    );
+}
+
+#[test]
+fn table_rows_name_where_an_outage_broke() {
+    let entries = vec![outage(1, causes(0, 0, 5, 2)), outage(2, Causes::default())];
+    assert!(pdf(&entries, &options(PLAN)).is_some());
+    assert_eq!(
+        outage_row("14:09", 7, &causes(0, 0, 5, 2)),
+        "No internet until 14:09 · 7 min · mostly past your router"
+    );
+    assert_eq!(
+        outage_row("14:09", 7, &causes(0, 3, 3, 1)),
+        "No internet until 14:09 · 7 min · checks disagreed"
+    );
+    assert_eq!(
+        outage_row("14:09", 7, &Causes::default()),
+        "No internet until 14:09 · 7 min"
+    );
+    let longest = outage_row("21 Oct 14:09", 1_440, &causes(0, 0, 5, 2));
+    assert!(canvas::width(&longest, Font::Regular, 9.0) <= RIGHT - 170.0);
+}
+
 #[test]
 fn chart_tops_are_round_numbers() {
     assert_eq!(nice_top(312.0), 400.0);
@@ -195,7 +263,7 @@ fn chart_tops_are_round_numbers() {
 fn sample_report() {
     let path = std::env::var("WEIR_REPORT_SAMPLE").expect("WEIR_REPORT_SAMPLE");
     let mut options = options(PLAN);
-    options.zone = Zone::Fixed(FixedOffset::east_opt(5 * 3600).unwrap());
+    options.zone = Zone::hours(5);
     std::fs::write(path, pdf(&month(), &options).unwrap()).unwrap();
 }
 
@@ -206,60 +274,4 @@ fn speeds_switch_precision_after_rounding() {
     assert_eq!(mbps(9.94), "9.9");
     assert_eq!(mbps(0.996), "1.0");
     assert_eq!(mbps(0.42), "0.42");
-}
-
-#[test]
-fn findings_say_where_outages_broke_when_known() {
-    let mut entries: Vec<Entry> = (1..=3)
-        .map(|day| result(NOW - day * 24 * HOUR, 300.0))
-        .collect();
-    let shapes = [
-        causes(0, 7, 0),
-        causes(2, 5, 0),
-        causes(0, 3, 4),
-        causes(2, 0, 0),
-        causes(3, 3, 1),
-        causes(0, 0, 0),
-        causes(0, 0, 4),
-    ];
-    for (index, shape) in shapes.iter().enumerate() {
-        let start = NOW - (index as u64 + 1) * 2 * HOUR;
-        entries.push(Entry::Outage {
-            start_ms: start,
-            end_ms: start + 5 * 60_000,
-            causes: *shape,
-        });
-    }
-    entries.sort_by_key(Entry::at_ms);
-    let summary = summarize(&entries, &options(Plan::default())).unwrap();
-    let lines = findings(&summary, &options(Plan::default()));
-    assert_eq!(
-        lines.last().map(String::as_str),
-        Some("Where it broke: past your router in 3, at your router in 1, checks disagreed in 1. Not known for 2.")
-    );
-    let bytes = pdf(&entries, &options(Plan::default())).unwrap();
-    let text = String::from_utf8_lossy(&bytes).to_uppercase();
-    for row in [
-        "No internet until 14:05 \u{b7} 5 min \u{b7} past your router",
-        "No internet until 12:05 \u{b7} 5 min \u{b7} mostly past your router",
-        "No internet until 10:05 \u{b7} 5 min \u{b7} partly past your router",
-        "No internet until 08:05 \u{b7} 5 min \u{b7} at your router",
-        "No internet until 06:05 \u{b7} 5 min \u{b7} checks disagreed",
-    ] {
-        let hex: String = canvas::encode(row)
-            .iter()
-            .map(|byte| format!("{byte:02X}"))
-            .collect();
-        assert!(text.contains(&format!("<{hex}>")), "{row}");
-    }
-}
-
-#[test]
-fn findings_are_unchanged_when_no_outage_has_a_cause() {
-    let entries = month();
-    let summary = summarize(&entries, &options(PLAN)).unwrap();
-    assert!(!findings(&summary, &options(PLAN))
-        .iter()
-        .any(|line| line.starts_with("Where it broke")));
-    assert_eq!(where_broken(&[(0, 1, causes(0, 0, 3))]), None);
 }

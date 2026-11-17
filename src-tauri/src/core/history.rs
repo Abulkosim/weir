@@ -30,7 +30,7 @@ pub enum Entry {
     Outage {
         start_ms: u64,
         end_ms: u64,
-        /// Where its checks broke. Missing in files from before 0.8.0.
+        /// Where the failed checks broke. Missing in files from before 0.8.0.
         #[serde(default)]
         causes: Causes,
     },

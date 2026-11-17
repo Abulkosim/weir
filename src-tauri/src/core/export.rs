@@ -1,16 +1,15 @@
 //! History as CSV for a spreadsheet or an internet provider. Columns: README "Export".
 
-use super::time::Zone;
+use super::time::{rfc3339, Zone};
 use super::{
     history::Entry,
     speedtest::{Report, TestError},
 };
-use chrono::SecondsFormat;
 
 pub const HEADER: &str = "tested_at,result,server,download_mbps,upload_mbps,latency_ms,latency_under_load_ms,jitter_ms,download_low_mbps,download_high_mbps,data_used_mb,notes";
 
 fn timestamp(ms: u64, zone: Zone) -> String {
-    zone.at(ms).to_rfc3339_opts(SecondsFormat::Secs, false)
+    rfc3339(zone, ms)
 }
 
 fn number(value: Option<f64>) -> String {
@@ -138,10 +137,7 @@ pub fn csv(entries: &[Entry]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::{
-        outage::Causes,
-        speedtest::{IdleLatency, Speed},
-    };
+    use crate::core::speedtest::{IdleLatency, Speed};
 
     fn report() -> Report {
         let speed = |mbps, loaded_ms| Speed {
@@ -193,7 +189,7 @@ mod tests {
                 error: TestError::NetworkChanged,
             },
         ];
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(5 * 3600).unwrap());
+        let zone = Zone::hours(5);
         let text = csv_at(&entries, zone);
         let lines: Vec<&str> = text.lines().collect();
         assert_eq!(lines[0], HEADER);
@@ -213,60 +209,59 @@ mod tests {
         assert!(lines.iter().all(|line| line.split(',').count() == columns));
     }
 
-    /// Splits one CSV line, honouring quotes.
+    /// Splits one CSV line, honouring quoted fields.
     fn columns(line: &str) -> Vec<String> {
-        let mut columns = vec![String::new()];
+        let mut fields = vec![String::new()];
         let mut quoted = false;
         let mut chars = line.chars().peekable();
         while let Some(char) = chars.next() {
-            match char {
-                '"' if quoted && chars.peek() == Some(&'"') => {
+            match (char, quoted) {
+                ('"', true) if chars.peek() == Some(&'"') => {
                     chars.next();
-                    columns.last_mut().unwrap().push('"');
+                    fields.last_mut().unwrap().push('"');
                 }
-                '"' => quoted = !quoted,
-                ',' if !quoted => columns.push(String::new()),
-                other => columns.last_mut().unwrap().push(other),
+                ('"', _) => quoted = !quoted,
+                (',', false) => fields.push(String::new()),
+                (other, _) => fields.last_mut().unwrap().push(other),
             }
         }
-        columns
+        fields
     }
 
     #[test]
-    fn outages_say_where_their_checks_broke() {
+    fn outages_say_where_they_broke_without_shifting_columns() {
         let start = 1_792_771_200_000;
         let entries = [
             Entry::Outage {
                 start_ms: start,
                 end_ms: start + 7 * 60_000,
-                causes: Causes {
+                causes: crate::core::outage::Causes {
                     router: 2,
                     past_router: 5,
-                    ..Causes::default()
+                    ..Default::default()
                 },
             },
             Entry::Outage {
                 start_ms: start + 3_600_000,
-                end_ms: start + 3_600_000 + 4 * 60_000,
-                causes: Causes::default(),
+                end_ms: start + 3_600_000 + 60_000,
+                causes: Default::default(),
             },
         ];
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(0).unwrap());
+        let zone = Zone::hours(0);
         let text = csv_at(&entries, zone);
         let lines: Vec<&str> = text.lines().collect();
+        let first = columns(lines[1]);
+        assert_eq!(first.len(), HEADER.split(',').count());
+        assert_eq!(first[1], "outage");
         assert_eq!(
-            lines[1],
-            "2026-10-23T16:00:00+00:00,outage,,,,,,,,,,\"no internet until 2026-10-23T16:07:00+00:00 (7 min); checks: 2 at your router, 5 past your router\""
+            first[11],
+            "no internet until 2026-10-23T16:07:00+00:00 (7 min); checks: 2 at your router, 5 past your router"
         );
         assert_eq!(
             lines[2],
-            "2026-10-23T17:00:00+00:00,outage,,,,,,,,,,no internet until 2026-10-23T17:04:00+00:00 (4 min)"
+            "2026-10-23T17:00:00+00:00,outage,,,,,,,,,,no internet until 2026-10-23T17:01:00+00:00 (1 min)",
+            "outages from before 0.8.0 read as they always did"
         );
-        let header = HEADER.split(',').count();
-        assert_eq!(header, 12);
-        for line in &lines {
-            assert_eq!(columns(line).len(), header, "{line}");
-        }
     }
 
     #[test]

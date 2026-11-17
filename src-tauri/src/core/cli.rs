@@ -1,14 +1,13 @@
 //! `weir last`, `weir history` and `weir test` for scripts. Every command prints JSON with
 //! the same fields as the CSV export. Fields: README "Command line".
 
-use super::time::Zone;
+use super::time::{rfc3339, Zone};
 use super::{
     export::{error_text, notes},
     history::Entry,
     meaning::meaning,
     speedtest::{Report, TestError},
 };
-use chrono::SecondsFormat;
 use serde_json::{json, Value};
 
 pub const USAGE: &str =
@@ -59,7 +58,7 @@ pub fn parse(args: &[String]) -> Result<Option<Command>, String> {
 }
 
 fn timestamp(ms: u64, zone: Zone) -> String {
-    zone.at(ms).to_rfc3339_opts(SecondsFormat::Secs, false)
+    rfc3339(zone, ms)
 }
 
 fn tenths(value: f64) -> f64 {
@@ -110,12 +109,12 @@ pub fn entry(entry: &Entry, zone: Zone) -> Value {
             "until": timestamp(*end_ms, zone),
             "minutes": end_ms.saturating_sub(*start_ms).div_ceil(60_000),
             "cause": causes.key(),
-            "checks": {
+            "checks": (!causes.is_empty()).then(|| json!({
                 "no_network": causes.no_network,
                 "router": causes.router,
                 "past_router": causes.past_router,
                 "unknown": causes.unknown,
-            },
+            })),
             "message": causes.sentence(),
         }),
     }
@@ -211,7 +210,7 @@ mod tests {
 
     #[test]
     fn a_result_has_the_csv_fields_and_the_verdict() {
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(5 * 3600).unwrap());
+        let zone = Zone::hours(5);
         let value = result(&report(), zone);
         assert_eq!(value["tested_at"], "2026-10-23T21:00:00+05:00");
         assert_eq!(value["server"], "Cloudflare FRA");
@@ -228,7 +227,7 @@ mod tests {
 
     #[test]
     fn last_skips_failures_and_history_keeps_everything() {
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(0).unwrap());
+        let zone = Zone::hours(0);
         let entries = vec![
             Entry::Result {
                 report: Box::new(report()),
@@ -251,6 +250,15 @@ mod tests {
                 end_ms: 1_792_771_900_000 + 60_000,
                 causes: Causes::default(),
             },
+            Entry::Outage {
+                start_ms: 1_792_772_900_000,
+                end_ms: 1_792_772_900_000 + 7 * 60_000,
+                causes: Causes {
+                    router: 3,
+                    unknown: 4,
+                    ..Causes::default()
+                },
+            },
         ];
         assert_eq!(last(&entries, zone)["download_mbps"], 312.4);
         assert_eq!(last(&[], zone), Value::Null);
@@ -263,14 +271,21 @@ mod tests {
         assert_eq!(all[2]["cause"], "past_router");
         assert_eq!(
             all[2]["checks"],
-            json!({"no_network": 0, "router": 2, "past_router": 5, "unknown": 0})
+            json!({ "no_network": 0, "router": 2, "past_router": 5, "unknown": 0 })
         );
         assert_eq!(all[2]["message"], "Mostly past your router: 5 of 7 checks.");
-        assert_eq!(all[3]["cause"], Value::Null);
+        assert_eq!(all[3]["cause"], Value::Null, "an outage from before 0.8.0");
         assert_eq!(all[3]["message"], Value::Null);
+        assert_eq!(all[3]["checks"], Value::Null, "no counts were kept then");
         assert_eq!(
-            all[3]["checks"],
-            json!({"no_network": 0, "router": 0, "past_router": 0, "unknown": 0})
+            all[4]["cause"],
+            Value::Null,
+            "router in 3 of 7 is no verdict"
+        );
+        assert_eq!(all[4]["checks"]["router"], 3);
+        assert_eq!(
+            all[4]["message"],
+            "At your router in 3 of 7 checks. The rest were unclear."
         );
     }
 }

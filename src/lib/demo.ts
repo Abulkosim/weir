@@ -122,9 +122,9 @@ export function demoProgress(step: number): View['testing'] {
   return null
 }
 
-const causes = (router: number, pastRouter: number, noNetwork = 0, unknown = 0) => ({ noNetwork, router, pastRouter, unknown })
+const causes = (noNetwork: number, router: number, pastRouter: number, unknown: number): Causes => ({ noNetwork, router, pastRouter, unknown })
 
-/** Two weeks of tests with a slow evening, one failure and one outage; `outages` adds one of each cause. */
+/** Two weeks of tests with a slow evening and one failure. `outages` adds one outage per cause. */
 export function demoHistory(now: number, state: string | null = null): Entry[] {
   const hour = 3_600_000
   const plan: [number, number, number, number][] = [
@@ -142,21 +142,19 @@ export function demoHistory(now: number, state: string | null = null): Entry[] {
     return { kind: 'result', report }
   })
   entries.splice(4, 0, { kind: 'failed', atMs: now - 30 * hour, error: 'stalled' })
-  entries.splice(2, 0, { kind: 'outage', startMs: now - 9 * hour, endMs: now - 9 * hour + 7 * 60_000, causes: causes(0, 7) })
+  entries.splice(2, 0, { kind: 'outage', startMs: now - 9 * hour, endMs: now - 9 * hour + 7 * 60_000, causes: causes(0, 0, 7, 0) })
   if (state !== 'outages') return entries
-  const outage = (hoursAgo: number, minutes: number, found?: Causes): Entry => {
-    const startMs = now - hoursAgo * hour - 23 * 60_000
-    return { kind: 'outage', startMs, endMs: startMs + minutes * 60_000, ...(found && { causes: found }) }
-  }
-  entries.push(
-    outage(1, 12, causes(4, 0)),
-    outage(2, 3, causes(0, 0, 1)),
-    outage(3, 9, causes(2, 5)),
-    outage(4, 5, causes(3, 0, 0, 4)),
-    outage(6, 6, causes(3, 3, 0, 1)),
+  const outage = (hoursAgo: number, minutes: number, found?: Causes): Entry =>
+    ({ kind: 'outage', startMs: now - hoursAgo * hour, endMs: now - hoursAgo * hour + minutes * 60_000, ...(found ? { causes: found } : {}) })
+  const extra = [
+    outage(1, 12, causes(0, 4, 0, 0)),
+    outage(2, 3, causes(3, 0, 0, 0)),
+    outage(3, 9, causes(0, 2, 5, 0)),
+    outage(4, 5, causes(0, 3, 0, 4)),
+    outage(6, 6, causes(0, 3, 3, 1)),
     outage(7, 4),
-  )
-  return entries.sort((a, b) => entryTime(b) - entryTime(a))
+  ]
+  return [...extra, ...entries].sort((a, b) => entryTime(b) - entryTime(a))
 }
 
 export function createDemoUpdateState(scenario: string | null): UpdateState {

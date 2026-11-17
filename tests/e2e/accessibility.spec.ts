@@ -9,6 +9,7 @@ const views = [
   { name: 'failed', url: '/?demo=1&state=failed' },
   { name: 'offline', url: '/?demo=1&state=offline' },
   { name: 'history', url: '/?demo=1&page=history' },
+  { name: 'history with outage causes', url: '/?demo=1&page=history&state=outages' },
   { name: 'settings', url: '/?demo=1&page=settings' },
   { name: 'check past router', url: '/?demo=1&state=check-isp' },
   { name: 'checking', url: '/?demo=1&state=checking' },
