@@ -23,3 +23,5 @@ src-tauri/fuzz/target/
 src-tauri/fuzz/corpus/
 src-tauri/fuzz/artifacts/
 src-tauri/fuzz/coverage/
+lab-out/
+lab/server/target/

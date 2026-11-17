@@ -21,7 +21,11 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test tests/unit/*.test.ts",
     "test:e2e": "playwright test",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "lab": "node lab/run.ts",
+    "lab:twin": "vite build --config lab/twin/vite.config.ts",
+    "lab:report": "node lab/report.ts",
+    "lab:spike": "node lab/spike.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "5.3.0",
@@ -31,6 +35,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
+    "@cloudflare/speedtest": "1.16.0",
     "@playwright/test": "1.65.0",
     "@tauri-apps/cli": "2.12.4",
     "@types/node": "24.19.2",
