@@ -12,6 +12,13 @@ repository = "https://github.com/Abulkosim/weir"
 name = "weir_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+lab = []
+
+[[example]]
+name = "lab"
+required-features = ["lab"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -59,3 +66,9 @@ lto = true
 opt-level = "s"
 strip = true
 panic = "abort"
+
+[profile.lab]
+inherits = "release"
+lto = false
+codegen-units = 16
+strip = false

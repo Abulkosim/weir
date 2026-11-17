@@ -23,11 +23,14 @@ pub struct Cloudflare {
 
 impl Default for Cloudflare {
     fn default() -> Self {
-        Self::with_base(BASE)
+        Self {
+            base: BASE.to_owned(),
+        }
     }
 }
 
 impl Cloudflare {
+    #[cfg(any(test, feature = "lab"))]
     pub fn with_base(base: &str) -> Self {
         Self {
             base: base.trim_end_matches('/').to_owned(),
