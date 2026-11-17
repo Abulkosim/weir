@@ -6,6 +6,7 @@ import { errorCopy, formatMbps, formatMs } from '../lib/format'
 import { entryTime, type Entry } from '../lib/model'
 import { hourLabel, slowHours } from '../lib/hours'
 import { monthSummary, outageText } from '../lib/month'
+import { causeText } from '../lib/outage'
 import { median as medianOf } from '../lib/stats'
 
 const props = defineProps<{ entries: Entry[]; now: number; planMbps?: number | null; watching?: boolean }>()
@@ -143,7 +144,10 @@ function time(at: number): string {
                 <span class="history-latency">{{ entry.report.latency ? `${formatMs(entry.report.latency.medianMs)} ms` : '–' }}</span>
               </template>
               <span v-else-if="entry.kind === 'failed'" class="history-failed">{{ errorCopy[entry.error].title }}</span>
-              <span v-else class="history-failed">No internet until {{ time(entry.endMs) }} · {{ Math.max(1, Math.ceil((entry.endMs - entry.startMs) / 60_000)) }} min</span>
+              <template v-else>
+                <span class="history-failed">No internet until {{ time(entry.endMs) }} · {{ Math.max(1, Math.ceil((entry.endMs - entry.startMs) / 60_000)) }} min</span>
+                <span v-if="causeText(entry.causes)" class="history-cause">{{ causeText(entry.causes) }}</span>
+              </template>
             </li>
           </ul>
         </section>

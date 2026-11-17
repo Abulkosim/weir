@@ -4,7 +4,7 @@ use crate::core::{
     history::{Entry, History, Recovery},
     meaning::{meaning, Meaning},
     network::{Network, Path},
-    outage::{Event, Watch},
+    outage::{Check, Event, Watch},
     plan::{compare, Comparison},
     settings::{Settings, Store},
     speedtest::{self, Control, Plan, Progress, Report, TestError},
@@ -14,7 +14,10 @@ use crate::core::{
 use serde::Serialize;
 use std::{
     path::PathBuf,
-    sync::{atomic::Ordering, Arc, Mutex},
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc, Mutex,
+    },
 };
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -122,6 +125,8 @@ pub struct Runtime {
     history: Mutex<History>,
     store: Store,
     watch: Mutex<Watch>,
+    /// Counts network changes, so a probe can tell whether one happened while it ran.
+    network_changes: AtomicU64,
     pub monitor_wake: tokio::sync::Notify,
 }
 
@@ -174,6 +179,7 @@ impl Runtime {
             history: Mutex::new(history),
             store,
             watch: Mutex::new(Watch::default()),
+            network_changes: AtomicU64::new(0),
             monitor_wake: tokio::sync::Notify::new(),
         }
     }
@@ -198,8 +204,16 @@ impl Runtime {
                         );
                     }
                 }
-                Event::Back { start_ms, end_ms } => {
-                    let (count, _, problem) = self.record(Entry::Outage { start_ms, end_ms });
+                Event::Back {
+                    start_ms,
+                    end_ms,
+                    causes,
+                } => {
+                    let (count, _, problem) = self.record(Entry::Outage {
+                        start_ms,
+                        end_ms,
+                        causes,
+                    });
                     self.change(app, |view| {
                         view.outage_since_ms = None;
                         view.history_count = count;
@@ -207,32 +221,35 @@ impl Runtime {
                     });
                     if notify {
                         let minutes = end_ms.saturating_sub(start_ms).div_ceil(60_000);
-                        Self::notify(
-                            app,
-                            "Connection back",
-                            &format!(
-                                "No internet {}–{} ({minutes} min).",
-                                clock(start_ms),
-                                clock(end_ms)
-                            ),
+                        let mut body = format!(
+                            "No internet {}–{} ({minutes} min).",
+                            clock(start_ms),
+                            clock(end_ms)
                         );
+                        if let Some(notice) = causes.notice() {
+                            body = format!("{body} {notice}");
+                        }
+                        Self::notify(app, "Connection back", &body);
                     }
                 }
             }
         }
     }
 
-    /// One tick of the opt-in watch. `ok` is `None` when the OS reports no path.
-    pub fn watch_tick(&self, app: &AppHandle, ok: Option<bool>) {
-        let now = unix_ms();
+    /// One tick of the opt-in watch, timed here under the lock so ticks stay in order.
+    pub fn watch_tick(&self, app: &AppHandle, check: Check) {
         let events = match self.watch.lock() {
-            Ok(mut watch) => match ok {
-                Some(ok) => watch.on_check(ok, now),
-                None => watch.on_offline(now),
-            },
+            Ok(mut watch) => watch.on(check, unix_ms()),
             Err(_) => return,
         };
         self.outage_events(app, events);
+    }
+
+    /// The internet is back after an outage blamed on the router: ask the router once more.
+    pub fn router_recheck_due(&self) -> bool {
+        self.watch
+            .lock()
+            .is_ok_and(|watch| watch.router_recheck_due())
     }
 
     pub fn stop_watching(&self, app: &AppHandle) {
@@ -249,6 +266,10 @@ impl Runtime {
             .lock()
             .map(|control| control.is_some())
             .unwrap_or(false)
+    }
+
+    pub fn network_changes(&self) -> u64 {
+        self.network_changes.load(Ordering::Relaxed)
     }
 
     pub fn path(&self) -> Option<Path> {
@@ -382,12 +403,16 @@ impl Runtime {
             .ok()
             .and_then(|mut current| current.replace(path));
         if previous.is_some_and(|previous| previous.identity() != path.identity()) {
+            self.network_changes.fetch_add(1, Ordering::Relaxed);
             if let Some(control) = self.control.lock().ok().and_then(|control| control.clone()) {
                 control.network_changed.store(true, Ordering::Relaxed);
             }
+            if let Ok(mut watch) = self.watch.lock() {
+                watch.network_changed();
+            }
         }
         if !path.online && self.view().settings.watch_outages {
-            self.watch_tick(app, None);
+            self.watch_tick(app, Check::Offline { from_path: true });
         } else if path.online && previous.is_some_and(|previous| !previous.online) {
             self.monitor_wake.notify_one();
         }
@@ -609,6 +634,11 @@ mod tests {
             Entry::Outage {
                 start_ms: at + 120_000,
                 end_ms: at + 180_000,
+                causes: crate::core::outage::Causes {
+                    router: 2,
+                    past_router: 5,
+                    ..Default::default()
+                },
             },
         ];
         let text = serde_json::to_string_pretty(&serde_json::json!({

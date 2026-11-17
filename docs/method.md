@@ -141,15 +141,53 @@ The first card in History ([`month.ts`](../src/lib/month.ts)):
 - Failed tests are counted, never averaged in. Last month's median download is shown beside it to compare.
 - Until the new month has a test, the card shows last month under its name, so the 1st doesn't open on an empty card.
 
+## Outage watch
+
+Off by default. Settings → Outages → Watch for outages ([`monitor.rs`](../src-tauri/src/monitor.rs), [`outage.rs`](../src-tauri/src/core/outage.rs)).
+
+- About once a minute (60 s ± 10 %), one tiny request to Cloudflare on a kept-alive connection. Two failed checks in a row start an outage, dated from the first. The OS reporting no network path starts one at once. A gap of 5 minutes or more between checks means the computer slept: an open outage closes at the last check before the gap.
+- **Where it broke.** Each failed check, including the first one before the outage starts, is classified:
+
+  | The OS reports | The router | The DNS server | Counted as |
+  |---|---|---|---|
+  | no network path (Wi-Fi off, cable out) | – | – | no network |
+  | a path | answered | not asked | past your router |
+  | a path | silent | answered, and it is the router or past it | past your router |
+  | a path | silent | silent, none, or on the home network | at your router |
+  | a path | not asked: no gateway, IPv6 only, a public gateway (the provider's), VPN or other tunnel, cellular, or out of time | – | unclear |
+  | a path that changed while the check ran | – | – | unclear |
+
+- A DNS server elsewhere on the home network (a Pi-hole, a NAS) or on this computer can answer while the router is down, so its reply proves nothing and it isn't asked. VPN adapters are found by type, and by name for those that report as plain Ethernet (TAP, Wintun, WireGuard, AnyConnect and similar).
+- The router gets 2 probes (ICMP, or TCP to ports 80, 443 and 53 where ICMP isn't allowed), not the 5 of **Check connection**. The DNS server is asked only when the router is silent, at most twice, and any reply counts, even "server failure": a router forwarding DNS during an upstream outage still answers. Each stage has its own time limit (1 s, 5 s, 3.5 s); a limit hit reads as unclear, never as silence.
+- Only one router probe runs at a time, and on macOS only replies from the router's address count, so **Check connection** or a `ping` in Terminal can't be mistaken for the router answering. A watch probe waits up to 12 s for one already running (unclear if it can't start), and a probe cut short keeps the next one waiting until its ICMP socket is closed.
+- OS path updates arrive in bursts. Each spell without a network counts as one "no network" check, however many updates it sends, even after a failed check: a Wi-Fi drop right after one failed check is never put down as past the router. Minute checks that find no network count each.
+- **Router blame needs proof.** A router can ignore pings, so silence alone is weak. When the internet is back, Weir asks the router once more: router blame stands only if it answers then, on the same network, without a sleep in between. If it stays silent, the network changed, or the outage closed across a sleep, those checks become unclear.
+- **Verdict** for History, the notification, the report, the CSV and `weir history`, over all checks of the outage (unclear included):
+  - every check in one place: "Your router was reachable throughout. The break was past it."
+  - more than half in one place: "Mostly past your router: 5 of 7 checks."
+  - one place, the rest unclear: "Past your router in 3 of 7 checks. The rest were unclear." This is no verdict: the report counts it under "Not known" and `weir history` gives `cause: null`.
+  - more than one place, none over half: "Checks disagreed: 3 of 7 at your router, 3 past it, 1 unclear."
+  - only unclear checks: nothing is said.
+- History keeps only the four counts, never the router or DNS address, Wi-Fi name or IP. History files stay version 1: Weir 0.7.3 and earlier ignore the counts, so a downgrade keeps working and only loses where outages broke.
+- **Data per check.** Computed, not measured on the wire:
+
+  | Packet | Size | When |
+  |---|---|---|
+  | ICMP echo (each way) | 44 B on macOS, 45 B on Windows | 2 per failed check |
+  | TCP SYN | about 64 B, up to 2 per port with a retransmit, so ≤ 12 SYNs ≈ 0.8 kB | only if ICMP gets no answer or isn't allowed |
+  | DNS query / reply | 66 B / about 150 B at most | only if the router is silent, ≤ 2 |
+
+  A failed check where the router answers adds about 0.2 kB; the worst case sends about 1 kB. The re-check after an outage blamed on the router is about 0.2 kB, once. ARP broadcasts stay on the local network and aren't counted. With the failed Cloudflare request, a minute stays under 2 kB.
+
 ## Provider report
 
 **Report** in History (or Settings → History → Save PDF) writes an A4 PDF of the last 30 days, built in Rust ([`report.rs`](../src-tauri/src/core/report.rs)) with the PDF's built-in Helvetica, so no fonts are embedded and nothing is fetched.
 
 - Header: the period, the UTC offset of every time, and the plan if one is set.
 - Medians for download, upload and latency (idle and under load), the download and upload range, the median's share of the plan, and how many tests failed.
-- Plain findings: tests under half the plan, the slowest hours (same rule as History: at least 10 tests over 3 hours of the day, hours under 80 % of the usual median), outages with the longest one, and failures. If the outage watch is off the report says outages were not monitored, instead of implying there were none.
+- Plain findings: tests under half the plan, the slowest hours (same rule as History: at least 10 tests over 3 hours of the day, hours under 80 % of the usual median), outages with the longest one and where they broke ("Where it broke: past your router in 3, at your router in 1. Not known for 2."), and failures. If the outage watch is off the report says outages were not monitored, instead of implying there were none.
 - A chart of every download over the 30 days with the plan as a dashed line, tests under half the plan in red and outages as red marks on the baseline.
-- Every test, newest first, with failures and outages in place, and a short note on how Weir measures.
+- Every test, newest first, with failures and outages in place (for example "No internet until 14:09 · 7 min · past your router"), and a short note on how Weir measures.
 - No IP address, Wi-Fi name or location; the server is the Cloudflare data-centre code, as in History.
 
 ## Scheduled tests

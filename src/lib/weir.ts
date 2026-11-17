@@ -14,7 +14,7 @@ export function useWeir() {
   const confirming = ref(false)
   const message = ref<string | null>(null)
   let messageTimer: ReturnType<typeof setTimeout> | undefined
-  const history = ref<Entry[]>(demo ? demoHistory(Date.now()) : [])
+  const history = ref<Entry[]>(demo ? demoHistory(Date.now(), query.get('state')) : [])
   let live: Samples = noSamples
   let historyRequest = 0
   let stopListening: (() => void) | undefined

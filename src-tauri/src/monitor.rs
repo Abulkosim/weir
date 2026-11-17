@@ -1,7 +1,12 @@
 //! The opt-in outage watch: a tiny request about once a minute on a kept-alive connection.
+//! When it fails, two router probes (and a DNS query if the router is silent) say where.
 
 use crate::{
-    core::backends::{cloudflare::Cloudflare, Backend, Connection},
+    core::{
+        backends::{cloudflare::Cloudflare, Backend, Connection},
+        outage::{classify_on, Check},
+        probe,
+    },
     runtime::Runtime,
 };
 use std::{sync::Arc, time::Duration};
@@ -35,10 +40,13 @@ pub fn start(app: AppHandle, runtime: Arc<Runtime>) {
             if runtime.testing() {
                 continue;
             }
-            if runtime.path().is_some_and(|path| !path.online) {
-                runtime.watch_tick(&app, None);
+            let changes = runtime.network_changes();
+            let path = runtime.path();
+            if path.is_some_and(|path| !path.online) {
+                runtime.watch_tick(&app, Check::Offline { from_path: false });
                 continue;
             }
+            let path = path.unwrap_or_default();
             if connection.is_none() {
                 connection = backend.connect().ok();
             }
@@ -48,7 +56,20 @@ pub fn start(app: AppHandle, runtime: Arc<Runtime>) {
                     .is_ok_and(|probe| probe.is_ok()),
                 None => false,
             };
-            runtime.watch_tick(&app, Some(ok));
+            let check = if ok {
+                let router_now = if runtime.router_recheck_due() {
+                    Some(probe::router_answers(path).await.unwrap_or(false))
+                } else {
+                    None
+                };
+                Check::Up { router_now }
+            } else {
+                let signals = probe::where_broken(path).await;
+                Check::Down(classify_on(signals, runtime.network_changes() == changes))
+            };
+            if runtime.view().settings.watch_outages {
+                runtime.watch_tick(&app, check);
+            }
         }
     });
 }
