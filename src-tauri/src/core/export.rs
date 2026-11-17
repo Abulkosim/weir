@@ -98,14 +98,22 @@ fn row(entry: &Entry, zone: Zone) -> String {
             fields.push(field(error_text(*error)));
             fields
         }
-        Entry::Outage { start_ms, end_ms } => {
+        Entry::Outage {
+            start_ms,
+            end_ms,
+            causes,
+        } => {
             let mut fields = vec![timestamp(*start_ms, zone), "outage".into()];
             fields.extend(std::iter::repeat_n(String::new(), 9));
-            fields.push(format!(
+            let mut note = format!(
                 "no internet until {} ({} min)",
                 timestamp(*end_ms, zone),
                 end_ms.saturating_sub(*start_ms).div_ceil(60_000)
-            ));
+            );
+            if let Some(tally) = causes.tally() {
+                note = format!("{note}; {tally}");
+            }
+            fields.push(field(&note));
             fields
         }
     };
@@ -200,6 +208,61 @@ mod tests {
         );
         let columns = HEADER.split(',').count();
         assert!(lines.iter().all(|line| line.split(',').count() == columns));
+    }
+
+    /// Splits one CSV line, honouring quoted fields.
+    fn columns(line: &str) -> Vec<String> {
+        let mut fields = vec![String::new()];
+        let mut quoted = false;
+        let mut chars = line.chars().peekable();
+        while let Some(char) = chars.next() {
+            match (char, quoted) {
+                ('"', true) if chars.peek() == Some(&'"') => {
+                    chars.next();
+                    fields.last_mut().unwrap().push('"');
+                }
+                ('"', _) => quoted = !quoted,
+                (',', false) => fields.push(String::new()),
+                (other, _) => fields.last_mut().unwrap().push(other),
+            }
+        }
+        fields
+    }
+
+    #[test]
+    fn outages_say_where_they_broke_without_shifting_columns() {
+        let start = 1_792_771_200_000;
+        let entries = [
+            Entry::Outage {
+                start_ms: start,
+                end_ms: start + 7 * 60_000,
+                causes: crate::core::outage::Causes {
+                    router: 2,
+                    past_router: 5,
+                    ..Default::default()
+                },
+            },
+            Entry::Outage {
+                start_ms: start + 3_600_000,
+                end_ms: start + 3_600_000 + 60_000,
+                causes: Default::default(),
+            },
+        ];
+        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(0).unwrap());
+        let text = csv_at(&entries, zone);
+        let lines: Vec<&str> = text.lines().collect();
+        let first = columns(lines[1]);
+        assert_eq!(first.len(), HEADER.split(',').count());
+        assert_eq!(first[1], "outage");
+        assert_eq!(
+            first[11],
+            "no internet until 2026-10-23T16:07:00+00:00 (7 min); checks: 2 at your router, 5 past your router"
+        );
+        assert_eq!(
+            lines[2],
+            "2026-10-23T17:00:00+00:00,outage,,,,,,,,,,no internet until 2026-10-23T17:01:00+00:00 (1 min)",
+            "outages from before 0.8.0 read as they always did"
+        );
     }
 
     #[test]

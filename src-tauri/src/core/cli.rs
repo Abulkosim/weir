@@ -100,11 +100,23 @@ pub fn entry(entry: &Entry, zone: Zone) -> Value {
             "error": error,
             "message": error_text(*error),
         }),
-        Entry::Outage { start_ms, end_ms } => json!({
+        Entry::Outage {
+            start_ms,
+            end_ms,
+            causes,
+        } => json!({
             "tested_at": timestamp(*start_ms, zone),
             "result": "outage",
             "until": timestamp(*end_ms, zone),
             "minutes": end_ms.saturating_sub(*start_ms).div_ceil(60_000),
+            "cause": causes.key(),
+            "checks": {
+                "no_network": causes.no_network,
+                "router": causes.router,
+                "past_router": causes.past_router,
+                "unknown": causes.unknown,
+            },
+            "message": causes.sentence(),
         }),
     }
 }
@@ -125,7 +137,10 @@ pub fn history(entries: &[Entry], zone: Zone) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::speedtest::{IdleLatency, Speed};
+    use crate::core::{
+        outage::Causes,
+        speedtest::{IdleLatency, Speed},
+    };
 
     fn args(words: &[&str]) -> Vec<String> {
         std::iter::once("weir")
@@ -225,6 +240,16 @@ mod tests {
             Entry::Outage {
                 start_ms: 1_792_771_400_000,
                 end_ms: 1_792_771_400_000 + 7 * 60_000,
+                causes: Causes {
+                    router: 2,
+                    past_router: 5,
+                    ..Causes::default()
+                },
+            },
+            Entry::Outage {
+                start_ms: 1_792_771_900_000,
+                end_ms: 1_792_771_900_000 + 60_000,
+                causes: Causes::default(),
             },
         ];
         assert_eq!(last(&entries, zone)["download_mbps"], 312.4);
@@ -235,5 +260,14 @@ mod tests {
         assert_eq!(all[1]["message"], "Connection stalled");
         assert_eq!(all[2]["result"], "outage");
         assert_eq!(all[2]["minutes"], 7);
+        assert_eq!(all[2]["cause"], "past_router");
+        assert_eq!(
+            all[2]["checks"],
+            json!({ "no_network": 0, "router": 2, "past_router": 5, "unknown": 0 })
+        );
+        assert_eq!(all[2]["message"], "Mostly past your router: 5 of 7 checks.");
+        assert_eq!(all[3]["cause"], Value::Null, "an outage from before 0.8.0");
+        assert_eq!(all[3]["message"], Value::Null);
+        assert_eq!(all[3]["checks"]["router"], 0);
     }
 }

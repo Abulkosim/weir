@@ -1,5 +1,8 @@
 use super::*;
-use crate::core::speedtest::{IdleLatency, Speed};
+use crate::core::{
+    outage::Causes,
+    speedtest::{IdleLatency, Speed},
+};
 
 const HOUR: u64 = 3_600_000;
 const NOW: u64 = 1_792_771_200_000;
@@ -73,6 +76,7 @@ fn month() -> Vec<Entry> {
     entries.push(Entry::Outage {
         start_ms: day + 14 * HOUR + 2 * 60_000,
         end_ms: day + 14 * HOUR + 31 * 60_000,
+        causes: Causes::default(),
     });
     entries.push(Entry::Failed {
         at_ms: day + 14 * HOUR + 5 * 60_000,
@@ -167,6 +171,65 @@ fn text_is_winansi_and_fits() {
         canvas::wrap("one two three four", Font::Regular, 10.0, 40.0),
         ["one two", "three", "four"]
     );
+}
+
+fn causes(no_network: u32, router: u32, past_router: u32, unknown: u32) -> Causes {
+    Causes {
+        no_network,
+        router,
+        past_router,
+        unknown,
+    }
+}
+
+fn outage(days_ago: u64, causes: Causes) -> Entry {
+    let start_ms = NOW - days_ago * 24 * HOUR;
+    Entry::Outage {
+        start_ms,
+        end_ms: start_ms + 7 * 60_000,
+        causes,
+    }
+}
+
+#[test]
+fn findings_say_where_outages_broke() {
+    let entries = vec![
+        outage(1, causes(0, 0, 7, 0)),
+        outage(2, causes(0, 0, 5, 2)),
+        outage(3, causes(0, 0, 3, 4)),
+        outage(4, causes(0, 3, 0, 0)),
+        outage(5, causes(0, 3, 3, 1)),
+        outage(6, causes(0, 0, 0, 2)),
+        outage(7, Causes::default()),
+    ];
+    let summary = summarize(&entries, &options(Plan::default())).unwrap();
+    let lines = findings(&summary, &options(Plan::default()));
+    assert_eq!(
+        lines.last().map(String::as_str),
+        Some("Where it broke: past your router in 3, at your router in 1, checks disagreed in 1. Not known for 2.")
+    );
+    let unknown = [outage(1, causes(0, 0, 0, 2)), outage(2, Causes::default())];
+    let summary = summarize(&unknown, &options(Plan::default())).unwrap();
+    assert!(findings(&summary, &options(Plan::default()))
+        .iter()
+        .all(|line| !line.starts_with("Where it broke")));
+    let one = [outage(1, causes(3, 0, 0, 0))];
+    let summary = summarize(&one, &options(Plan::default())).unwrap();
+    assert_eq!(
+        findings(&summary, &options(Plan::default()))
+            .last()
+            .map(String::as_str),
+        Some("Where it broke: no network on this computer in 1.")
+    );
+}
+
+#[test]
+fn table_rows_name_where_an_outage_broke() {
+    let entries = vec![outage(1, causes(0, 0, 5, 2)), outage(2, Causes::default())];
+    let bytes = pdf(&entries, &options(PLAN)).unwrap();
+    let text = String::from_utf8_lossy(&bytes);
+    assert!(text.contains(" mostly past your router)"));
+    assert_eq!(text.matches("past your router)").count(), 1);
 }
 
 #[test]
