@@ -81,8 +81,8 @@
     "id": "F-3",
     "title": "A gigabit test uses more data than the up-to estimate promises",
     "status": "open",
-    "where": "src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441, src-tauri/src/core/speedtest.rs:415",
-    "cause": "Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to {gig-5.data.mb} MB and on gig-60 up to {gig-60.data.mb} MB of IP traffic. The caps are checked once per tick, so a fast link overshoots them, bytes still in flight when the streams are aborted are not counted, and WIRE_OVERHEAD does not cover ACKs and headers at this rate. Weir itself counted {gig-60.honesty.pct} % of the payload on gig-60. Fix in its own pull request: stop the streams at the cap rather than on the next tick, count the overshoot, and raise the estimate or lower the caps.",
+    "where": "src-tauri/src/core/stats.rs:306, src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441",
+    "cause": "Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to {gig-5.data.mb} MB and on gig-60 up to {gig-60.data.mb} MB of IP traffic. Weir's own count was {gig-60.bytesUsed.mb} MB on gig-60, already past the two caps together because they are checked once per tick and a fast link overshoots them before the next check; IP and TCP headers and ACKs then add more than WIRE_OVERHEAD allows. Weir's count itself is honest: it matched {gig-60.honesty.pct} % of the TCP payload on the wire. Fix in its own pull request: stop the streams at the cap rather than on the next tick, and raise the estimate or lower the caps.",
     "expect": [
       {
         "profile": "gig-5",
