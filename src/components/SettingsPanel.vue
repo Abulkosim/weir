@@ -69,7 +69,7 @@ function patch(change: Partial<Settings>): void {
       <section class="settings-section">
         <h2>Outages</h2>
         <div class="setting-row">
-          <div><span id="watch-label" class="setting-label">Watch for outages</span><p>A tiny check about once a minute, under 2 kB. Outages go into History.</p></div>
+          <div><span id="watch-label" class="setting-label">Watch for outages</span><p>A tiny check about once a minute, under 2 kB. Outages go into History with where they broke.</p></div>
           <AppSwitch :model-value="settings.watchOutages" aria-labelledby="watch-label" @update:model-value="patch({ watchOutages: $event })"/>
         </div>
         <div class="setting-row">

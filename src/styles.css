@@ -779,6 +779,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   grid-column: 2 / -1;
   color: var(--danger);
 }
+.history-cause {
+  grid-column: 2 / -1;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--secondary);
+  text-wrap: pretty;
+}
 h1[tabindex="-1"]:focus { outline: none; }
 .toast {
   position: absolute;
