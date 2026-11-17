@@ -44,6 +44,12 @@
       "kind": "failed"
     },
     {
+      "causes": {
+        "noNetwork": 0,
+        "pastRouter": 5,
+        "router": 2,
+        "unknown": 0
+      },
       "endMs": 1792771380000,
       "kind": "outage",
       "startMs": 1792771320000

@@ -10,6 +10,7 @@ use super::{
     export::error_text,
     history::Entry,
     meaning::Health,
+    outage::{self, Causes, Verdict},
     plan::{self, Plan},
     speedtest::{Report, TestError},
     stats::median,
@@ -70,7 +71,7 @@ pub struct Summary<'a> {
     pub slow: Option<SlowHours>,
     /// Hours of the day with results, so "no hour stands out" is only said with enough data.
     pub enough_for_hours: bool,
-    pub outages: Vec<(u64, u64)>,
+    pub outages: Vec<(u64, u64, Causes)>,
 }
 
 fn spread(values: &[f64]) -> Option<Spread> {
@@ -174,7 +175,11 @@ pub fn summarize<'a>(entries: &'a [Entry], options: &Options) -> Option<Summary<
     for entry in &period {
         match entry {
             Entry::Failed { at_ms, error } => failed.push((*at_ms, *error)),
-            Entry::Outage { start_ms, end_ms } => outages.push((*start_ms, *end_ms)),
+            Entry::Outage {
+                start_ms,
+                end_ms,
+                causes,
+            } => outages.push((*start_ms, *end_ms, *causes)),
             Entry::Result { .. } => {}
         }
     }
@@ -275,12 +280,12 @@ pub fn findings(summary: &Summary, options: &Options) -> Vec<String> {
         let total: u64 = summary
             .outages
             .iter()
-            .map(|(start, end)| minutes(*start, *end))
+            .map(|(start, end, _)| minutes(*start, *end))
             .sum();
         let (start, end) = summary
             .outages
             .iter()
-            .copied()
+            .map(|(start, end, _)| (*start, *end))
             .max_by_key(|(start, end)| end.saturating_sub(*start))
             .unwrap_or_default();
         let count = match summary.outages.len() {
@@ -294,6 +299,7 @@ pub fn findings(summary: &Summary, options: &Options) -> Vec<String> {
             clock(end),
             minutes(start, end)
         ));
+        lines.extend(where_broken(&summary.outages));
     }
     match summary.failed.as_slice() {
         [] => {}
@@ -309,6 +315,51 @@ pub fn findings(summary: &Summary, options: &Options) -> Vec<String> {
         )),
     }
     lines
+}
+
+/// Where outages broke, grouped by their main cause, when any outage has one.
+fn where_broken(outages: &[(u64, u64, Causes)]) -> Option<String> {
+    let mut groups: Vec<(&str, usize)> = [
+        outage::place(outage::Cause::Router),
+        outage::place(outage::Cause::PastRouter),
+        outage::place(outage::Cause::NoNetwork),
+        "checks disagreed",
+    ]
+    .into_iter()
+    .map(|place| (place, 0))
+    .collect();
+    let mut unknown = 0;
+    for (_, _, causes) in outages {
+        let index = match causes.verdict() {
+            None => {
+                unknown += 1;
+                continue;
+            }
+            Some(Verdict::Mixed) => 3,
+            Some(
+                Verdict::All(cause) | Verdict::Mostly { cause, .. } | Verdict::Partly { cause, .. },
+            ) => match cause {
+                outage::Cause::Router => 0,
+                outage::Cause::PastRouter => 1,
+                outage::Cause::NoNetwork | outage::Cause::Unknown => 2,
+            },
+        };
+        groups[index].1 += 1;
+    }
+    groups.retain(|(_, count)| *count > 0);
+    if groups.is_empty() {
+        return None;
+    }
+    groups.sort_by_key(|(_, count)| std::cmp::Reverse(*count));
+    let parts: Vec<String> = groups
+        .iter()
+        .map(|(place, count)| format!("{place} in {count}"))
+        .collect();
+    let mut line = format!("Where it broke: {}.", parts.join(", "));
+    if unknown > 0 {
+        line.push_str(&format!(" Not known for {unknown}."));
+    }
+    Some(line)
 }
 
 fn health_color(health: Health) -> Rgb {
@@ -546,7 +597,7 @@ fn chart(writer: &mut Writer, summary: &Summary, options: &Options) {
             SECONDARY,
         );
     }
-    for (start, end) in &summary.outages {
+    for (start, end, _) in &summary.outages {
         let (from, to) = (x(*start), x(*end));
         page.rect(from, bottom - 5.0, (to - from).max(1.5), 5.0, DANGER);
     }
@@ -712,24 +763,26 @@ fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
                     DANGER,
                 );
             }
-            Entry::Outage { start_ms, end_ms } => {
+            Entry::Outage {
+                start_ms,
+                end_ms,
+                causes,
+            } => {
                 let end = local(*end_ms, zone);
                 let until = if end.date_naive() == at.date_naive() {
                     end.format("%H:%M").to_string()
                 } else {
                     end.format("%-d %b %H:%M").to_string()
                 };
-                page.text(
-                    170.0,
-                    y,
-                    &format!(
-                        "No internet until {until} · {} min",
-                        minutes(*start_ms, *end_ms)
-                    ),
-                    Font::Regular,
-                    9.0,
-                    DANGER,
+                let mut text = format!(
+                    "No internet until {until} · {} min",
+                    minutes(*start_ms, *end_ms)
                 );
+                if let Some(place) = causes.place() {
+                    text = format!("{text} · {place}");
+                }
+                let text = canvas::fit(&text, Font::Regular, 9.0, RIGHT - 170.0);
+                page.text(170.0, y, &text, Font::Regular, 9.0, DANGER);
             }
         }
         page.line((MARGIN, y + 5.0), (RIGHT, y + 5.0), 0.4, LINE, false);

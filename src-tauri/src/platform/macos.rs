@@ -86,6 +86,17 @@ fn reply_sequence(reply: &[u8]) -> Option<u16> {
     (icmp.len() >= 8 && icmp[0] == 0).then(|| u16::from_be_bytes([icmp[6], icmp[7]]))
 }
 
+/// A reply to probe `sequence` from `target` itself. Every ICMP socket on macOS
+/// sees every echo reply, so one from elsewhere must not count.
+fn is_reply(
+    reply: &[u8],
+    from: Option<std::net::Ipv4Addr>,
+    target: std::net::Ipv4Addr,
+    sequence: u16,
+) -> bool {
+    from == Some(target) && reply_sequence(reply) == Some(sequence)
+}
+
 pub fn ping(target: std::net::Ipv4Addr, count: u32) -> Option<Vec<f64>> {
     use socket2::{Domain, Protocol, Socket, Type};
     use std::{
@@ -105,7 +116,7 @@ pub fn ping(target: std::net::Ipv4Addr, count: u32) -> Option<Vec<f64>> {
         socket.send_to(&echo_request(sequence), &address).ok()?;
         let mut buffer = [MaybeUninit::<u8>::uninit(); 256];
         while started.elapsed() < Duration::from_millis(1_000) {
-            let Ok(size) = socket.recv(&mut buffer) else {
+            let Ok((size, from)) = socket.recv_from(&mut buffer) else {
                 break;
             };
             // recv initialised the first `size` bytes.
@@ -113,7 +124,8 @@ pub fn ping(target: std::net::Ipv4Addr, count: u32) -> Option<Vec<f64>> {
                 .iter()
                 .map(|byte| unsafe { byte.assume_init() })
                 .collect();
-            if reply_sequence(&bytes) == Some(sequence) {
+            let from = from.as_socket_ipv4().map(|from| *from.ip());
+            if is_reply(&bytes, from, target, sequence) {
                 times.push(started.elapsed().as_secs_f64() * 1_000.0);
                 break;
             }
@@ -187,5 +199,18 @@ mod tests {
             None,
             "a request is not a reply"
         );
+    }
+
+    #[test]
+    fn only_the_target_s_reply_counts() {
+        use std::net::Ipv4Addr;
+        let router = Ipv4Addr::new(192, 0, 2, 1);
+        let elsewhere = Ipv4Addr::new(198, 51, 100, 7);
+        let mut reply = echo_request(2);
+        reply[0] = 0;
+        assert!(is_reply(&reply, Some(router), router, 2));
+        assert!(!is_reply(&reply, Some(elsewhere), router, 2));
+        assert!(!is_reply(&reply, None, router, 2));
+        assert!(!is_reply(&reply, Some(router), router, 1));
     }
 }

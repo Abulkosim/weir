@@ -1,6 +1,15 @@
 use super::*;
 use crate::core::speedtest::{IdleLatency, Speed};
 
+fn causes(router: u32, past_router: u32, unknown: u32) -> Causes {
+    Causes {
+        router,
+        past_router,
+        unknown,
+        ..Causes::default()
+    }
+}
+
 const HOUR: u64 = 3_600_000;
 const NOW: u64 = 1_792_771_200_000;
 
@@ -73,6 +82,7 @@ fn month() -> Vec<Entry> {
     entries.push(Entry::Outage {
         start_ms: day + 14 * HOUR + 2 * 60_000,
         end_ms: day + 14 * HOUR + 31 * 60_000,
+        causes: Causes::default(),
     });
     entries.push(Entry::Failed {
         at_ms: day + 14 * HOUR + 5 * 60_000,
@@ -196,4 +206,60 @@ fn speeds_switch_precision_after_rounding() {
     assert_eq!(mbps(9.94), "9.9");
     assert_eq!(mbps(0.996), "1.0");
     assert_eq!(mbps(0.42), "0.42");
+}
+
+#[test]
+fn findings_say_where_outages_broke_when_known() {
+    let mut entries: Vec<Entry> = (1..=3)
+        .map(|day| result(NOW - day * 24 * HOUR, 300.0))
+        .collect();
+    let shapes = [
+        causes(0, 7, 0),
+        causes(2, 5, 0),
+        causes(0, 3, 4),
+        causes(2, 0, 0),
+        causes(3, 3, 1),
+        causes(0, 0, 0),
+        causes(0, 0, 4),
+    ];
+    for (index, shape) in shapes.iter().enumerate() {
+        let start = NOW - (index as u64 + 1) * 2 * HOUR;
+        entries.push(Entry::Outage {
+            start_ms: start,
+            end_ms: start + 5 * 60_000,
+            causes: *shape,
+        });
+    }
+    entries.sort_by_key(Entry::at_ms);
+    let summary = summarize(&entries, &options(Plan::default())).unwrap();
+    let lines = findings(&summary, &options(Plan::default()));
+    assert_eq!(
+        lines.last().map(String::as_str),
+        Some("Where it broke: past your router in 3, at your router in 1, checks disagreed in 1. Not known for 2.")
+    );
+    let bytes = pdf(&entries, &options(Plan::default())).unwrap();
+    let text = String::from_utf8_lossy(&bytes).to_uppercase();
+    for row in [
+        "No internet until 14:05 \u{b7} 5 min \u{b7} past your router",
+        "No internet until 12:05 \u{b7} 5 min \u{b7} mostly past your router",
+        "No internet until 10:05 \u{b7} 5 min \u{b7} partly past your router",
+        "No internet until 08:05 \u{b7} 5 min \u{b7} at your router",
+        "No internet until 06:05 \u{b7} 5 min \u{b7} checks disagreed",
+    ] {
+        let hex: String = canvas::encode(row)
+            .iter()
+            .map(|byte| format!("{byte:02X}"))
+            .collect();
+        assert!(text.contains(&format!("<{hex}>")), "{row}");
+    }
+}
+
+#[test]
+fn findings_are_unchanged_when_no_outage_has_a_cause() {
+    let entries = month();
+    let summary = summarize(&entries, &options(PLAN)).unwrap();
+    assert!(!findings(&summary, &options(PLAN))
+        .iter()
+        .any(|line| line.starts_with("Where it broke")));
+    assert_eq!(where_broken(&[(0, 1, causes(0, 0, 3))]), None);
 }

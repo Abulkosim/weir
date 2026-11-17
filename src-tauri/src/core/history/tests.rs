@@ -1,4 +1,5 @@
 use super::*;
+use crate::core::outage::Causes;
 use crate::core::speedtest::{IdleLatency, Speed};
 
 const DAY: u64 = 24 * 60 * 60 * 1000;
@@ -197,4 +198,82 @@ fn file_that_cannot_be_opened_is_left_alone() {
     assert_eq!(recovery, Some(Recovery::Unopened));
     assert!(history.push(result(NOW, 100.0), NOW).is_err());
     assert!(path.is_dir());
+}
+
+#[test]
+fn outages_from_before_causes_load_without_one() {
+    let text = r#"{"version":1,"entries":[{"kind":"outage","startMs":1,"endMs":2}]}"#;
+    assert_eq!(
+        parse(text),
+        Some((
+            vec![Entry::Outage {
+                start_ms: 1,
+                end_ms: 2,
+                causes: Causes::default(),
+            }],
+            0
+        ))
+    );
+}
+
+#[test]
+fn causes_with_missing_or_unknown_keys_still_load() {
+    let text = r#"{"version":1,"entries":[{"kind":"outage","startMs":1,"endMs":2,"causes":{"pastRouter":3,"later":9}}]}"#;
+    assert_eq!(
+        parse(text),
+        Some((
+            vec![Entry::Outage {
+                start_ms: 1,
+                end_ms: 2,
+                causes: Causes {
+                    past_router: 3,
+                    ..Causes::default()
+                },
+            }],
+            0
+        ))
+    );
+}
+
+/// Weir 0.7.3's entry, copied from `git show v0.7.3:src-tauri/src/core/history.rs`.
+#[derive(Debug, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+#[allow(dead_code)]
+enum Release073 {
+    Result {
+        report: Box<Report>,
+    },
+    #[serde(rename_all = "camelCase")]
+    Failed {
+        at_ms: u64,
+        error: TestError,
+    },
+    #[serde(rename_all = "camelCase")]
+    Outage {
+        start_ms: u64,
+        end_ms: u64,
+    },
+}
+
+#[test]
+fn weir_0_7_3_reads_and_keeps_writing_a_file_with_causes() {
+    let entries = vec![
+        result(DAY, 100.0),
+        Entry::Outage {
+            start_ms: 2 * DAY,
+            end_ms: 2 * DAY + 7 * 60_000,
+            causes: Causes {
+                router: 2,
+                past_router: 5,
+                ..Causes::default()
+            },
+        },
+    ];
+    let text = to_text(&entries).unwrap();
+    assert!(text.contains(r#""causes":{"noNetwork":0,"router":2,"pastRouter":5,"unknown":0}"#));
+    let raw: Value = serde_json::from_str(&text).unwrap();
+    for entry in raw["entries"].as_array().unwrap() {
+        serde_json::from_value::<Release073>(entry.clone()).unwrap();
+    }
+    assert!(!is_newer(&text), "0.7.3 must not treat it as read-only");
 }

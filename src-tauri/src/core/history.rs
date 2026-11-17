@@ -1,6 +1,9 @@
 //! Every test, kept locally for a year in one bounded JSON file.
 
-use super::speedtest::{Report, TestError};
+use super::{
+    outage::Causes,
+    speedtest::{Report, TestError},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -27,6 +30,9 @@ pub enum Entry {
     Outage {
         start_ms: u64,
         end_ms: u64,
+        /// Where its checks broke. Missing in files from before 0.8.0.
+        #[serde(default)]
+        causes: Causes,
     },
 }
 
