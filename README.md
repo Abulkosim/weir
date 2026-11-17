@@ -54,7 +54,7 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 - **Keyboard.** Record a shortcut in Settings → Tray & startup → Shortcut to open Weir from any app. In the popover, ⌘T (Ctrl+T) runs a test, ⌘K (Ctrl+K) checks the connection, ⌘, (Ctrl+,) opens Settings, Esc goes back. **Copy summary** in the result details puts the numbers on the clipboard for a chat with your provider.
 - **Check connection.** Wi-Fi signal, router round trip, DNS lookup time and whether Cloudflare answers, each in plain words, about 10 kB, no speed test. Weir never reads your Wi-Fi name.
 - **Scheduled tests, if you want them.** Settings → Scheduled tests (off by default) runs a full test every 6 or 12 hours or once a day, shows the data it will use each month, and waits whenever you're on a hotspot, a metered connection, Low Data Mode or Low Power Mode. Scheduled results are marked with a clock in History.
-- **Outages, if you want them.** Settings → Outages → Watch for outages (off by default) sends one tiny request a minute, records "No internet until 14:09 · 7 min" in History, and can notify you when the connection drops and returns.
+- **Outages, if you want them.** Settings → Outages → Watch for outages (off by default) sends one tiny request a minute, records "No internet until 14:09 · 7 min" in History with where it broke ("Your router was reachable throughout. The break was past it."), and can notify you when the connection drops and returns. [How causes are decided](docs/method.md#outage-watch).
 - **This month.** The top of History shows the month's median download, upload and latency, how long you were offline, failed tests, and last month's download to compare.
 - **History.** Every test for a year, by day, with the median and range, download by hour of day and the slowest hours named. **Export CSV** from History or Settings, for a spreadsheet.
 - **Report for your provider.** **Report** in History saves a PDF of the last 30 days: medians against your plan, how often it fell under half, slow hours, outages, a chart and every test. [What's in it](docs/method.md#provider-report).
@@ -78,11 +78,11 @@ Numbers differ between tests because servers, stream counts and statistics diffe
 
 ## Privacy
 
-Weir contacts `speed.cloudflare.com` when you run a test or check your connection (and once a minute if you turn on outage watching), your own router and DNS server when you check your connection, and GitHub to check for updates. It sends no telemetry and stores no IP address, location or Wi-Fi name: history keeps the Cloudflare data-centre code and the numbers. Cloudflare sees your IP address, as with any website. Full list: [PRIVACY.md](PRIVACY.md).
+Weir contacts `speed.cloudflare.com` when you run a test or check your connection (and once a minute if you turn on outage watching), your own router and DNS server when you check your connection, when an outage-watch check fails and once when the connection returns, and GitHub to check for updates. It sends no telemetry and stores no IP address, location or Wi-Fi name: history keeps the Cloudflare data-centre code and the numbers. Cloudflare sees your IP address, as with any website. Full list: [PRIVACY.md](PRIVACY.md).
 
 ## Export
 
-CSV columns: `tested_at` (local time with UTC offset), `result` (`ok`, `failed` or `outage`), `server`, `download_mbps`, `upload_mbps`, `latency_ms`, `latency_under_load_ms`, `jitter_ms`, `download_low_mbps`, `download_high_mbps`, `data_used_mb`, `notes` (for example "stopped at data limit" or the failure reason).
+CSV columns: `tested_at` (local time with UTC offset), `result` (`ok`, `failed` or `outage`), `server`, `download_mbps`, `upload_mbps`, `latency_ms`, `latency_under_load_ms`, `jitter_ms`, `download_low_mbps`, `download_high_mbps`, `data_used_mb`, `notes` (for example "stopped at data limit", the failure reason, or for an outage "no internet until … (7 min); checks: 2 at your router, 5 past your router").
 
 ## Command line
 
@@ -95,7 +95,7 @@ weir test              # runs a full test now and prints it
 weir test --allow-metered
 ```
 
-Fields match the CSV export (`tested_at`, `download_mbps`, `latency_under_load_ms` and so on) plus `health` (`good`, `fair` or `poor`), `verdict`, `notes` and `scheduled`. `weir test` refuses a hotspot or metered connection unless you pass `--allow-metered` (exit code 3), prints `{"error": …, "message": …}` and exits 1 if the test fails, and does not add the result to History. Nothing here changes History or settings.
+Fields match the CSV export (`tested_at`, `download_mbps`, `latency_under_load_ms` and so on) plus `health` (`good`, `fair` or `poor`), `verdict`, `notes` and `scheduled`. Outages carry `until`, `minutes`, `cause` (`router`, `past_router`, `no_network`, `mixed` or `null`), `checks` (counts of `no_network`, `router`, `past_router` and `unknown`) and `message`, the sentence History shows. `weir test` refuses a hotspot or metered connection unless you pass `--allow-metered` (exit code 3), prints `{"error": …, "message": …}` and exits 1 if the test fails, and does not add the result to History. Nothing here changes History or settings.
 
 ## Develop
 

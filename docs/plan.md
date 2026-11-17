@@ -217,6 +217,11 @@ Patch. A read-only audit of the Rust core and the frontend, then one pull reques
   Not done, on purpose: ESLint and a split tsconfig (vue-tsc strict covers the risk), splitting `report.rs` and `tray.rs` (churn without a fix), sending phase lengths from Rust (cosmetic), honouring `Retry-After` (scheduled tests are hours apart), pruning History around clock jumps (a real year away and a wrong clock look the same).
 - [x] **S.3 Release v0.7.3.** Published 2026-11-10 20:34 UTC; evidence in `docs/verification.md`.
 
+## Accuracy and outage causes (v0.8.0) ⛳
+
+- [ ] **B.1 Record where an outage broke.** Each failed watch check is classified (no network, router, past router, unclear) with 2 router probes and DNS only if the router is silent; router blame needs the router to answer once the internet is back; outages store counts only; History, the notification, the PDF, CSV and `weir history` say where it broke.
+  Verify: unit tests on classify, tally (pre-outage failure, path-burst dedupe, sleep gap, network change, re-check, reset, clamp), verdict and copy; 0.7.3 reader test; ipc and outage-copy fixtures; CSV column count; e2e outage rows light + dark; CI green. 👤 On the Mac: router WAN cable out → "past your router"; Wi-Fi off → "no network"; router powered off with Wi-Fi to a second AP or Ethernet switch → "at your router"; VPN on with WAN out → nothing claimed; Check connection pressed mid-outage → counts unaffected; bytes per failed check with tcpdump (no addresses in docs).
+
 ## Phase 5 — Later
 
 - [ ] Per-network history keyed by a salted hash of the gateway MAC, user-named.

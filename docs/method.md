@@ -147,9 +147,9 @@ The first card in History ([`month.ts`](../src/lib/month.ts)):
 
 - Header: the period, the UTC offset of every time, and the plan if one is set.
 - Medians for download, upload and latency (idle and under load), the download and upload range, the median's share of the plan, and how many tests failed.
-- Plain findings: tests under half the plan, the slowest hours (same rule as History: at least 10 tests over 3 hours of the day, hours under 80 % of the usual median), outages with the longest one, and failures. If the outage watch is off the report says outages were not monitored, instead of implying there were none.
+- Plain findings: tests under half the plan, the slowest hours (same rule as History: at least 10 tests over 3 hours of the day, hours under 80 % of the usual median), outages with the longest one and where they broke ("Where it broke: past your router in 3, at your router in 1."), and failures. If the outage watch is off the report says outages were not monitored, instead of implying there were none.
 - A chart of every download over the 30 days with the plan as a dashed line, tests under half the plan in red and outages as red marks on the baseline.
-- Every test, newest first, with failures and outages in place, and a short note on how Weir measures.
+- Every test, newest first, with failures and outages in place (an outage row ends with where it broke, for example "· past your router"), and a short note on how Weir measures.
 - No IP address, Wi-Fi name or location; the server is the Cloudflare data-centre code, as in History.
 
 ## Scheduled tests
@@ -161,6 +161,55 @@ Off by default. Settings → Scheduled tests: every 6 hours, every 12 hours or o
 - Due when no test, by hand or scheduled, ran within the interval. A cancelled scheduled test is not retried until the next interval.
 - A scheduled test never asks to confirm data use, so it never runs where the Test button would ask. A failure goes into History without replacing the last result in the popover.
 - Settings shows the cost before you choose: the per-test estimate × tests a month, for example "About 250 MB a test, 15 GB a month" at every 12 hours.
+
+## Outage watch
+
+Off by default. Settings → Outages → Watch for outages ([`outage.rs`](../src-tauri/src/core/outage.rs), [`monitor.rs`](../src-tauri/src/monitor.rs)).
+
+- About once a minute (60 s ± 10 %, so machines don't check in step), one `GET /__down?bytes=0` to Cloudflare on a kept-alive connection, 5 s to answer. No check runs during a test.
+- Two failed checks in a row start an outage, dated from the first. The OS reporting no network at all starts one at once. A gap of 5 min or more between checks means the computer slept: an open outage closes at the last check before the gap, and nothing is claimed about the gap.
+
+### Where it broke
+
+Each failed check, including the one before an outage starts, is put in one class:
+
+| Class | When |
+| --- | --- |
+| No network | The OS has no network path: Wi-Fi off, cable out |
+| Router | The default gateway didn't answer, and neither did the DNS server |
+| Past the router | The router answered, or the DNS server answered while the router didn't |
+| Unclear | No gateway, an IPv6-only gateway, a VPN or tunnel as the default route, a connection that is neither Wi-Fi nor a cable, or a probe that ran out of time |
+
+- The router gets 2 probes (ICMP echo, or TCP connects to ports 80, 443 and 53 where ICMP isn't allowed), 5 s at most. The DNS server is asked only when the router is silent: up to 2 lookups, 3.5 s at most. Any reply counts, even a refusal or a server failure: a router's DNS forwarder answers with an error when the internet behind it is down, and that still shows the router is reachable ([`probe.rs`](../src-tauri/src/core/probe.rs)).
+- With a VPN the default gateway is the VPN's, so its silence says nothing about the router at home. Those checks are unclear.
+- The OS reports path changes in bursts. A path change counts as one check only when it is the first sign of the outage; after that only the minute checks count, so "5 of 7 checks" means 7 checks.
+- **Router blame has to be confirmed.** A router that ignores pings looks the same as one that is off. When the internet comes back, Weir asks the router once more. Only if it answers then, on the same network and without a sleep in between, do the router counts stand. Otherwise they become unclear.
+- One probe at a time: Check connection and the watch never ping the router at once, and on macOS only replies from the router itself count.
+
+History, the notification, the PDF and `weir history` name the main class:
+
+- **All** checks in one class: "Your router was reachable throughout. The break was past it."
+- **Mostly**, more than half: "Mostly past your router: 5 of 7 checks."
+- **Partly**, the only known class but half or fewer, the rest unclear: "Past your router in 3 of 7 checks. The rest were unclear."
+- **Disagreed** otherwise: "Checks disagreed: 3 of 7 at your router, 3 past it, 1 unclear."
+- Only unclear checks, or an outage recorded before 0.8.0: nothing is added.
+
+Only the four counts are stored with the outage, never the router or DNS address. History keeps format version 1, so Weir 0.7.3 still reads and writes the file; if 0.7.3 saves it, those outages lose their counts and show no cause.
+
+### Data per check
+
+Computed from packet sizes, not measured (the owner's tcpdump check is pending in [plan.md](plan.md)). IPv4 sizes; link-layer framing and ARP, which stay on the local network, are not counted.
+
+| | Sent | Received |
+| --- | --- | --- |
+| ICMP echo, each | 44 B (macOS), 45 B (Windows) | the same |
+| TCP connect attempt (SYN), each | about 64 B | a reset of about 40 B, if any |
+| DNS lookup, each | 66 B | up to about 150 B |
+
+- A failed check where the router answers: 2 echoes and 2 replies, about 0.2 kB.
+- The worst case, router silent and no ICMP: 2 echoes, up to 12 SYNs (3 ports, 2 rounds, a retransmit each) and 2 lookups, about 1 kB sent.
+- The confirmation when the internet returns: about 0.2 kB, once per outage that blamed the router.
+- With the failed Cloudflare request, a failed minute stays under 2 kB.
 
 ## Comparing with other tests
 

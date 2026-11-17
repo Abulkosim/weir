@@ -7,8 +7,8 @@ This page describes Weir's current release. It is derived from the source code; 
 ## Summary
 
 - No accounts, telemetry, analytics, crash reporting, or ads.
-- Network requests go only to Cloudflare's speed test servers, to GitHub Releases for update checks, and, when you check your connection, to your own router and DNS server.
-- Weir runs a speed test only when you start one, unless you turn on **Settings → Scheduled tests** (off by default). Scheduled tests never run on a hotspot, a metered connection, in Low Data Mode, Low Power Mode or Battery Saver. Outage watching, off by default, sends one tiny request a minute when you turn it on.
+- Network requests go only to Cloudflare's speed test servers, to GitHub Releases for update checks, and, when you check your connection or an outage-watch check fails, to your own router and DNS server.
+- Weir runs a speed test only when you start one, unless you turn on **Settings → Scheduled tests** (off by default). Scheduled tests never run on a hotspot, a metered connection, in Low Data Mode, Low Power Mode or Battery Saver. Outage watching, off by default, sends one tiny request a minute when you turn it on; when one fails, it also asks your router and DNS server whether they answer.
 - History and settings stay on your computer. They never include your IP address, location, network provider, or Wi-Fi name.
 
 ## Network requests
@@ -26,11 +26,13 @@ All requests use HTTPS and send a `Weir/<version> (+https://github.com/Abulkosim
 | `speed.cloudflare.com` | `GET /__down?bytes=0`, twice on a new connection | When you choose **Check connection** | Nothing about you |
 | `speed.cloudflare.com` | `GET /__down?bytes=0` on a kept-alive connection | About once a minute, only while **Watch for outages** is on (off by default) | Nothing about you |
 | Your router | Five ICMP echo requests (or TCP connection attempts to ports 80, 443 and 53 if ICMP is not allowed) | When you choose **Check connection** | Nothing; it stays on your network |
+| Your router | Two ICMP echo requests (or TCP connection attempts as above) | When an outage-watch check fails, and once when the connection returns after an outage that blamed the router | Nothing; it stays on your network |
 | Your DNS server | Three lookups of `speed.cloudflare.com` over UDP | When you choose **Check connection** | The name `speed.cloudflare.com` |
+| Your DNS server | Up to two lookups of `speed.cloudflare.com` over UDP | When an outage-watch check fails and the router did not answer | The name `speed.cloudflare.com` |
 
 Each test request carries a random number in its query string so caches don't answer it ([`cloudflare.rs`](src-tauri/src/core/backends/cloudflare.rs)). GitHub may redirect release files to its own download storage, such as `objects.githubusercontent.com`.
 
-Weir does not send test results anywhere, including Cloudflare's own results endpoint. It does not contact any other host. The router address and DNS server come from your operating system and are used only for that check; they are not stored. Wi-Fi signal strength and link rate come from the operating system too, never the network name ([`probe.rs`](src-tauri/src/core/probe.rs), [`platform/`](src-tauri/src/platform)). The interface itself has no network access: its content security policy allows connections only to Weir's local process ([`tauri.conf.json`](src-tauri/tauri.conf.json)).
+Weir does not send test results anywhere, including Cloudflare's own results endpoint. It does not contact any other host. The router address and DNS server come from your operating system and are used only for those checks; they are not stored. Wi-Fi signal strength and link rate come from the operating system too, never the network name ([`probe.rs`](src-tauri/src/core/probe.rs), [`platform/`](src-tauri/src/platform)). The interface itself has no network access: its content security policy allows connections only to Weir's local process ([`tauri.conf.json`](src-tauri/tauri.conf.json)).
 
 To tell whether you are online or on a metered connection, Weir asks the operating system (Network framework on macOS, connection profile on Windows). This sends no traffic.
 
@@ -59,7 +61,7 @@ Weir writes only to its own data folder:
 
 | File | Contents |
 | --- | --- |
-| `history.json` | Each test for up to one year or 5,000 tests: start time, duration, provider (`Cloudflare`), data-centre code, latency, jitter, download and upload speeds, latency under load, and data used. Failed tests keep the time and the reason. Outages keep their start and end times. |
+| `history.json` | Each test for up to one year or 5,000 tests: start time, duration, provider (`Cloudflare`), data-centre code, latency, jitter, download and upload speeds, latency under load, and data used. Failed tests keep the time and the reason. Outages keep their start and end times and how many of their checks broke where (router, past the router, no network, unclear), never an address. |
 | `settings.json` | Theme, tray speed text, launch at login, daily update checks, outage watching and its notifications |
 
 Neither file holds an IP address, city, network provider (ASN), coordinates, Wi-Fi name (SSID), or router address. Files are replaced atomically. An unreadable file is moved aside as `history.unreadable-<time>.json` or `settings.unreadable-<time>.json`, never deleted. See [`history.rs`](src-tauri/src/core/history.rs) and [`settings.rs`](src-tauri/src/core/settings.rs).
