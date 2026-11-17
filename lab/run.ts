@@ -12,7 +12,7 @@ import {
   reorderDelta, shape, teardown, topologyUp, unshape, type JitterMode,
 } from './net.ts';
 import {
-  cpuMax, ipBytes, jitter, median, parseIperf, PROBE_TIMEOUT_MS, parsePidStat, parsePing, parseProcStat, payloadBytes, within,
+  cpuMax, iperfBlock, ipBytes, jitter, median, parseIperf, PROBE_TIMEOUT_MS, parsePidStat, parsePing, parseProcStat, payloadBytes, within,
   wireMbps, type CpuTimes, type PingSample, type WireSample,
 } from './parse.ts';
 import { expectedFar, forShard, order, streams, type Profile, type Step } from './profiles.ts';
@@ -99,10 +99,13 @@ function pidTicks(pid: number | null): number {
   }
 }
 
-async function iperf(dir: 'down' | 'up', parallel: number, seconds: number): Promise<{ mbps: number; mismatch: number; loadedMs: number | null } | Failed> {
+async function iperf(dir: 'down' | 'up', parallel: number, seconds: number, mbps = 10_000): Promise<{ mbps: number; mismatch: number; loadedMs: number | null } | Failed> {
   const ping = pinger(0.1);
   const begin = Date.now();
-  const argv = ['iperf3', '-c', ADDR.server, '-P', String(parallel), '-t', String(seconds), '-O', '2', '-J', dir === 'down' ? '-R' : '--get-server-output'];
+  const argv = [
+    'iperf3', '-c', ADDR.server, '-P', String(parallel), '-t', String(seconds), '-O', '2', '-l', String(iperfBlock(mbps)), '-J',
+    dir === 'down' ? '-R' : '--get-server-output',
+  ];
   const done = await run(clientUser(argv), 30_000);
   const pings = parsePing((await ping.stop()).stdout, 100);
   if (done.code !== 0) return { error: done.timedOut ? 'timeout' : `iperf3 exit ${done.code}` };
@@ -118,10 +121,10 @@ async function truthStep(entry: Profile): Promise<Truth | Failed> {
   const before = cpu();
   const idle = await idlePing(21);
   const count = streams(expectedFar(entry));
-  const down = await iperf('down', count.down, 10);
+  const down = await iperf('down', count.down, 10, entry.down);
   if ('error' in down) return down;
   await drain();
-  const up = await iperf('up', count.up, 10);
+  const up = await iperf('up', count.up, 10, entry.up);
   if ('error' in up) return up;
   const busiest = cpuMax(before, cpu());
   return {

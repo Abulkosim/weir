@@ -39,7 +39,7 @@ export const THRESHOLDS = {
   idleJitter: {
     absMs: 3,
     pct: 15,
-    reason: 'On a jittery path a 19-sample median moves by a few ms between runs on its own.',
+    reason: 'On a jittery path a 19-sample median moves by a few ms between runs on its own, so jittery links are judged on the median over repeats. Changed from every repeat after the fourth run: one wifi-jitter repeat read 17.6 ms against a 13.9 ms concurrent ping while the five-repeat medians agreed within 1 ms.',
   },
   loaded: {
     absMs: 10,

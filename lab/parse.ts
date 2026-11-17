@@ -42,12 +42,14 @@ export function parseIperf(text: string, omitSeconds = 2): IperfResult {
   // iperf3 3.16's server does not always flag its omitted intervals, so drop them by time when none are flagged.
   const flagged = receiver.intervals.some((interval) => interval.sum?.omitted);
   // It can also report the omit boundary as one interval whose seconds span two intervals but whose bytes
-  // cover one (start equals end); such inconsistent intervals are dropped.
+  // cover one (start equals end); such inconsistent intervals are dropped, and so is the short interval
+  // after the sender stops, which only holds the wait for the end of the test.
   const counted = receiver.intervals.filter((interval) => {
     const sum = interval.sum;
     if (!sum) return false;
     const span = (sum.end ?? 0) - (sum.start ?? 0);
     if (Math.abs(span - (sum.seconds ?? 0)) > 0.05) return false;
+    if ((sum.seconds ?? 0) < 0.9) return false;
     return flagged ? !sum.omitted : (sum.start ?? 0) >= omitSeconds - 0.001;
   });
   const bytes = counted.reduce((sum, interval) => sum + (interval.sum?.bytes ?? 0), 0);
@@ -66,6 +68,17 @@ export function parseIperf(text: string, omitSeconds = 2): IperfResult {
     startMs: (startSecs + firstStart) * 1000,
     retransmits: json.end?.sum_sent?.retransmits ?? null,
   };
+}
+
+/**
+ * iperf3 read/write size for a shaped rate. The default 128 KiB reads make a
+ * receiver's per-interval bytes jump in 128 KiB steps, which at a few Mbps is
+ * several percent of a ten-second test; about a hundredth of a second of data
+ * per read keeps that edge error under one percent.
+ */
+export function iperfBlock(mbps: number): number {
+  const bytes = (mbps * 1e6) / 8 / 100;
+  return Math.min(131_072, Math.max(2048, Math.round(bytes / 1024) * 1024));
 }
 
 export interface PingSample {

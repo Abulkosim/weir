@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { analyze, applyFindings, fill, placeholders, validity, type Finding, type Verdict } from '../../lab/analyze.ts'
 import { netemArgs, offloads, parseNstat, parseQdiscStats, parseSoftnet, reorderDelta, shape, tbfLimit, teardown, topologyUp, unshape } from '../../lab/net.ts'
-import { cpuMax, parseIperf, parsePing, parseProcStat, wireMbps, type WireSample } from '../../lab/parse.ts'
+import { cpuMax, iperfBlock, parseIperf, parsePing, parseProcStat, wireMbps, type WireSample } from '../../lab/parse.ts'
 import { ceilingMbps, expectedFar, FAR_MS, forShard, order, PROFILES, SHARDS, streams, type Profile } from '../../lab/profiles.ts'
 import { renderAll, renderMarkdown, renderSvg } from '../../lab/render.ts'
 import { slim, type ProfileResult, type Repeat, type Results, type Truth, type Validity, type Weir } from '../../lab/schema.ts'
@@ -88,6 +88,9 @@ test('iperf3 goodput comes from receiver intervals and is checked against the en
     ...[1, 2, 3].map(start => ({ sum: { start, end: start + 1, seconds: 1, bytes: 3_000_000, omitted: false } })),
   ]
   assert.equal(parseIperf(JSON.stringify(glitch)).mbps, 24, 'an omit-boundary interval with two seconds and one second of bytes is dropped')
+  glitch.server_output_json.intervals.push({ sum: { start: 4, end: 4.5, seconds: 0.5, bytes: 0, omitted: false } })
+  assert.equal(parseIperf(JSON.stringify(glitch)).mbps, 24, 'the short wait after the sender stops is dropped')
+  assert.deepEqual([1, 3, 25, 1000].map(iperfBlock), [2048, 4096, 31744, 131072])
   assert.throws(() => parseIperf('{"error":"unable to connect to server 10.77.2.2"}'), /<addr>/)
   assert.throws(() => parseIperf('{"start":{"test_start":{"reverse":0}},"intervals":[]}'), /no receiver intervals/)
 })

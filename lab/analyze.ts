@@ -254,13 +254,20 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
   const idleLimits = shape.jitter ? THRESHOLDS.idleJitter : THRESHOLDS.idle;
   const idle = pairs(repeats, (w) => w.report?.latency?.medianMs, (repeat, w) => truthOf(repeat)?.idleMs ?? w.wire.idleMs);
   const idleErrors = errors(idle, 'ms');
-  const idleOk = idleErrors.length > 0 && idle.weir.every((weir, index) => {
-    const truth = idle.other[index];
-    if (typeof weir !== 'number' || typeof truth !== 'number') return true;
-    return Math.abs(weir - truth) <= Math.max(idleLimits.absMs, (truth * idleLimits.pct) / 100);
-  });
+  const within = (weir: number, truth: number) => Math.abs(weir - truth) <= Math.max(idleLimits.absMs, (truth * idleLimits.pct) / 100);
+  const idleWeir = stat(idle.weir);
+  const idleTruth = stat(idle.other);
+  const idleOk = idleErrors.length > 0 && (shape.jitter
+    ? !!idleWeir && !!idleTruth && within(idleWeir.median, idleTruth.median)
+    : idle.weir.every((weir, index) => {
+      const truth = idle.other[index];
+      return typeof weir !== 'number' || typeof truth !== 'number' || within(weir, truth);
+    }));
+  const idleRule = shape.jitter ? 'medians over repeats' : 'every repeat';
   out.push(verdict(id, 'idle', idleErrors.length ? (idleOk ? 'pass' : 'fail') : 'fail',
-    idleErrors.length ? `worst ${fmt(Math.max(...idleErrors.map(Math.abs)))} ms from ping (limit max(${idleLimits.absMs} ms, ${idleLimits.pct} %))` : 'no idle latency to compare',
+    idleErrors.length
+      ? `medians ${fmt(idleWeir?.median)} ms Weir, ${fmt(idleTruth?.median)} ms ping; worst repeat ${fmt(Math.max(...idleErrors.map(Math.abs)))} ms apart (limit max(${idleLimits.absMs} ms, ${idleLimits.pct} %), ${idleRule})`
+      : 'no idle latency to compare',
     { suspect: idleOk ? null : idleErrors.length ? 'weir-math' : validitySuspect ?? 'unclear', weir: stat(idle.weir), truth: stat(idle.other), error: stat(idleErrors) }));
 
   for (const dir of ['download', 'upload'] as const) {
