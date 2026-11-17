@@ -1,16 +1,15 @@
 //! History as CSV for a spreadsheet or an internet provider. Columns: README "Export".
 
-use super::time::Zone;
+use super::time::{rfc3339, Zone};
 use super::{
     history::Entry,
     speedtest::{Report, TestError},
 };
-use chrono::SecondsFormat;
 
 pub const HEADER: &str = "tested_at,result,server,download_mbps,upload_mbps,latency_ms,latency_under_load_ms,jitter_ms,download_low_mbps,download_high_mbps,data_used_mb,notes";
 
 fn timestamp(ms: u64, zone: Zone) -> String {
-    zone.at(ms).to_rfc3339_opts(SecondsFormat::Secs, false)
+    rfc3339(zone, ms)
 }
 
 fn number(value: Option<f64>) -> String {
@@ -190,7 +189,7 @@ mod tests {
                 error: TestError::NetworkChanged,
             },
         ];
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(5 * 3600).unwrap());
+        let zone = Zone::hours(5);
         let text = csv_at(&entries, zone);
         let lines: Vec<&str> = text.lines().collect();
         assert_eq!(lines[0], HEADER);
@@ -248,7 +247,7 @@ mod tests {
                 causes: Default::default(),
             },
         ];
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(0).unwrap());
+        let zone = Zone::hours(0);
         let text = csv_at(&entries, zone);
         let lines: Vec<&str> = text.lines().collect();
         let first = columns(lines[1]);

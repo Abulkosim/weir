@@ -1,14 +1,13 @@
 //! `weir last`, `weir history` and `weir test` for scripts. Every command prints JSON with
 //! the same fields as the CSV export. Fields: README "Command line".
 
-use super::time::Zone;
+use super::time::{rfc3339, Zone};
 use super::{
     export::{error_text, notes},
     history::Entry,
     meaning::meaning,
     speedtest::{Report, TestError},
 };
-use chrono::SecondsFormat;
 use serde_json::{json, Value};
 
 pub const USAGE: &str =
@@ -59,7 +58,7 @@ pub fn parse(args: &[String]) -> Result<Option<Command>, String> {
 }
 
 fn timestamp(ms: u64, zone: Zone) -> String {
-    zone.at(ms).to_rfc3339_opts(SecondsFormat::Secs, false)
+    rfc3339(zone, ms)
 }
 
 fn tenths(value: f64) -> f64 {
@@ -211,7 +210,7 @@ mod tests {
 
     #[test]
     fn a_result_has_the_csv_fields_and_the_verdict() {
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(5 * 3600).unwrap());
+        let zone = Zone::hours(5);
         let value = result(&report(), zone);
         assert_eq!(value["tested_at"], "2026-10-23T21:00:00+05:00");
         assert_eq!(value["server"], "Cloudflare FRA");
@@ -228,7 +227,7 @@ mod tests {
 
     #[test]
     fn last_skips_failures_and_history_keeps_everything() {
-        let zone = Zone::Fixed(chrono::FixedOffset::east_opt(0).unwrap());
+        let zone = Zone::hours(0);
         let entries = vec![
             Entry::Result {
                 report: Box::new(report()),

@@ -89,7 +89,7 @@ async fn save_as(
 }
 
 fn today() -> String {
-    chrono::Local::now().format("%Y-%m-%d").to_string()
+    jiff::Zoned::now().strftime("%Y-%m-%d").to_string()
 }
 
 #[tauri::command]
@@ -106,7 +106,7 @@ pub async fn export_report(app: AppHandle) -> Result<Option<String>, String> {
     let settings = runtime.view().settings;
     let version = app.package_info().version.to_string();
     let options = report::Options {
-        now_ms: chrono::Utc::now().timestamp_millis().max(0) as u64,
+        now_ms: crate::core::time::unix_ms(),
         zone: crate::core::time::Zone::Local,
         plan: settings.plan(),
         watching: settings.watch_outages,

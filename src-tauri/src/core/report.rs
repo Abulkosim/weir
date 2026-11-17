@@ -19,7 +19,7 @@ use canvas::{
     Font, Page, Rgb, ACCENT, DANGER, HEIGHT, INK, LINE, MARGIN, SECONDARY, SOFT, TERTIARY, WARNING,
     WIDTH,
 };
-use chrono::{DateTime, FixedOffset, Timelike};
+use jiff::Zoned;
 
 pub const DAYS: u64 = 30;
 const DAY_MS: u64 = 86_400_000;
@@ -130,7 +130,7 @@ pub fn slow_hours(reports: &[&Report], hour_of: impl Fn(u64) -> u32) -> (bool, O
     (true, slow)
 }
 
-fn local(ms: u64, zone: Zone) -> DateTime<FixedOffset> {
+fn local(ms: u64, zone: Zone) -> Zoned {
     zone.at(ms)
 }
 
@@ -170,7 +170,9 @@ pub fn summarize<'a>(entries: &'a [Entry], options: &Options) -> Option<Summary<
             })
             .count()
     });
-    let (enough_for_hours, slow) = slow_hours(&reports, |ms| local(ms, options.zone).hour());
+    let (enough_for_hours, slow) = slow_hours(&reports, |ms| {
+        local(ms, options.zone).hour().unsigned_abs().into()
+    });
     let mut failed = Vec::new();
     let mut outages = Vec::new();
     for entry in &period {
@@ -285,8 +287,8 @@ fn outage_row(until: &str, minutes: u64, causes: &Causes) -> String {
 /// Plain sentences for the "What this shows" section.
 pub fn findings(summary: &Summary, options: &Options) -> Vec<String> {
     let zone = options.zone;
-    let day = |ms: u64| local(ms, zone).format("%-d %b").to_string();
-    let clock = |ms: u64| local(ms, zone).format("%H:%M").to_string();
+    let day = |ms: u64| local(ms, zone).strftime("%-d %b").to_string();
+    let clock = |ms: u64| local(ms, zone).strftime("%H:%M").to_string();
     let mut lines = Vec::new();
     if let (Some(paid), Some(under)) = (plan::valid(options.plan.download_mbps), summary.under_half)
     {
@@ -623,7 +625,7 @@ fn chart(writer: &mut Writer, summary: &Summary, options: &Options) {
         page.dot(*point, 2.2, color);
     }
     let zone = options.zone;
-    let date = |ms: u64| local(ms, zone).format("%-d %b").to_string();
+    let date = |ms: u64| local(ms, zone).strftime("%-d %b").to_string();
     let label_y = bottom + 13.0;
     page.text(
         left,
@@ -728,7 +730,7 @@ fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
         page.text(
             MARGIN,
             y,
-            &at.format("%-d %b %Y").to_string(),
+            &at.strftime("%-d %b %Y").to_string(),
             Font::Regular,
             9.0,
             INK,
@@ -736,7 +738,7 @@ fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
         page.text(
             126.0,
             y,
-            &at.format("%H:%M").to_string(),
+            &at.strftime("%H:%M").to_string(),
             Font::Regular,
             9.0,
             INK,
@@ -778,10 +780,10 @@ fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
                 causes,
             } => {
                 let end = local(*end_ms, zone);
-                let until = if end.date_naive() == at.date_naive() {
-                    end.format("%H:%M").to_string()
+                let until = if end.date() == at.date() {
+                    end.strftime("%H:%M").to_string()
                 } else {
-                    end.format("%-d %b %H:%M").to_string()
+                    end.strftime("%-d %b %H:%M").to_string()
                 };
                 let text = outage_row(&until, minutes(*start_ms, *end_ms), causes);
                 page.text(
@@ -810,7 +812,7 @@ pub fn pdf(entries: &[Entry], options: &Options) -> Option<Vec<u8>> {
     };
     writer.new_page();
     let zone = options.zone;
-    let date = |ms: u64| local(ms, zone).format("%-d %b %Y").to_string();
+    let date = |ms: u64| local(ms, zone).strftime("%-d %b %Y").to_string();
     let page = writer.page();
     page.text(
         MARGIN,
@@ -827,7 +829,7 @@ pub fn pdf(entries: &[Entry], options: &Options) -> Option<Vec<u8>> {
             "{} – {} · Last {DAYS} days · Local times, now UTC{}",
             date(summary.from_ms),
             date(summary.to_ms),
-            local(summary.to_ms, zone).offset()
+            local(summary.to_ms, zone).strftime("%:z")
         ),
         Font::Regular,
         10.0,
