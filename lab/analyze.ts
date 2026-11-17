@@ -1,7 +1,7 @@
 // Pure judging: lab results in, verdicts out. No I/O and no clocks.
 
 import { median, percentile } from './parse.ts';
-import { ceilingMbps, PROFILES, type Profile } from './profiles.ts';
+import { ceilingMbps, expectedFar, PROFILES, type Profile } from './profiles.ts';
 import { failed, type Baseline, type ProfileResult, type Repeat, type Results, type Truth, type Twin, type Validity, type Weir } from './schema.ts';
 import { THRESHOLDS } from './thresholds.ts';
 
@@ -195,7 +195,14 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
     const capMetric: Metric = `${dir}.capacity`;
     const truthValues = truthPairs.other.filter((value): value is number => typeof value === 'number');
     const judgeProblems = repeats.filter((repeat) => truthOf(repeat) && !usableTruth(truthOf(repeat))).length;
-    if (capErrors.length < 2) {
+    const farMismatch = repeats.filter((repeat) => {
+      const far = weirOf(repeat)?.far;
+      return typeof far === 'boolean' && far !== expectedFar(shape);
+    }).length;
+    if (farMismatch) {
+      out.push(verdict(id, capMetric, 'invalid-input',
+        `Weir's far-link decision differed from the stream count iperf3 used in ${farMismatch} runs`, { suspect: 'input', truth: stat(truthValues) }));
+    } else if (capErrors.length < 2) {
       out.push(verdict(id, capMetric, capErrors.length || !failures.length ? 'inconclusive' : 'fail',
         judgeProblems ? `${judgeProblems} iperf3 runs were saturated or disagreed with their own totals` : 'too few runs with both Weir and iperf3',
         { suspect: judgeProblems ? 'judge' : validitySuspect ?? 'unclear', truth: stat(truthValues) }));

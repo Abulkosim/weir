@@ -152,7 +152,7 @@ function weir(numbers: Numbers): Weir {
       pingSent: 400,
     },
     serverBytes: { down: 0, up: 0, unknown: 0 },
-    far: false,
+    far: (numbers.idle ?? 5) > 100,
     cpuMax: 0.4,
     saturated: false,
   }

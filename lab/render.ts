@@ -250,13 +250,14 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
   const ids = PROFILES.map((item) => item.id);
   const width = 880;
   const top = 64;
-  const row = 26;
+  const row = 28;
   const height = top + ids.length * row + 44;
   const left = { x0: 150, x1: 470, min: -40, max: 40 };
   const right = { x0: 560, x1: 860, min: 1, max: 2000 };
   const xErr = (value: number) => left.x0 + ((Math.max(left.min, Math.min(left.max, value)) - left.min) / (left.max - left.min)) * (left.x1 - left.x0);
   const xMs = (value: number) => right.x0 + (Math.log10(Math.max(right.min, Math.min(right.max, value))) / Math.log10(right.max)) * (right.x1 - right.x0);
   const parts: string[] = [];
+  const ticks: string[] = [];
   const text = (x: number, y: number, body: string, attrs = '') => parts.push(`<text x="${n(x)}" y="${n(y)}"${attrs}>${escape(body)}</text>`);
 
   parts.push(`<rect width="${width}" height="${height}" rx="10" fill="${theme.surface}"/>`);
@@ -264,7 +265,7 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
   text(left.x0, 50, 'Speed error vs iperf3 (%) · ● download ○ upload · | wire', ' class="axis-title"');
   text(right.x0, 50, 'Latency (ms, log) · ● Weir | ping · idle and loaded', ' class="axis-title"');
 
-  for (const tick of [-40, -20, -10, 0, 10, 20, 40]) {
+  for (const tick of [-40, -20, 0, 20, 40]) {
     const x = xErr(tick);
     parts.push(`<line x1="${n(x)}" y1="${top - 6}" x2="${n(x)}" y2="${top + ids.length * row}" stroke="${theme.grid}" stroke-width="1"/>`);
     text(x, top + ids.length * row + 16, `${tick > 0 ? '+' : tick < 0 ? '−' : ''}${Math.abs(tick)} %`, ' class="tick" text-anchor="middle"');
@@ -276,6 +277,7 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
   }
 
   ids.forEach((id, index) => {
+    parts.push(...ticks.splice(0));
     const y = top + index * row + row / 2;
     const definition = PROFILES.find((item) => item.id === id)!;
     const entry = results.profiles.find((item) => item.id === id);
@@ -291,7 +293,7 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
       text(left.x0 + 6, y + 4, 'not in this run', ' class="note"');
       return;
     }
-    for (const [dir, offset] of [['download', -3], ['upload', 3]] as const) {
+    for (const [dir, offset] of [['download', -5], ['upload', 5]] as const) {
       const capacity = find(analysis, id, `${dir}.capacity`);
       const wire = find(analysis, id, `${dir}.wire`);
       const bad = capacity && !['pass', 'report', 'xpass'].includes(capacity.status);
@@ -299,7 +301,7 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
       if (wire?.error && capacity?.truth && wire.truth) {
         const wireVsTruth = ((wire.truth.median - capacity.truth.median) / capacity.truth.median) * 100;
         const x = xErr(wireVsTruth);
-        parts.push(`<line x1="${n(x)}" y1="${n(y + offset - 5)}" x2="${n(x)}" y2="${n(y + offset + 5)}" stroke="${theme.secondary}" stroke-width="1.5"/>`);
+        ticks.push(`<line x1="${n(x)}" y1="${n(y + offset - 5)}" x2="${n(x)}" y2="${n(y + offset + 5)}" stroke="${theme.ink}" stroke-width="1.5"/>`);
       }
       if (capacity?.error) {
         const x = xErr(capacity.error.median);
@@ -316,13 +318,14 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
       const bad = !['pass', 'report', 'xpass'].includes(item.status);
       if (item.truth) {
         const x = xMs(item.truth.median);
-        parts.push(`<line x1="${n(x)}" y1="${n(y - 7)}" x2="${n(x)}" y2="${n(y + 7)}" stroke="${theme.secondary}" stroke-width="1.5"/>`);
+        ticks.push(`<line x1="${n(x)}" y1="${n(y - 10)}" x2="${n(x)}" y2="${n(y + 10)}" stroke="${theme.ink}" stroke-width="1.5"/>`);
       }
       if (item.weir) {
         parts.push(`<circle cx="${n(xMs(item.weir.median))}" cy="${n(y)}" r="4.5" fill="${bad ? theme.danger : theme.accent}" stroke="${theme.surface}" stroke-width="2"><title>${escape(`${id} ${item.metric}: Weir ${fmt(item.weir.median)} ms, ping ${fmt(item.truth?.median)} ms`)}</title></circle>`);
       }
     }
   });
+  parts.push(...ticks.splice(0));
   text(16, height - 12, `Shaded: pass band for the median. Red: not passing. ${results.commit.slice(0, 12)} · ${results.startedAt.slice(0, 10)}`, ' class="note"');
 
   const font = '-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, system-ui, sans-serif';
