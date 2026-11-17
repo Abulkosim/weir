@@ -329,6 +329,8 @@ pub struct Watch {
     router_unverifiable: bool,
     /// This spell without a network is already counted.
     offline_counted: bool,
+    /// When the OS last reported no network path.
+    last_offline_ms: Option<u64>,
 }
 
 impl Watch {
@@ -376,6 +378,19 @@ impl Watch {
         events
     }
 
+    /// Like `on`, for a check that began at `started_ms`. An answer from before the OS
+    /// then lost every path says nothing about now, so that `Up` is dropped.
+    pub fn on_from(&mut self, check: Check, started_ms: u64, at_ms: u64) -> Vec<Event> {
+        let stale = matches!(check, Check::Up { .. })
+            && self
+                .last_offline_ms
+                .is_some_and(|offline_ms| offline_ms >= started_ms);
+        if stale {
+            return Vec::new();
+        }
+        self.on(check, at_ms)
+    }
+
     fn on_up(&mut self, router_now: Option<bool>, at_ms: u64) -> Option<Event> {
         let mut causes = self.causes;
         if self.router_unverifiable || router_now != Some(true) {
@@ -403,6 +418,7 @@ impl Watch {
 
     /// The OS lost every network path: that is an outage at once, no second check needed.
     fn on_offline(&mut self, from_path: bool, at_ms: u64) -> Option<Event> {
+        self.last_offline_ms = Some(at_ms);
         if !from_path || !self.offline_counted {
             self.causes.add(Cause::NoNetwork);
             self.offline_counted = true;
