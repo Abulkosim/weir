@@ -206,9 +206,13 @@ fn findings_say_where_outages_broke() {
     let lines = findings(&summary, &options(Plan::default()));
     assert_eq!(
         lines.last().map(String::as_str),
-        Some("Where it broke: past your router in 3, at your router in 1, checks disagreed in 1. Not known for 2.")
+        Some("Where it broke: past your router in 2, at your router in 1, checks disagreed in 1. Not known for 3.")
     );
-    let unknown = [outage(1, causes(0, 0, 0, 2)), outage(2, Causes::default())];
+    let unknown = [
+        outage(1, causes(0, 0, 0, 2)),
+        outage(2, Causes::default()),
+        outage(3, causes(0, 0, 3, 4)),
+    ];
     let summary = summarize(&unknown, &options(Plan::default())).unwrap();
     assert!(findings(&summary, &options(Plan::default()))
         .iter()

@@ -107,12 +107,56 @@ fn a_burst_of_path_updates_counts_once_but_minute_ticks_each_count() {
     let mut after_failure = Watch::default();
     after_failure.on(down(Cause::PastRouter), 0);
     after_failure.on(PATH_OFFLINE, 1_000);
+    after_failure.on(PATH_OFFLINE, 2_000);
     assert_eq!(
         after_failure.causes(),
-        causes(0, 0, 1, 0),
-        "a path update is not a check of its own once checks are counting"
+        causes(1, 0, 1, 0),
+        "losing the network after a failed check still counts, once"
     );
     assert_eq!(after_failure.outage_since_ms(), Some(0));
+}
+
+#[test]
+fn a_short_wifi_drop_after_one_failed_check_is_not_blamed_past_the_router() {
+    let mut watch = Watch::default();
+    watch.on(UP, 0);
+    watch.on(down(Cause::PastRouter), MINUTE);
+    assert_eq!(
+        watch.on(PATH_OFFLINE, MINUTE + 20_000),
+        [Event::Lost { since_ms: MINUTE }]
+    );
+    let events = watch.on(UP, MINUTE + 50_000);
+    assert_eq!(events, [back(MINUTE, MINUTE + 50_000, causes(1, 0, 1, 0))]);
+    let Event::Back { causes, .. } = events[0] else {
+        unreachable!()
+    };
+    assert_eq!(causes.verdict(), Some(Verdict::Mixed));
+}
+
+#[test]
+fn a_new_spell_without_network_counts_again() {
+    let mut watch = Watch::default();
+    watch.on(PATH_OFFLINE, 0);
+    watch.on(PATH_OFFLINE, 1_000);
+    watch.on(down(Cause::Router), MINUTE);
+    watch.on(PATH_OFFLINE, MINUTE + 1_000);
+    watch.on(PATH_OFFLINE, MINUTE + 2_000);
+    assert_eq!(watch.causes(), causes(2, 1, 0, 0));
+}
+
+#[test]
+fn a_check_that_straddles_a_network_change_is_unclear() {
+    let silent = Signals {
+        router: Some(false),
+        dns: None,
+    };
+    assert_eq!(classify_on(silent, true), Cause::Router);
+    assert_eq!(classify_on(silent, false), Cause::Unknown);
+    let answered = Signals {
+        router: Some(true),
+        dns: None,
+    };
+    assert_eq!(classify_on(answered, false), Cause::Unknown);
 }
 
 #[test]
@@ -294,6 +338,13 @@ fn copy_says_where_it_broke() {
     assert_eq!(Causes::default().tally(), None);
     assert_eq!(causes(0, 0, 0, 2).sentence(), None);
     assert_eq!(causes(0, 0, 0, 2).key(), None);
+    assert_eq!(causes(0, 2, 5, 0).key(), Some("past_router"));
+    assert_eq!(
+        causes(0, 3, 0, 4).key(),
+        None,
+        "router in 3 of 7 is no verdict for scripts"
+    );
+    assert_eq!(causes(0, 3, 3, 1).key(), Some("mixed"));
 }
 
 /// Every verdict's copy, read by `tests/unit/outage.test.ts` so History says the same.

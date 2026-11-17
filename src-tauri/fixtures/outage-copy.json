@@ -118,7 +118,7 @@
       "router": 3,
       "unknown": 4
     },
-    "key": "router",
+    "key": null,
     "name": "partly router",
     "notice": null,
     "place": "partly at your router",
@@ -132,7 +132,7 @@
       "router": 0,
       "unknown": 1
     },
-    "key": "past_router",
+    "key": null,
     "name": "partly past router, 2 checks",
     "notice": null,
     "place": "partly past your router",

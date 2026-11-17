@@ -110,12 +110,12 @@ pub fn entry(entry: &Entry, zone: Zone) -> Value {
             "until": timestamp(*end_ms, zone),
             "minutes": end_ms.saturating_sub(*start_ms).div_ceil(60_000),
             "cause": causes.key(),
-            "checks": {
+            "checks": (!causes.is_empty()).then(|| json!({
                 "no_network": causes.no_network,
                 "router": causes.router,
                 "past_router": causes.past_router,
                 "unknown": causes.unknown,
-            },
+            })),
             "message": causes.sentence(),
         }),
     }
@@ -251,6 +251,15 @@ mod tests {
                 end_ms: 1_792_771_900_000 + 60_000,
                 causes: Causes::default(),
             },
+            Entry::Outage {
+                start_ms: 1_792_772_900_000,
+                end_ms: 1_792_772_900_000 + 7 * 60_000,
+                causes: Causes {
+                    router: 3,
+                    unknown: 4,
+                    ..Causes::default()
+                },
+            },
         ];
         assert_eq!(last(&entries, zone)["download_mbps"], 312.4);
         assert_eq!(last(&[], zone), Value::Null);
@@ -268,6 +277,16 @@ mod tests {
         assert_eq!(all[2]["message"], "Mostly past your router: 5 of 7 checks.");
         assert_eq!(all[3]["cause"], Value::Null, "an outage from before 0.8.0");
         assert_eq!(all[3]["message"], Value::Null);
-        assert_eq!(all[3]["checks"]["router"], 0);
+        assert_eq!(all[3]["checks"], Value::Null, "no counts were kept then");
+        assert_eq!(
+            all[4]["cause"],
+            Value::Null,
+            "router in 3 of 7 is no verdict"
+        );
+        assert_eq!(all[4]["checks"]["router"], 3);
+        assert_eq!(
+            all[4]["message"],
+            "At your router in 3 of 7 checks. The rest were unclear."
+        );
     }
 }

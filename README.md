@@ -95,7 +95,7 @@ weir test              # runs a full test now and prints it
 weir test --allow-metered
 ```
 
-Fields match the CSV export (`tested_at`, `download_mbps`, `latency_under_load_ms` and so on) plus `health` (`good`, `fair` or `poor`), `verdict`, `notes` and `scheduled`. Outages in `weir history` have `until`, `minutes`, `cause` (`router`, `past_router`, `no_network`, `mixed` or `null` when not known), `checks` (the counts: `no_network`, `router`, `past_router`, `unknown`) and `message` (the sentence History shows, or `null`). `weir test` refuses a hotspot or metered connection unless you pass `--allow-metered` (exit code 3), prints `{"error": …, "message": …}` and exits 1 if the test fails, and does not add the result to History. Nothing here changes History or settings.
+Fields match the CSV export (`tested_at`, `download_mbps`, `latency_under_load_ms` and so on) plus `health` (`good`, `fair` or `poor`), `verdict`, `notes` and `scheduled`. Outages in `weir history` have `until`, `minutes`, `cause` (`router`, `past_router`, `no_network`, `mixed`, or `null` when not known or most checks were unclear), `checks` (the counts: `no_network`, `router`, `past_router`, `unknown`; `null` for outages recorded before 0.8.0) and `message` (the sentence History shows, or `null`). `weir test` refuses a hotspot or metered connection unless you pass `--allow-metered` (exit code 3), prints `{"error": …, "message": …}` and exits 1 if the test fails, and does not add the result to History. Nothing here changes History or settings.
 
 ## Develop
 

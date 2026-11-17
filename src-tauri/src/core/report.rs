@@ -230,7 +230,8 @@ fn plural(count: usize, one: &str, many: &str) -> String {
 }
 
 /// One line on where outages broke, or `None` when no outage has a cause on record.
-/// "Mostly" and "partly" outages count under their place; the table says which.
+/// "Mostly" outages count under their place; "partly" ones, where most checks were
+/// unclear, count as not known.
 fn where_it_broke(outages: &[(u64, u64, Causes)]) -> Option<String> {
     let mut by_place = [
         (place(Cause::PastRouter), 0_usize),
@@ -240,7 +241,7 @@ fn where_it_broke(outages: &[(u64, u64, Causes)]) -> Option<String> {
     let (mut mixed, mut unknown) = (0, 0);
     for (_, _, causes) in outages {
         let cause = match causes.verdict() {
-            None => {
+            None | Some(Verdict::Partly { .. }) => {
                 unknown += 1;
                 continue;
             }
@@ -248,9 +249,7 @@ fn where_it_broke(outages: &[(u64, u64, Causes)]) -> Option<String> {
                 mixed += 1;
                 continue;
             }
-            Some(
-                Verdict::All(cause) | Verdict::Mostly { cause, .. } | Verdict::Partly { cause, .. },
-            ) => cause,
+            Some(Verdict::All(cause) | Verdict::Mostly { cause, .. }) => cause,
         };
         if let Some(slot) = by_place.iter_mut().find(|(name, _)| *name == place(cause)) {
             slot.1 += 1;

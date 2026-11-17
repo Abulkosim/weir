@@ -4,7 +4,7 @@
 use crate::{
     core::{
         backends::{cloudflare::Cloudflare, Backend, Connection},
-        outage::{classify, Check},
+        outage::{classify_on, Check},
         probe,
     },
     runtime::Runtime,
@@ -40,6 +40,7 @@ pub fn start(app: AppHandle, runtime: Arc<Runtime>) {
             if runtime.testing() {
                 continue;
             }
+            let changes = runtime.network_changes();
             let path = runtime.path();
             if path.is_some_and(|path| !path.online) {
                 runtime.watch_tick(&app, Check::Offline { from_path: false });
@@ -63,7 +64,8 @@ pub fn start(app: AppHandle, runtime: Arc<Runtime>) {
                 };
                 Check::Up { router_now }
             } else {
-                Check::Down(classify(probe::where_broken(path).await))
+                let signals = probe::where_broken(path).await;
+                Check::Down(classify_on(signals, runtime.network_changes() == changes))
             };
             if runtime.view().settings.watch_outages {
                 runtime.watch_tick(&app, check);

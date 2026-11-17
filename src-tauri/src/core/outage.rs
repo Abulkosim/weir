@@ -45,6 +45,15 @@ pub fn classify(signals: Signals) -> Cause {
     }
 }
 
+/// A check whose probes straddled a network change can't say where it broke.
+pub fn classify_on(signals: Signals, same_network: bool) -> Cause {
+    if same_network {
+        classify(signals)
+    } else {
+        Cause::Unknown
+    }
+}
+
 /// How many checks of one outage broke where. Stored in History.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -242,12 +251,12 @@ impl Causes {
     }
 
     /// A stable key for scripts: `router`, `past_router`, `no_network` or `mixed`.
+    /// `None` when most checks were unclear: one place in a minority is no verdict.
     pub fn key(&self) -> Option<&'static str> {
         match self.verdict()? {
-            Verdict::All(cause) | Verdict::Mostly { cause, .. } | Verdict::Partly { cause, .. } => {
-                Some(key(cause))
-            }
+            Verdict::All(cause) | Verdict::Mostly { cause, .. } => Some(key(cause)),
             Verdict::Mixed => Some("mixed"),
+            Verdict::Partly { .. } => None,
         }
     }
 }
@@ -305,7 +314,7 @@ pub enum Check {
     /// The internet did not answer, and this is where it broke.
     Down(Cause),
     /// The OS reports no network path: from the minute check, or from a path update,
-    /// which can arrive in bursts and is counted only as the first sign of an outage.
+    /// which can arrive in bursts and is counted once per spell without a network.
     Offline { from_path: bool },
 }
 
@@ -318,6 +327,8 @@ pub struct Watch {
     causes: Causes,
     /// The network changed since the first failure, so router silence can't be re-checked.
     router_unverifiable: bool,
+    /// This spell without a network is already counted.
+    offline_counted: bool,
 }
 
 impl Watch {
@@ -334,6 +345,7 @@ impl Watch {
         self.first_failure_ms = None;
         self.causes = Causes::default();
         self.router_unverifiable = false;
+        self.offline_counted = false;
     }
 
     /// Closes an outage across a sleep at the last moment it was observed. Router
@@ -380,6 +392,7 @@ impl Watch {
     fn on_down(&mut self, cause: Cause, at_ms: u64) -> Option<Event> {
         self.failures += 1;
         self.causes.add(cause);
+        self.offline_counted = false;
         let first = *self.first_failure_ms.get_or_insert(at_ms);
         if self.outage_since_ms.is_none() && self.failures >= FAILURES_TO_START {
             self.outage_since_ms = Some(first);
@@ -390,8 +403,9 @@ impl Watch {
 
     /// The OS lost every network path: that is an outage at once, no second check needed.
     fn on_offline(&mut self, from_path: bool, at_ms: u64) -> Option<Event> {
-        if !from_path || self.causes.is_empty() {
+        if !from_path || !self.offline_counted {
             self.causes.add(Cause::NoNetwork);
+            self.offline_counted = true;
         }
         if self.outage_since_ms.is_some() {
             return None;

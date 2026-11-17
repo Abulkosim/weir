@@ -152,18 +152,20 @@ Off by default. Settings → Outages → Watch for outages ([`monitor.rs`](../sr
   |---|---|---|---|
   | no network path (Wi-Fi off, cable out) | – | – | no network |
   | a path | answered | not asked | past your router |
-  | a path | silent | answered | past your router |
-  | a path | silent | silent or none | at your router |
-  | a path | not asked: no gateway, IPv6 only, VPN or other tunnel, cellular, or out of time | – | unclear |
+  | a path | silent | answered, and it is the router or past it | past your router |
+  | a path | silent | silent, none, or on the home network | at your router |
+  | a path | not asked: no gateway, IPv6 only, a public gateway (the provider's), VPN or other tunnel, cellular, or out of time | – | unclear |
+  | a path that changed while the check ran | – | – | unclear |
 
+- A DNS server elsewhere on the home network (a Pi-hole, a NAS) or on this computer can answer while the router is down, so its reply proves nothing and it isn't asked. VPN adapters are found by type, and by name for those that report as plain Ethernet (TAP, Wintun, WireGuard, AnyConnect and similar).
 - The router gets 2 probes (ICMP, or TCP to ports 80, 443 and 53 where ICMP isn't allowed), not the 5 of **Check connection**. The DNS server is asked only when the router is silent, at most twice, and any reply counts, even "server failure": a router forwarding DNS during an upstream outage still answers. Each stage has its own time limit (1 s, 5 s, 3.5 s); a limit hit reads as unclear, never as silence.
-- Only one router probe runs at a time, and on macOS only replies from the router's address count, so **Check connection** or a `ping` in Terminal can't be mistaken for the router answering.
-- OS path updates arrive in bursts. They count as one "no network" check only when nothing else has been counted yet; after that only the minute checks count, so "5 of 7 checks" means 7 checks.
+- Only one router probe runs at a time, and on macOS only replies from the router's address count, so **Check connection** or a `ping` in Terminal can't be mistaken for the router answering. A watch probe waits up to 12 s for one already running (unclear if it can't start), and a probe cut short keeps the next one waiting until its ICMP socket is closed.
+- OS path updates arrive in bursts. Each spell without a network counts as one "no network" check, however many updates it sends, even after a failed check: a Wi-Fi drop right after one failed check is never put down as past the router. Minute checks that find no network count each.
 - **Router blame needs proof.** A router can ignore pings, so silence alone is weak. When the internet is back, Weir asks the router once more: router blame stands only if it answers then, on the same network, without a sleep in between. If it stays silent, the network changed, or the outage closed across a sleep, those checks become unclear.
 - **Verdict** for History, the notification, the report, the CSV and `weir history`, over all checks of the outage (unclear included):
   - every check in one place: "Your router was reachable throughout. The break was past it."
   - more than half in one place: "Mostly past your router: 5 of 7 checks."
-  - one place, the rest unclear: "Past your router in 3 of 7 checks. The rest were unclear."
+  - one place, the rest unclear: "Past your router in 3 of 7 checks. The rest were unclear." This is no verdict: the report counts it under "Not known" and `weir history` gives `cause: null`.
   - more than one place, none over half: "Checks disagreed: 3 of 7 at your router, 3 past it, 1 unclear."
   - only unclear checks: nothing is said.
 - History keeps only the four counts, never the router or DNS address, Wi-Fi name or IP. History files stay version 1: Weir 0.7.3 and earlier ignore the counts, so a downgrade keeps working and only loses where outages broke.

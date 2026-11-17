@@ -14,7 +14,10 @@ use crate::core::{
 use serde::Serialize;
 use std::{
     path::PathBuf,
-    sync::{atomic::Ordering, Arc, Mutex},
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc, Mutex,
+    },
 };
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -122,6 +125,8 @@ pub struct Runtime {
     history: Mutex<History>,
     store: Store,
     watch: Mutex<Watch>,
+    /// Counts network changes, so a probe can tell whether one happened while it ran.
+    network_changes: AtomicU64,
     pub monitor_wake: tokio::sync::Notify,
 }
 
@@ -174,6 +179,7 @@ impl Runtime {
             history: Mutex::new(history),
             store,
             watch: Mutex::new(Watch::default()),
+            network_changes: AtomicU64::new(0),
             monitor_wake: tokio::sync::Notify::new(),
         }
     }
@@ -260,6 +266,10 @@ impl Runtime {
             .lock()
             .map(|control| control.is_some())
             .unwrap_or(false)
+    }
+
+    pub fn network_changes(&self) -> u64 {
+        self.network_changes.load(Ordering::Relaxed)
     }
 
     pub fn path(&self) -> Option<Path> {
@@ -393,6 +403,7 @@ impl Runtime {
             .ok()
             .and_then(|mut current| current.replace(path));
         if previous.is_some_and(|previous| previous.identity() != path.identity()) {
+            self.network_changes.fetch_add(1, Ordering::Relaxed);
             if let Some(control) = self.control.lock().ok().and_then(|control| control.clone()) {
                 control.network_changed.store(true, Ordering::Relaxed);
             }
