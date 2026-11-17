@@ -275,6 +275,14 @@ fn where_it_broke(outages: &[(u64, u64, Causes)]) -> Option<String> {
     Some(line)
 }
 
+/// An outage in the table, for example "No internet until 14:09 · 7 min · past your router".
+fn outage_row(until: &str, minutes: u64, causes: &Causes) -> String {
+    match causes.place() {
+        Some(place) => format!("No internet until {until} · {minutes} min · {place}"),
+        None => format!("No internet until {until} · {minutes} min"),
+    }
+}
+
 /// Plain sentences for the "What this shows" section.
 pub fn findings(summary: &Summary, options: &Options) -> Vec<String> {
     let zone = options.zone;
@@ -776,13 +784,7 @@ fn table(writer: &mut Writer, summary: &Summary, options: &Options) {
                 } else {
                     end.format("%-d %b %H:%M").to_string()
                 };
-                let mut text = format!(
-                    "No internet until {until} · {} min",
-                    minutes(*start_ms, *end_ms)
-                );
-                if let Some(place) = causes.place() {
-                    text = format!("{text} · {place}");
-                }
+                let text = outage_row(&until, minutes(*start_ms, *end_ms), causes);
                 page.text(
                     170.0,
                     y,

@@ -226,10 +226,21 @@ fn findings_say_where_outages_broke() {
 #[test]
 fn table_rows_name_where_an_outage_broke() {
     let entries = vec![outage(1, causes(0, 0, 5, 2)), outage(2, Causes::default())];
-    let bytes = pdf(&entries, &options(PLAN)).unwrap();
-    let text = String::from_utf8_lossy(&bytes);
-    assert!(text.contains(" mostly past your router)"));
-    assert_eq!(text.matches("past your router)").count(), 1);
+    assert!(pdf(&entries, &options(PLAN)).is_some());
+    assert_eq!(
+        outage_row("14:09", 7, &causes(0, 0, 5, 2)),
+        "No internet until 14:09 · 7 min · mostly past your router"
+    );
+    assert_eq!(
+        outage_row("14:09", 7, &causes(0, 3, 3, 1)),
+        "No internet until 14:09 · 7 min · checks disagreed"
+    );
+    assert_eq!(
+        outage_row("14:09", 7, &Causes::default()),
+        "No internet until 14:09 · 7 min"
+    );
+    let longest = outage_row("21 Oct 14:09", 1_440, &causes(0, 0, 5, 2));
+    assert!(canvas::width(&longest, Font::Regular, 9.0) <= RIGHT - 170.0);
 }
 
 #[test]
