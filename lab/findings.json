@@ -1,5 +1,142 @@
 [
   {
+    "id": "F-1",
+    "title": "A gigabit upload hits the data cap before the steady window is long enough",
+    "status": "open",
+    "where": "src-tauri/src/core/stats.rs:354, src-tauri/src/core/stats.rs:306, src-tauri/src/core/speedtest.rs:60",
+    "cause": "On gig-5 every upload ends as {gig-5.errors}. The socket counter, which includes send-buffer fill, reaches UPLOAD_CAP_MB well under two seconds into the phase, so the steady window that starts at one second is shorter than the one second a capped result needs, and Tracker::result returns TooShort. The user sees a failed upload on a link that carries {gig-5.download.weir} Mbps down without trouble. Fix in its own pull request: let a capped upload keep going on time once the cap is near, or size the cap from the download result.",
+    "expect": [
+      {
+        "profile": "gig-5",
+        "metric": "validity"
+      },
+      {
+        "profile": "gig-5",
+        "metric": "upload.wire"
+      },
+      {
+        "profile": "gig-5",
+        "metric": "upload.capacity"
+      },
+      {
+        "profile": "gig-5",
+        "metric": "upload.physics"
+      },
+      {
+        "profile": "gig-5",
+        "metric": "loaded.upload"
+      }
+    ]
+  },
+  {
+    "id": "F-2",
+    "title": "Slow uploads are reported as stalled",
+    "status": "open",
+    "where": "src-tauri/src/core/stats.rs:303, src-tauri/src/core/stats.rs:8, src-tauri/src/core/speedtest.rs:65",
+    "cause": "On slow-5 every upload ends as {slow-5.errors}, and on geo-250 as {geo-250.errors}. Each stream's first request is min_request bytes; the whole request goes into the socket send buffer at once, so the socket counter stops growing while the link drains it. At these upload rates that takes longer than STALL_MS, and Tracker::decide fails the upload as stalled although bytes are still arriving at the server. Fix in its own pull request: count stalls from bytes acknowledged or from completed requests, or size the first request from the download rate.",
+    "expect": [
+      {
+        "profile": "slow-5",
+        "metric": "validity"
+      },
+      {
+        "profile": "slow-5",
+        "metric": "upload.wire"
+      },
+      {
+        "profile": "slow-5",
+        "metric": "upload.capacity"
+      },
+      {
+        "profile": "slow-5",
+        "metric": "upload.physics"
+      },
+      {
+        "profile": "slow-5",
+        "metric": "loaded.upload"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "validity"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "upload.wire"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "upload.capacity"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "upload.physics"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "loaded.upload"
+      }
+    ]
+  },
+  {
+    "id": "F-3",
+    "title": "A gigabit test uses more data than the up-to estimate promises",
+    "status": "open",
+    "where": "src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441, src-tauri/src/core/speedtest.rs:415",
+    "cause": "Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to {gig-5.data.mb} MB and on gig-60 up to {gig-60.data.mb} MB of IP traffic. The caps are checked once per tick, so a fast link overshoots them, bytes still in flight when the streams are aborted are not counted, and WIRE_OVERHEAD does not cover ACKs and headers at this rate. Weir itself counted {gig-60.honesty.pct} % of the payload on gig-60. Fix in its own pull request: stop the streams at the cap rather than on the next tick, count the overshoot, and raise the estimate or lower the caps.",
+    "expect": [
+      {
+        "profile": "gig-5",
+        "metric": "data.ceiling"
+      },
+      {
+        "profile": "gig-60",
+        "metric": "data.ceiling"
+      }
+    ]
+  },
+  {
+    "id": "F-4",
+    "title": "A far gigabit upload reads low because the cap ends it during the ramp",
+    "status": "open",
+    "where": "src-tauri/src/core/speedtest.rs:60, src-tauri/src/core/speedtest.rs:62, src-tauri/src/core/stats.rs:350",
+    "cause": "On gig-60 Weir's upload reads {gig-60.upload.weir} Mbps against iperf3's {gig-60.upload.truth} Mbps ({gig-60.upload.err} %), while it agrees with the wire in its own window ({gig-60.upload.wireErr} %). So the math is right and the load is short: the upload hits UPLOAD_CAP_MB a few seconds in, before cubic on four streams has reached the link rate at this round trip, and the capped result averages the ramp. Download on the same link reads {gig-60.download.err} % against iperf3 for the same reason: its cap ends the phase a few seconds in, during the ramp. Fix in its own pull request together with F-1.",
+    "expect": [
+      {
+        "profile": "gig-60",
+        "metric": "download.capacity"
+      },
+      {
+        "profile": "gig-60",
+        "metric": "upload.capacity"
+      }
+    ]
+  },
+  {
+    "id": "F-5",
+    "title": "Upload can read above the link when requests leave gaps",
+    "status": "open",
+    "where": "src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211",
+    "cause": "Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads {cable-100-10-cf.upload.weir} Mbps on a link whose payload ceiling is below that, against {cable-100-10.upload.weir} Mbps on the same link without server time; on mobile it reads {mobile.upload.weir} Mbps. On fiber-300-far, with long round trips, it sits {fiber-300-far.upload.wireErr} % above the wire in its own window, and on lossy-2 {lossy-2.upload.wireErr} %. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.",
+    "expect": [
+      {
+        "profile": "cable-100-10-cf",
+        "metric": "upload.physics"
+      },
+      {
+        "profile": "mobile",
+        "metric": "upload.physics"
+      },
+      {
+        "profile": "fiber-300-far",
+        "metric": "upload.wire"
+      },
+      {
+        "profile": "lossy-2",
+        "metric": "upload.wire"
+      }
+    ]
+  },
+  {
     "id": "F-doc-1",
     "title": "docs/method.md claims an upload byte cross-check the code does not do",
     "status": "open",

@@ -78,6 +78,9 @@ test('iperf3 goodput comes from receiver intervals and is checked against the en
   const up = parseIperf(fixture('iperf-up.json'))
   assert.ok(Math.abs(up.mbps - 23.92) < 1e-9)
   assert.ok(up.mismatch > 0 && up.mismatch < 0.001)
+  const unflagged = JSON.parse(fixture('iperf-up.json'))
+  unflagged.server_output_json.intervals = [0, 1, 2, 3].map(start => ({ sum: { start, end: start + 1, seconds: 1, bytes: start < 2 ? 1_000_000 : 3_000_000, omitted: false } }))
+  assert.equal(parseIperf(JSON.stringify(unflagged)).mbps, 24, 'an unflagged server omit period is dropped by time')
   assert.throws(() => parseIperf('{"error":"unable to connect to server 10.77.2.2"}'), /<addr>/)
   assert.throws(() => parseIperf('{"start":{"test_start":{"reverse":0}},"intervals":[]}'), /no receiver intervals/)
 })
@@ -150,6 +153,7 @@ function weir(numbers: Numbers): Weir {
       ipBytes: (numbers.ipMb ?? 200) * 1e6,
       payloadBytes: 100e6,
       pingSent: 400,
+      serverSpan: null,
     },
     serverBytes: { down: 0, up: 0, unknown: 0 },
     far: (numbers.idle ?? 5) > 100,

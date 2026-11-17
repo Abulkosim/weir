@@ -33,13 +33,16 @@ interface IperfJson {
  * Goodput from iperf3 -J. With -R the client is the receiver; without it the
  * receiver's intervals come from --get-server-output.
  */
-export function parseIperf(text: string): IperfResult {
+export function parseIperf(text: string, omitSeconds = 2): IperfResult {
   const json = JSON.parse(text) as IperfJson;
   if (json.error) throw new Error(`iperf3: ${json.error.replace(/\d+\.\d+\.\d+\.\d+/g, '<addr>')}`);
   const reverse = Boolean(json.start?.test_start?.reverse);
   const receiver = reverse ? json : json.server_output_json;
   if (!receiver?.intervals?.length) throw new Error('iperf3: no receiver intervals');
-  const counted = receiver.intervals.filter((interval) => interval.sum && !interval.sum.omitted);
+  // iperf3 3.16's server does not always flag its omitted intervals, so drop them by time when none are flagged.
+  const flagged = receiver.intervals.some((interval) => interval.sum?.omitted);
+  const counted = receiver.intervals.filter((interval) =>
+    interval.sum && (flagged ? !interval.sum.omitted : (interval.sum.start ?? 0) >= omitSeconds - 0.001));
   const bytes = counted.reduce((sum, interval) => sum + (interval.sum?.bytes ?? 0), 0);
   const seconds = counted.reduce((sum, interval) => sum + (interval.sum?.seconds ?? 0), 0);
   if (seconds <= 0) throw new Error('iperf3: no counted time');

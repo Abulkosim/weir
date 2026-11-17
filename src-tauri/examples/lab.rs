@@ -123,8 +123,8 @@ fn main() {
     };
     let mut plan = Plan::default();
     if args.baseline {
-        plan.download.max_bytes = 4_000 * MB;
-        plan.upload.max_bytes = 4_000 * MB;
+        plan.download.max_bytes = 100_000 * MB;
+        plan.upload.max_bytes = 100_000 * MB;
     }
     let iface = args.wire_iface.as_deref();
     let backend = Cloudflare::with_base(&args.base);

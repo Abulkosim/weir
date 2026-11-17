@@ -63,6 +63,8 @@ export interface WeirWire {
   /** TCP payload both ways on the client interface over the whole run. */
   payloadBytes: number | null;
   pingSent: number;
+  /** Server wire samples around the upload window: ms before its start, ms after its end, count. */
+  serverSpan: [number, number, number] | null;
 }
 
 export interface UploadRequest {

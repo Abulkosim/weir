@@ -217,7 +217,13 @@ export function renderMarkdown(results: Results, findings: Finding[], analysis =
 
 export function renderSummary(results: Results, analysis: Analysis): string {
   const lines = [`## Accuracy lab: ${analysis.ok ? 'passing' : 'failing'}`, '', Object.entries(analysis.counts).map(([name, count]) => `${name} ${count}`).join(' · '), ''];
-  const notable = analysis.verdicts.filter((item) => !['pass', 'report'].includes(item.status));
+  const invalid = [...new Set(analysis.verdicts.filter((item) => item.status === 'invalid-input').map((item) => item.profile))];
+  for (const id of invalid) {
+    const entry = results.profiles.find((item) => item.id === id);
+    lines.push(`- ${id}: lab input invalid (${entry?.validity.reasons.join('; ') ?? 'unknown'}); every gated check on it is invalid-input.`);
+  }
+  if (invalid.length) lines.push('');
+  const notable = analysis.verdicts.filter((item) => !['pass', 'report', 'invalid-input'].includes(item.status));
   if (notable.length) {
     lines.push('| Link | Check | Status | Suspect | Detail |', '|---|---|---|---|---|');
     for (const item of notable) lines.push(`| ${item.profile} | ${item.metric} | ${item.status}${item.finding ? ` (${item.finding})` : ''} | ${item.suspect ?? ''} | ${item.detail} |`);

@@ -12,7 +12,7 @@ import {
   reorderDelta, shape, teardown, topologyUp, unshape, type JitterMode,
 } from './net.ts';
 import {
-  cpuMax, ipBytes, jitter, median, parseIperf, parsePidStat, parsePing, parseProcStat, payloadBytes, within,
+  cpuMax, ipBytes, jitter, median, parseIperf, PROBE_TIMEOUT_MS, parsePidStat, parsePing, parseProcStat, payloadBytes, within,
   wireMbps, type CpuTimes, type PingSample, type WireSample,
 } from './parse.ts';
 import { expectedFar, forShard, order, streams, type Profile, type Step } from './profiles.ts';
@@ -224,6 +224,9 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
       ipBytes: span ? span.ip : null,
       payloadBytes: span ? span.payload : null,
       pingSent: pings.length,
+      serverSpan: server.length && upWindow?.startUnixMs
+        ? [round(upWindow.startUnixMs - server[0]!.atMs, 0)!, round(server[server.length - 1]!.atMs - upWindow.endUnixMs, 0)!, server.length]
+        : null,
     },
     serverBytes: { down: stats.down_bytes, up: stats.up_bytes, unknown: stats.unknown },
     far: typeof latency === 'number' ? latency > 100 : null,
@@ -298,7 +301,8 @@ async function runProfile(entry: Profile): Promise<ProfileResult> {
   const txBefore = await txDropped();
   const nstatBefore = { c: await nstat(NS.client), s: await nstat(NS.server) };
 
-  const delaySamples = await idlePing(41);
+  await drain();
+  const delaySamples = (await idlePing(81)).filter((rtt) => rtt < PROBE_TIMEOUT_MS);
   const repeats: Repeat[] = [];
   const count = repeatOverride > 0 ? repeatOverride : entry.repeats;
   for (let index = 0; index < count; index++) {
@@ -315,10 +319,15 @@ async function runProfile(entry: Profile): Promise<ProfileResult> {
     log(`  ${index + 1}/${count} ${summarize(entry, repeat)}`);
   }
 
-  const netem = async (dev: string) => (await qdisc(dev)).find((stats) => stats.kind === 'netem');
-  const rcNetem = await netem(IFACE.routerToClient);
-  const rsNetem = await netem(IFACE.routerToServer);
-  const lossOf = (stats: typeof rcNetem) => (stats && stats.packets + stats.drops > 0 ? stats.drops / (stats.packets + stats.drops) : null);
+  // netem's drop counter also counts its tbf child's tail drops; only the difference is netem's own loss.
+  const lossOf = async (dev: string) => {
+    const stats = await qdisc(dev);
+    const netemStats = stats.find((entry) => entry.kind === 'netem');
+    const tbfStats = stats.find((entry) => entry.kind === 'tbf');
+    if (!netemStats || netemStats.packets + netemStats.drops === 0) return null;
+    return (netemStats.drops - (tbfStats?.drops ?? 0)) / (netemStats.packets + netemStats.drops);
+  };
+  const loss = { down: await lossOf(IFACE.routerToClient), up: await lossOf(IFACE.routerToServer) };
   const reorder = reorderDelta(nstatBefore.c, await nstat(NS.client)) + reorderDelta(nstatBefore.s, await nstat(NS.server));
   const softnet = softnetDropped() - softnetBefore;
   const tx = (await txDropped()) - txBefore;
@@ -332,7 +341,7 @@ async function runProfile(entry: Profile): Promise<ProfileResult> {
     shard: entry.shard,
     planned: count,
     offloads: 'off',
-    validity: validity(entry, delaySamples, truths, { down: lossOf(rcNetem), up: lossOf(rsNetem) }, softnet, tx, reorder),
+    validity: validity(entry, delaySamples, truths, loss, softnet, tx, reorder),
     repeats,
   };
 }

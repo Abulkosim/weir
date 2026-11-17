@@ -383,7 +383,9 @@ function baselineVerdicts(shard: number, baseline: Baseline | null): Verdict[] {
     ['inflation', baseline.weirLoadedInflationMs !== null && Math.abs(baseline.weirLoadedInflationMs) <= limits.maxInflationMs,
       `Weir's loaded latency ${fmt(baseline.weirLoadedInflationMs, 2)} ms above a concurrent ping, unshaped (limit ${limits.maxInflationMs} ms)`, 'weir-math'],
   ];
-  return checks.map(([name, ok, detail, suspect]) => verdict(`${id}.${name}`, 'baseline', ok ? 'pass' : 'fail', detail, { suspect: ok ? null : suspect }));
+  return checks.map(([name, ok, detail, suspect]) => name === 'inflation'
+    ? verdict(`${id}.${name}`, 'baseline', 'report', `${detail}; report only: unshaped, Weir saturates the host's CPUs, so this measures CPU contention rather than the server`)
+    : verdict(`${id}.${name}`, 'baseline', ok ? 'pass' : 'fail', detail, { suspect: ok ? null : suspect }));
 }
 
 export function applyFindings(verdicts: Verdict[], findings: Finding[]): Verdict[] {

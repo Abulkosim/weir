@@ -90,7 +90,7 @@ export function offloads(on: boolean): Argv[] {
 const ms = (value: number) => `${Number(value.toFixed(3))}ms`;
 
 export function tbfBurst(mbps: number): number {
-  return Math.max(32_000, Math.round((mbps * 1e6) / 8 * 0.001));
+  return Math.max(2 * FRAME, Math.round((mbps * 1e6) / 8 * 0.001));
 }
 
 export function tbfLimit(mbps: number, bufferMs: number): number {
