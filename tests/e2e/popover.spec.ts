@@ -274,10 +274,27 @@ test('early in a month, history sums up the month before', async ({ page }) => {
   await expect(page.getByText(/^Month before/)).toHaveCount(0)
 })
 
-test('outages appear in history with their length', async ({ page }) => {
+test('outages appear in history with their length and where they broke', async ({ page }) => {
   await page.goto('/?demo=1&page=history')
   await expect(page.getByText(/No internet until .* · 7 min/)).toBeVisible()
+  await expect(page.locator('.history-row').filter({ hasText: '· 7 min' }).locator('.history-cause')).toHaveText('Your router was reachable throughout. The break was past it.')
 })
+
+for (const theme of themes) {
+  test(`each outage cause reads plainly in history in ${theme}`, async ({ page }, info) => {
+    await page.clock.setFixedTime(new Date(2026, 10, 20, 20, 0))
+    await page.goto(`/?demo=1&page=history&state=outages&theme=${theme}`)
+    const cause = (minutes: number) => page.locator('.history-row').filter({ hasText: `· ${minutes} min` }).locator('.history-cause')
+    await expect(cause(12)).toHaveText('Your router didn’t answer. The problem was at home: the Wi-Fi, a cable or the router.')
+    await expect(cause(3)).toHaveText('Your computer had no network connection.')
+    await expect(cause(9)).toHaveText('Mostly past your router: 5 of 7 checks.')
+    await expect(cause(5)).toHaveText('At your router in 3 of 7 checks. The rest were unclear.')
+    await expect(cause(6)).toHaveText('Checks disagreed: 3 of 7 at your router, 3 past it, 1 unclear.')
+    await expect(cause(4)).toHaveCount(0)
+    await page.locator('.history-row').filter({ hasText: '· 12 min' }).scrollIntoViewIfNeeded()
+    await shoot(page, 'outages', info.outputPath(`outages-${theme}.png`))
+  })
+}
 
 test('scheduled tests show their data cost and are marked in the result and history', async ({ page }) => {
   await page.goto('/?demo=1&page=settings')

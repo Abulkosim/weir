@@ -97,10 +97,12 @@ export const viewSchema = z.object({
   outageSinceMs: count.nullable(),
 })
 
+export const causesSchema = z.object({ noNetwork: count, router: count, pastRouter: count, unknown: count })
+
 export const entrySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('result'), report: reportSchema }),
   z.object({ kind: z.literal('failed'), atMs: count, error: testErrorSchema }),
-  z.object({ kind: z.literal('outage'), startMs: count, endMs: count }),
+  z.object({ kind: z.literal('outage'), startMs: count, endMs: count, causes: causesSchema.optional() }),
 ])
 export const historySchema = z.array(entrySchema).max(1_000)
 
@@ -118,6 +120,7 @@ export type Schedule = z.infer<typeof scheduleSchema>
 export type Diagnosis = z.infer<typeof diagnosisSchema>
 export type Share = z.infer<typeof shareSchema>
 export type PlanComparison = z.infer<typeof planSchema>
+export type Causes = z.infer<typeof causesSchema>
 
 export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, plan: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null, outageSinceMs: null }
 

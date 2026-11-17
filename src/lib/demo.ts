@@ -1,8 +1,8 @@
 import type { UpdateState } from './updater.ts'
 import { comparePlan } from './plan.ts'
-import { testErrorSchema, viewSchema, type Diagnosis, type Entry, type Meaning, type Report, type View } from './model.ts'
+import { entryTime, testErrorSchema, viewSchema, type Causes, type Diagnosis, type Entry, type Meaning, type Report, type View } from './model.ts'
 
-export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking', 'outage', 'scheduled', 'noplan'] as const
+export const demoStates = ['never', 'result', 'testing', 'testing-latency', 'testing-upload', 'failed', 'metered', 'offline', 'stutter', 'stale', 'capped', 'varied', 'partial', 'check-fine', 'check-isp', 'check-router', 'check-wifi', 'check-dns', 'checking', 'outage', 'outages', 'scheduled', 'noplan'] as const
 export type DemoState = (typeof demoStates)[number]
 
 const minute = 60_000
@@ -122,8 +122,10 @@ export function demoProgress(step: number): View['testing'] {
   return null
 }
 
-/** Two weeks of tests with a slow evening and one failure. */
-export function demoHistory(now: number): Entry[] {
+const causes = (router: number, pastRouter: number, noNetwork = 0, unknown = 0) => ({ noNetwork, router, pastRouter, unknown })
+
+/** Two weeks of tests with a slow evening, one failure and one outage; `outages` adds one of each cause. */
+export function demoHistory(now: number, state: string | null = null): Entry[] {
   const hour = 3_600_000
   const plan: [number, number, number, number][] = [
     [0.2, 312, 41, 14], [5, 298, 40, 15], [21, 305, 41, 14], [27, 144, 38, 31], [46, 301, 39, 15], [52, 310, 41, 13],
@@ -140,8 +142,21 @@ export function demoHistory(now: number): Entry[] {
     return { kind: 'result', report }
   })
   entries.splice(4, 0, { kind: 'failed', atMs: now - 30 * hour, error: 'stalled' })
-  entries.splice(2, 0, { kind: 'outage', startMs: now - 9 * hour, endMs: now - 9 * hour + 7 * 60_000 })
-  return entries
+  entries.splice(2, 0, { kind: 'outage', startMs: now - 9 * hour, endMs: now - 9 * hour + 7 * 60_000, causes: causes(0, 7) })
+  if (state !== 'outages') return entries
+  const outage = (hoursAgo: number, minutes: number, found?: Causes): Entry => {
+    const startMs = now - hoursAgo * hour - 23 * 60_000
+    return { kind: 'outage', startMs, endMs: startMs + minutes * 60_000, ...(found && { causes: found }) }
+  }
+  entries.push(
+    outage(1, 12, causes(4, 0)),
+    outage(2, 3, causes(0, 0, 1)),
+    outage(3, 9, causes(2, 5)),
+    outage(4, 5, causes(3, 0, 0, 4)),
+    outage(6, 6, causes(3, 3, 0, 1)),
+    outage(7, 4),
+  )
+  return entries.sort((a, b) => entryTime(b) - entryTime(a))
 }
 
 export function createDemoUpdateState(scenario: string | null): UpdateState {
