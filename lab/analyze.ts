@@ -85,9 +85,9 @@ const weirOf = (repeat: Repeat): Weir | null => (failed(repeat.weir) ? null : re
 const truthOf = (repeat: Repeat): Truth | null => (repeat.truth && !failed(repeat.truth) ? repeat.truth : null);
 const twinOf = (repeat: Repeat): Twin | null => (repeat.twin && !failed(repeat.twin) ? repeat.twin : null);
 
-/** Truth a judge can stand on: not saturated and iperf3's own sums agree. */
-export function usableTruth(truth: Truth | null): truth is Truth {
-  return !!truth && !truth.saturated && truth.mismatch.down <= 0.01 && truth.mismatch.up <= 0.01;
+/** Truth a judge can stand on: not saturated and iperf3's own sums agree for that direction. */
+export function usableTruth(truth: Truth | null, dir: 'download' | 'upload'): truth is Truth {
+  return !!truth && !truth.saturated && (dir === 'download' ? truth.mismatch.down : truth.mismatch.up) <= 0.01;
 }
 
 const pct = (value: number, reference: number) => ((value - reference) / reference) * 100;
@@ -189,12 +189,12 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
 
     const truthPairs = pairs(repeats, speed, (repeat) => {
       const truth = truthOf(repeat);
-      return usableTruth(truth) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
+      return usableTruth(truth, dir) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
     });
     const capErrors = errors(truthPairs, 'pct');
     const capMetric: Metric = `${dir}.capacity`;
     const truthValues = truthPairs.other.filter((value): value is number => typeof value === 'number');
-    const judgeProblems = repeats.filter((repeat) => truthOf(repeat) && !usableTruth(truthOf(repeat))).length;
+    const judgeProblems = repeats.filter((repeat) => truthOf(repeat) && !usableTruth(truthOf(repeat), dir)).length;
     const farMismatch = repeats.filter((repeat) => {
       const far = weirOf(repeat)?.far;
       return typeof far === 'boolean' && far !== expectedFar(shape);
@@ -230,7 +230,7 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
         const wireVerdict = out.find((v) => v.metric === metric);
         const wireVsTruth = errors(pairs(repeats, (w) => (dir === 'download' ? w.wire.downMbps : w.wire.upMbps), (repeat) => {
           const truth = truthOf(repeat);
-          return usableTruth(truth) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
+          return usableTruth(truth, dir) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
         }), 'pct');
         const wireMedian = stat(wireVsTruth)?.median ?? 0;
         if (wireVerdict?.status === 'fail') suspect = 'weir-math';
@@ -510,7 +510,10 @@ export function validity(
   }
   let rate: Validity['rate'] = null;
   if (entry.lossPct === 0 && !entry.jitter && truths.length) {
-    const ratios = truths.flatMap((truth) => [truth.downMbps / ceilingMbps(entry.down), truth.upMbps / ceilingMbps(entry.up)]);
+    const ratios = truths.flatMap((truth) => [
+      ...(usableTruth(truth, 'download') ? [truth.downMbps / ceilingMbps(entry.down)] : []),
+      ...(usableTruth(truth, 'upload') ? [truth.upMbps / ceilingMbps(entry.up)] : []),
+    ]);
     const ok = ratios.every((ratio) => ratio >= THRESHOLDS.rate.min && ratio <= THRESHOLDS.rate.max);
     rate = { ok, ratios: ratios.map((ratio) => round(ratio, 4)!), detail: 'loss-free iperf3 goodput over the shaped payload ceiling' };
     if (!ok) reasons.push(`rate: iperf3/ceiling ${ratios.map((ratio) => ratio.toFixed(3)).join(', ')}`);

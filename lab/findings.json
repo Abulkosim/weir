@@ -116,7 +116,7 @@
     "title": "Upload can read above the link when requests leave gaps",
     "status": "open",
     "where": "src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211",
-    "cause": "Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads {cable-100-10-cf.upload.weir} Mbps on a link whose payload ceiling is below that, against {cable-100-10.upload.weir} Mbps on the same link without server time; on mobile it reads {mobile.upload.weir} Mbps. On fiber-300-far, with long round trips, it sits {fiber-300-far.upload.wireErr} % above the wire in its own window, and on lossy-2 {lossy-2.upload.wireErr} %. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.",
+    "cause": "Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads {cable-100-10-cf.upload.weir} Mbps on a link whose payload ceiling is below that, against {cable-100-10.upload.weir} Mbps on the same link without server time; on mobile it reads {mobile.upload.weir} Mbps, on dsl-25-shallow {dsl-25-shallow.upload.weir} Mbps and on lossy-0.1 {lossy-0.1.upload.weir} Mbps, each at or past the physical ceiling of its link in some runs. On fiber-300-far, with long round trips, it sits {fiber-300-far.upload.wireErr} % above the wire in its own window, and on lossy-2 {lossy-2.upload.wireErr} %. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.",
     "expect": [
       {
         "profile": "cable-100-10-cf",
@@ -133,6 +133,14 @@
       {
         "profile": "lossy-2",
         "metric": "upload.wire"
+      },
+      {
+        "profile": "dsl-25-shallow",
+        "metric": "upload.physics"
+      },
+      {
+        "profile": "lossy-0.1",
+        "metric": "upload.physics"
       }
     ]
   },

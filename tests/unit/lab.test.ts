@@ -81,6 +81,13 @@ test('iperf3 goodput comes from receiver intervals and is checked against the en
   const unflagged = JSON.parse(fixture('iperf-up.json'))
   unflagged.server_output_json.intervals = [0, 1, 2, 3].map(start => ({ sum: { start, end: start + 1, seconds: 1, bytes: start < 2 ? 1_000_000 : 3_000_000, omitted: false } }))
   assert.equal(parseIperf(JSON.stringify(unflagged)).mbps, 24, 'an unflagged server omit period is dropped by time')
+  const glitch = JSON.parse(fixture('iperf-up.json'))
+  glitch.server_output_json.intervals = [
+    { sum: { start: 0, end: 1, seconds: 1, bytes: 1_000_000, omitted: true } },
+    { sum: { start: 1, end: 1, seconds: 2, bytes: 3_000_000, omitted: false } },
+    ...[1, 2, 3].map(start => ({ sum: { start, end: start + 1, seconds: 1, bytes: 3_000_000, omitted: false } })),
+  ]
+  assert.equal(parseIperf(JSON.stringify(glitch)).mbps, 24, 'an omit-boundary interval with two seconds and one second of bytes is dropped')
   assert.throws(() => parseIperf('{"error":"unable to connect to server 10.77.2.2"}'), /<addr>/)
   assert.throws(() => parseIperf('{"start":{"test_start":{"reverse":0}},"intervals":[]}'), /no receiver intervals/)
 })

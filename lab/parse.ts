@@ -18,7 +18,7 @@ export interface IperfResult {
 }
 
 interface IperfInterval {
-  sum?: { bytes?: number; seconds?: number; omitted?: boolean; start?: number };
+  sum?: { bytes?: number; seconds?: number; omitted?: boolean; start?: number; end?: number };
 }
 
 interface IperfJson {
@@ -41,8 +41,15 @@ export function parseIperf(text: string, omitSeconds = 2): IperfResult {
   if (!receiver?.intervals?.length) throw new Error('iperf3: no receiver intervals');
   // iperf3 3.16's server does not always flag its omitted intervals, so drop them by time when none are flagged.
   const flagged = receiver.intervals.some((interval) => interval.sum?.omitted);
-  const counted = receiver.intervals.filter((interval) =>
-    interval.sum && (flagged ? !interval.sum.omitted : (interval.sum.start ?? 0) >= omitSeconds - 0.001));
+  // It can also report the omit boundary as one interval whose seconds span two intervals but whose bytes
+  // cover one (start equals end); such inconsistent intervals are dropped.
+  const counted = receiver.intervals.filter((interval) => {
+    const sum = interval.sum;
+    if (!sum) return false;
+    const span = (sum.end ?? 0) - (sum.start ?? 0);
+    if (Math.abs(span - (sum.seconds ?? 0)) > 0.05) return false;
+    return flagged ? !sum.omitted : (sum.start ?? 0) >= omitSeconds - 0.001;
+  });
   const bytes = counted.reduce((sum, interval) => sum + (interval.sum?.bytes ?? 0), 0);
   const seconds = counted.reduce((sum, interval) => sum + (interval.sum?.seconds ?? 0), 0);
   if (seconds <= 0) throw new Error('iperf3: no counted time');

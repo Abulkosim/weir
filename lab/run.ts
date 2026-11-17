@@ -186,6 +186,7 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
     return { error: 'unreadable output' };
   }
   const pings = parsePing(pingDone.stdout, 50);
+  await sleep(200);
   const client: WireSample[] = output.trace.filter((row) => row.wire).map((row) => ({ atMs: row.unixMs, ...row.wire! }));
   const server = serverSamples(await serverControl('/lab/wire'));
   const stats = JSON.parse(await serverControl('/lab/stats')) as { down_bytes: number; up_bytes: number; unknown: number };
