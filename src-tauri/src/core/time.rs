@@ -1,4 +1,7 @@
-use chrono::{DateTime, FixedOffset, Local};
+use jiff::{
+    tz::{Offset, TimeZone},
+    Timestamp, Zoned,
+};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn unix_ms() -> u64 {
@@ -12,22 +15,35 @@ pub fn unix_ms() -> u64 {
 #[derive(Clone, Copy, Debug)]
 pub enum Zone {
     Local,
-    Fixed(FixedOffset),
+    Fixed(Offset),
 }
 
 impl Zone {
-    pub fn at(self, ms: u64) -> DateTime<FixedOffset> {
-        let time = DateTime::from_timestamp_millis(ms as i64).unwrap_or_default();
+    /// A fixed zone `hours` east of UTC.
+    pub fn hours(hours: i8) -> Self {
+        Self::Fixed(Offset::constant(hours))
+    }
+
+    pub fn at(self, ms: u64) -> Zoned {
+        let time = i64::try_from(ms)
+            .ok()
+            .and_then(|ms| Timestamp::from_millisecond(ms).ok())
+            .unwrap_or(Timestamp::UNIX_EPOCH);
         match self {
-            Self::Local => time.with_timezone(&Local).fixed_offset(),
-            Self::Fixed(offset) => time.with_timezone(&offset),
+            Self::Local => time.to_zoned(TimeZone::system()),
+            Self::Fixed(offset) => time.to_zoned(TimeZone::fixed(offset)),
         }
     }
 }
 
+/// "2026-10-22T14:02:00+05:00": seconds and the offset that applied on that date.
+pub fn rfc3339(zone: Zone, ms: u64) -> String {
+    zone.at(ms).strftime("%Y-%m-%dT%H:%M:%S%:z").to_string()
+}
+
 /// Local "14:02".
 pub fn clock(ms: u64) -> String {
-    Zone::Local.at(ms).format("%H:%M").to_string()
+    Zone::Local.at(ms).strftime("%H:%M").to_string()
 }
 
 #[cfg(test)]
@@ -36,7 +52,17 @@ mod tests {
 
     #[test]
     fn fixed_zone_shifts_the_clock() {
-        let zone = Zone::Fixed(FixedOffset::east_opt(5 * 3600).unwrap());
-        assert_eq!(zone.at(0).format("%H:%M").to_string(), "05:00");
+        let zone = Zone::hours(5);
+        assert_eq!(zone.at(0).strftime("%H:%M").to_string(), "05:00");
+        assert_eq!(rfc3339(zone, 0), "1970-01-01T05:00:00+05:00");
+        assert_eq!(rfc3339(Zone::hours(0), 1_500), "1970-01-01T00:00:01+00:00");
+    }
+
+    #[test]
+    fn times_past_the_calendar_fall_back_to_the_epoch() {
+        assert_eq!(
+            rfc3339(Zone::hours(0), u64::MAX),
+            "1970-01-01T00:00:00+00:00"
+        );
     }
 }

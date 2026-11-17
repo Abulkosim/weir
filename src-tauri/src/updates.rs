@@ -1,5 +1,5 @@
 use crate::runtime::Runtime;
-use chrono::{DateTime, TimeDelta, Utc};
+use jiff::{SignedDuration, Timestamp};
 use serde::Serialize;
 use std::{
     sync::{Arc, Mutex},
@@ -143,12 +143,12 @@ async fn check(app: &AppHandle, updates: &Updates, quiet: bool) -> Result<Update
 const FIRST_CHECK_DELAY: Duration = Duration::from_secs(120);
 const DUE_CHECK_INTERVAL: Duration = Duration::from_secs(15 * 60);
 
-pub fn due(last: Option<&str>, now: DateTime<Utc>) -> bool {
-    let Some(last) = last.and_then(|value| DateTime::parse_from_rfc3339(value).ok()) else {
+pub fn due(last: Option<&str>, now: Timestamp) -> bool {
+    let Some(last) = last.and_then(|value| value.parse::<Timestamp>().ok()) else {
         return true;
     };
-    let elapsed = now.signed_duration_since(last);
-    elapsed < TimeDelta::zero() || elapsed >= TimeDelta::hours(24)
+    let elapsed = now.duration_since(last);
+    elapsed.is_negative() || elapsed >= SignedDuration::from_hours(24)
 }
 
 pub fn start_background_checks(app: AppHandle, runtime: Arc<Runtime>, wake: Arc<Notify>) {
@@ -167,7 +167,7 @@ pub fn start_background_checks(app: AppHandle, runtime: Arc<Runtime>, wake: Arc<
 
 async fn background_check(app: &AppHandle, runtime: &Runtime, last: &mut Option<String>) {
     let enabled = runtime.view().settings.auto_check_updates;
-    let now = Utc::now();
+    let now = Timestamp::now();
     if !enabled || !due(last.as_deref(), now) {
         return;
     }
@@ -184,7 +184,7 @@ async fn background_check(app: &AppHandle, runtime: &Runtime, last: &mut Option<
         return;
     }
     if check(app, &updates, true).await.is_ok() {
-        *last = Some(now.to_rfc3339());
+        *last = Some(now.to_string());
     }
 }
 
@@ -294,7 +294,7 @@ mod tests {
 
     #[test]
     fn background_checks_are_due_at_most_once_a_day() {
-        let now: DateTime<Utc> = "2026-10-22T12:00:00Z".parse().unwrap();
+        let now: Timestamp = "2026-10-22T12:00:00Z".parse().unwrap();
         assert!(due(None, now));
         assert!(due(Some("not a time"), now));
         assert!(due(Some(""), now));

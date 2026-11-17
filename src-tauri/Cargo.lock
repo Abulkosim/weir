@@ -5312,8 +5312,8 @@ version = "0.7.3"
 dependencies = [
  "block2",
  "bytes",
- "chrono",
  "futures-util",
+ "jiff",
  "netdev",
  "objc2",
  "objc2-app-kit",
