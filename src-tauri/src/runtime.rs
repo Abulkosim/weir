@@ -245,6 +245,15 @@ impl Runtime {
         self.outage_events(app, events);
     }
 
+    /// A tick for a check that began at `started_ms`; see `Watch::on_from`.
+    pub fn watch_tick_from(&self, app: &AppHandle, check: Check, started_ms: u64) {
+        let events = match self.watch.lock() {
+            Ok(mut watch) => watch.on_from(check, started_ms, unix_ms()),
+            Err(_) => return,
+        };
+        self.outage_events(app, events);
+    }
+
     /// The internet is back after an outage blamed on the router: ask the router once more.
     pub fn router_recheck_due(&self) -> bool {
         self.watch
