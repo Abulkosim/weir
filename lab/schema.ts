@@ -81,6 +81,8 @@ export interface Weir {
   wire: WeirWire;
   serverBytes: { down: number; up: number; unknown: number };
   far: boolean | null;
+  /** Duplicate segments the receiver saw during the run (DSACKs sent), per direction. */
+  duplicates?: { down: number; up: number };
   cpuMax: number;
   saturated: boolean;
   uploadRequests?: UploadRequest[];

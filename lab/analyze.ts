@@ -87,7 +87,8 @@ const twinOf = (repeat: Repeat): Twin | null => (repeat.twin && !failed(repeat.t
 
 /** Truth a judge can stand on: not saturated and iperf3's own sums agree for that direction. */
 export function usableTruth(truth: Truth | null, dir: 'download' | 'upload'): truth is Truth {
-  return !!truth && !truth.saturated && (dir === 'download' ? truth.mismatch.down : truth.mismatch.up) <= 0.01;
+  return !!truth && !truth.saturated
+    && (dir === 'download' ? truth.mismatch.down : truth.mismatch.up) <= THRESHOLDS.iperfConsistency.maxPct / 100;
 }
 
 const pct = (value: number, reference: number) => ((value - reference) / reference) * 100;
@@ -457,6 +458,8 @@ export function facts(results: Results, verdicts: Verdict[]): Record<string, Rec
       row[`${dir}.rough`] = String(weirs.filter((w) => (dir === 'download' ? w?.report?.download.rough : w?.report?.upload?.rough)).length);
       row[`${dir}.capped`] = String(weirs.filter((w) => (dir === 'download' ? w?.report?.download.capped : w?.report?.upload?.capped)).length);
     }
+    put('dupDown', stat(weirs.map((w) => w?.duplicates?.down))?.median, 0);
+    put('dupUp', stat(weirs.map((w) => w?.duplicates?.up))?.median, 0);
     put('idle.weir', stat(weirs.map((w) => w?.report?.latency?.medianMs))?.median);
     put('idle.truth', stat(truths.map((t) => t?.idleMs))?.median);
     put('data.mb', stat(weirs.map((w) => (w?.wire.ipBytes ?? NaN) / 1e6))?.max, 0);

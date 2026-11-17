@@ -141,6 +141,36 @@
       {
         "profile": "lossy-0.1",
         "metric": "upload.physics"
+      },
+      {
+        "profile": "mobile",
+        "metric": "upload.wire"
+      }
+    ]
+  },
+  {
+    "id": "F-6",
+    "title": "Far uploads leave the link idle between requests",
+    "status": "open",
+    "where": "src-tauri/src/core/speedtest.rs:68, src-tauri/src/core/speedtest.rs:63, src-tauri/src/core/speedtest.rs:310",
+    "cause": "On fiber-300-far Weir's upload reads {fiber-300-far.upload.weir} Mbps against iperf3's {fiber-300-far.upload.truth} Mbps ({fiber-300-far.upload.err} %), and the wire in Weir's own window agrees with Weir ({fiber-300-far.upload.wireErr} %). So the number is honest about what Weir sent, but Weir's own load under-fills a far link: each stream waits a full round trip for the response before it starts its next half-second request, and at this round trip that idle time is a large share of each request. Fix in its own pull request: size upload requests by round trip as well as rate, or pipeline the next request.",
+    "expect": [
+      {
+        "profile": "fiber-300-far",
+        "metric": "upload.capacity"
+      }
+    ]
+  },
+  {
+    "id": "F-7",
+    "title": "Weir's download on a satellite-like link sometimes reads below the wire",
+    "status": "open",
+    "where": "src-tauri/src/core/backends/cloudflare.rs:176, src-tauri/src/core/stats.rs:233",
+    "cause": "On geo-250 one run in the third lab run read below the client interface's payload rate over Weir's own steady window, past the downloadWire limit; the other runs agree within it (median {geo-250.download.wireErr} %). Not settled: the wire counts every arriving segment, so spurious retransmissions after a long queue delay would put duplicates on the wire that the app never sees. The lab now records duplicate segments per run (median {geo-250.dupDown} on geo-250) to tell the two apart. Until then the suspect is the judge or Weir's byte counter, unclear which.",
+    "expect": [
+      {
+        "profile": "geo-250",
+        "metric": "download.wire"
       }
     ]
   },

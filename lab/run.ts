@@ -171,7 +171,15 @@ function windowPing(pings: PingSample[], window: Window | null): number | null {
   return round(median(within(pings, window.startUnixMs, window.endUnixMs)));
 }
 
+const DSACK_SENT = ['TcpExtTCPDSACKOldSent', 'TcpExtTCPDSACKOfoSent'] as const;
+
+async function dsackSent(ns: string): Promise<number> {
+  const counters = await nstat(ns);
+  return DSACK_SENT.reduce((sum, name) => sum + (counters[name] ?? 0), 0);
+}
+
 async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
+  const dupBefore = { down: await dsackSent(NS.client), up: await dsackSent(NS.server) };
   const before = cpu();
   const ping = pinger(0.05);
   await sleep(300);
@@ -186,6 +194,7 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
     return { error: 'unreadable output' };
   }
   const pings = parsePing(pingDone.stdout, 50);
+  const duplicates = { down: (await dsackSent(NS.client)) - dupBefore.down, up: (await dsackSent(NS.server)) - dupBefore.up };
   await sleep(200);
   const client: WireSample[] = output.trace.filter((row) => row.wire).map((row) => ({ atMs: row.unixMs, ...row.wire! }));
   const server = serverSamples(await serverControl('/lab/wire'));
@@ -231,6 +240,7 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
     },
     serverBytes: { down: stats.down_bytes, up: stats.up_bytes, unknown: stats.unknown },
     far: typeof latency === 'number' ? latency > 100 : null,
+    duplicates,
     cpuMax: round(busiest)!,
     saturated: busiest > SATURATED,
     uploadRequests: requests,
