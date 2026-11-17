@@ -145,7 +145,7 @@ async function main() {
   await must(['truncate', '-s', '1000000000', 'lab-out/zero.bin']);
 
   const server = started(asRoot(inNs(NS.server, serverBin, '--listen', `${ADDR.server}:${PORT}`, '--static', staticDir, '--wire-iface', IFACE.server)));
-  const iperfd = started(asRoot(inNs(NS.server, 'iperf3', '-s')));
+  const iperfd = started(asRoot(inNs(NS.server, 'iperf3', '-s', '-J')), 0, true);
   try {
     await sleep(1500);
     const trace = await run(clientUser(['curl', '-s', `${base}/cdn-cgi/trace`]));

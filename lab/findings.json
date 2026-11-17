@@ -1,0 +1,10 @@
+[
+  {
+    "id": "F-doc-1",
+    "title": "docs/method.md claims an upload byte cross-check the code does not do",
+    "status": "open",
+    "where": "docs/method.md:70, src-tauri/src/core/backends/cloudflare.rs:186",
+    "cause": "method.md says the cf-meta-upload-bytes header cross-checks the upload count, but the Cloudflare backend never reads that header. Fix the doc or add the check in its own pull request. Documentation only: no lab check depends on it.",
+    "expect": []
+  }
+]

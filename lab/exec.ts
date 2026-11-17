@@ -46,9 +46,9 @@ export interface Background {
 }
 
 /** Spawns in its own process group so sudo relays our signals to the command. */
-export function started(argv: Argv, timeoutMs = 0): Background {
+export function started(argv: Argv, timeoutMs = 0, quiet = false): Background {
   const begin = Date.now();
-  const child = spawn(argv[0]!, argv.slice(1), { detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(argv[0]!, argv.slice(1), { detached: true, stdio: ['ignore', quiet ? 'ignore' : 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';
   let timedOut = false;

@@ -203,3 +203,5 @@ Off by default. Settings → Scheduled tests: every 6 hours, every 12 hours or o
 ## Comparing with other tests
 
 Weir uses 6 parallel streams and a sustained mean. speed.cloudflare.com uses one stream at a time and the 90th percentile of per-request speeds. On links up to ~300 Mbps with low latency the two should agree within about 10 %. On gigabit or high-latency links Weir may read higher because parallel streams fill the link faster. This is checked by hand on the owner's Mac and recorded in [verification.md](verification.md).
+
+On shaped links the accuracy lab checks Weir against the wire, iperf3 and Cloudflare's own test library on every engine change: [accuracy.md](accuracy.md).
