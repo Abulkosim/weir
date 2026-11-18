@@ -244,7 +244,7 @@
   {
     "id": "F-5",
     "title": "Upload can read off the wire when requests leave gaps",
-    "status": "open",
+    "status": "fixed",
     "where": "src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211",
     "cause": "Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads {cable-100-10-cf.upload.weir} Mbps on a link whose payload ceiling is below that, against {cable-100-10.upload.weir} Mbps on the same link without server time, and on mobile {mobile.upload.weir} Mbps, past its ceiling in some runs. On fiber-300-far, with long round trips, it sits {fiber-300-far.upload.wireErr} % above the wire in its own window, and on lossy-2 {lossy-2.upload.wireErr} %. On dsl-25-shallow and cable-100-10-cf single repeats also read below the wire (dsl-25-shallow median {dsl-25-shallow.upload.wireErr} %), which the gap explanation does not cover; the same per-request timing is the suspect there too, unproven. The bounds were first set from four runs; the seventh run, on unchanged lab code, went past them on dsl-25-shallow, cable-100-10-cf and lossy-0.1, so every bound in the lab was re-derived from all seven runs with the same rule. This bug moves the most from run to run, and its fix is the one that makes the gate steady. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.",
     "expect": [
@@ -455,7 +455,7 @@
   {
     "id": "F-doc-1",
     "title": "docs/method.md claims an upload byte cross-check the code does not do",
-    "status": "open",
+    "status": "fixed",
     "where": "docs/method.md:70, src-tauri/src/core/backends/cloudflare.rs:186",
     "cause": "method.md says the cf-meta-upload-bytes header cross-checks the upload count, but the Cloudflare backend never reads that header. Fix the doc or add the check in its own pull request. Documentation only: no lab check depends on it.",
     "expect": []

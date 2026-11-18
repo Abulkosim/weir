@@ -267,6 +267,41 @@ fn upload_uses_completed_requests_per_stream() {
 }
 
 #[test]
+fn upload_counts_the_time_a_stream_waits_between_requests() {
+    // Each stream sends 2.5 MB in 1 s, then waits 1 s; the other fills the gap,
+    // so the link carries 20 Mbps, not the 40 the two busy rates add up to.
+    let mut requests = Vec::new();
+    for step in 0..4 {
+        for stream in 0..2 {
+            requests.push(Completed {
+                stream,
+                started_ms: 1_000 + step * 2_000 + stream as u64 * 1_000,
+                bytes: 2_500_000,
+                duration_ms: 1_000.0,
+            });
+        }
+    }
+    let rate = upload_mbps(&requests, 2, 1_000).unwrap();
+    assert!(close(rate, 20.0, 0.001), "{rate}");
+}
+
+#[test]
+fn upload_spreads_a_request_across_the_window_edge() {
+    let request = |stream, started_ms| Completed {
+        stream,
+        started_ms,
+        bytes: 1_250_000,
+        duration_ms: 500.0,
+    };
+    let mut requests = vec![request(0, 750)];
+    for step in 0..4 {
+        requests.push(request(0, 1_250 + step * 500));
+    }
+    let rate = upload_mbps(&requests, 1, 1_000).unwrap();
+    assert!(close(rate, 20.0, 0.001), "{rate}");
+}
+
+#[test]
 fn data_estimate_follows_recent_results_and_rounds_up() {
     assert_eq!(data_estimate(&[]), DataEstimate::UpTo(600));
     assert_eq!(data_estimate(&[(100.0, 20.0)]), DataEstimate::About(110));

@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44243331961) on commit `b98c66d0a3cc` (Weir 0.7.3), started 2026-11-18 05:23 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **passing**. 164 pass, 29 expected fail, 10 unexpected pass, 13 invalid input, 115 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 168 pass, 5 fail, 24 expected fail, 6 unexpected pass, 13 invalid input, 115 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -69,16 +69,16 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | [gig-60](#gig-60) | −10.1 % (−22.1 to −6.0) | −18.9 % (−20.1 to −15.6) | +0.4 ms (+0.3 to +0.4) | +1.2 ms (−1.0 to +3.5) / +0.3 ms (+0.2 to +0.3) | 616 MB (612–618) | expected fail (download.capacity) |
 | [fiber-300](#fiber-300) | −0.0 % (−0.0 to −0.0) | +0.2 % (+0.1 to +0.5) | +0.3 ms (+0.2 to +0.3) | −0.4 ms (−1.0 to −0.2) / −0.5 ms (−0.7 to +0.6) | 393 MB (392–395) | pass |
 | [dsl-25-bloat](#dsl-25-bloat) | −0.1 % (−0.3 to −0.1) | −0.9 % (−1.6 to +0.2) | +0.2 ms (+0.2 to +0.3) | −10.2 ms (−13.4 to −4.7) / −18.8 ms (−21.9 to −11.9) | 23 MB (23–23) | unexpected pass (loaded.download.bias) |
-| [dsl-25-shallow](#dsl-25-shallow) | −0.1 % (−0.4 to +0.2) | +2.9 % (+2.0 to +3.0) | +0.3 ms (+0.3 to +0.3) | +0.8 ms (−0.5 to +2.2) / +1.2 ms (−1.3 to +1.6) | 22 MB (22–22) | unexpected pass (upload.wire) |
+| [dsl-25-shallow](#dsl-25-shallow) | −0.1 % (−0.4 to +0.2) | +2.9 % (+2.0 to +3.0) | +0.3 ms (+0.3 to +0.3) | +0.8 ms (−0.5 to +2.2) / +1.2 ms (−1.3 to +1.6) | 22 MB (22–22) | **fail** (upload.physics) |
 | [cable-100-10](#cable-100-10) | −0.1 % (−0.1 to −0.0) | +0.5 % (+0.1 to +0.6) | +0.2 ms (+0.2 to +0.3) | −2.2 ms (−2.5 to +0.3) / −0.5 ms (−1.9 to −0.2) | 75 MB (75–75) | pass |
-| [cable-100-10-cf](#cable-100-10-cf) | −0.1 % (−0.1 to +0.1) | +3.7 % (+3.6 to +4.3) | +0.4 ms (+0.3 to +0.4) | +1.7 ms (−2.9 to +2.6) / +2.5 ms (+0.1 to +2.6) | 75 MB (73–75) | unexpected pass (upload.wire) |
+| [cable-100-10-cf](#cable-100-10-cf) | −0.1 % (−0.1 to +0.1) | +3.7 % (+3.6 to +4.3) | +0.4 ms (+0.3 to +0.4) | +1.7 ms (−2.9 to +2.6) / +2.5 ms (+0.1 to +2.6) | 75 MB (73–75) | **fail** (upload.physics) |
 | [qreal-up](#qreal-up) | – | – | +0.3 ms (+0.2 to +0.3) | +0.3 ms (−0.7 to +3.3) / +0.6 ms (−0.2 to +1.3) | 75 MB (74–75) | pass |
 | [geo-250](#geo-250) | −2.2 % (−12.7 to −0.4) | – | +0.5 ms (+0.4 to +0.5) | +4.9 ms (−5.9 to +11.7) / – | 22 MB (21–28) | expected fail (validity) |
 | [fiber-300-far](#fiber-300-far) | −7.4 % (−9.1 to −2.9) | −17.5 % (−18.5 to −12.8) | +0.4 ms (+0.4 to +0.4) | +1.2 ms (+0.6 to +3.8) / +0.1 ms (−4.8 to +0.3) | 245 MB (244–260) | unexpected pass (download.capacity) |
-| [mobile](#mobile) | −7.1 % (−16.0 to +14.9) | +2.7 % (−1.4 to +4.7) | +1.6 ms (−1.4 to +4.6) | −0.8 ms (−9.6 to +1.3) / +6.5 ms (−4.5 to +18.5) | 25 MB (19–28) | expected fail (upload.wire) |
-| [lossy-0.1](#lossy-01) | +6.5 % (−2.1 to +17.3) | +0.1 % (−0.5 to +0.4) | +0.3 ms (+0.2 to +0.3) | +0.2 ms (+0.2 to +0.2) / +1.2 ms (−0.2 to +1.3) | 225 MB (156–249) | unexpected pass (upload.physics) |
+| [mobile](#mobile) | −7.1 % (−16.0 to +14.9) | +2.7 % (−1.4 to +4.7) | +1.6 ms (−1.4 to +4.6) | −0.8 ms (−9.6 to +1.3) / +6.5 ms (−4.5 to +18.5) | 25 MB (19–28) | **fail** (upload.wire) |
+| [lossy-0.1](#lossy-01) | +6.5 % (−2.1 to +17.3) | +0.1 % (−0.5 to +0.4) | +0.3 ms (+0.2 to +0.3) | +0.2 ms (+0.2 to +0.2) / +1.2 ms (−0.2 to +1.3) | 225 MB (156–249) | pass |
 | [lossy-1](#lossy-1) | +9.2 % (+4.4 to +15.8) | +8.6 % (−1.9 to +26.0) | +0.3 ms (+0.3 to +0.3) | +0.2 ms (+0.2 to +0.2) / +0.3 ms (+0.2 to +0.3) | 35 MB (30–36) | pass |
-| [lossy-2](#lossy-2) | +6.0 % (−5.7 to +12.8) | +3.0 % (−11.8 to +7.8) | +0.4 ms (+0.3 to +0.4) | +0.3 ms (+0.2 to +0.3) / +0.8 ms (−2.3 to +2.4) | 14 MB (11–14) | expected fail (upload.wire) |
+| [lossy-2](#lossy-2) | +6.0 % (−5.7 to +12.8) | +3.0 % (−11.8 to +7.8) | +0.4 ms (+0.3 to +0.4) | +0.3 ms (+0.2 to +0.3) / +0.8 ms (−2.3 to +2.4) | 14 MB (11–14) | **fail** (upload.wire) |
 | [wifi-jitter](#wifi-jitter) | +1.7 % (−11.9 to +38.1) | −2.4 % (−10.2 to +4.7) | +0.3 ms (−1.4 to +1.3) | −0.2 ms (−0.7 to +1.5) / −0.2 ms (−1.3 to +2.6) | 94 MB (81–113) | **invalid input** (validity) |
 
 Errors are Weir minus the truth: percent of iperf3 for speeds, ms against a ping for latency.
@@ -201,7 +201,7 @@ DSL 25/5, shallow buffer. 25/5 Mbps · 30 ms RTT · 20 ms buffer.
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 23.9 Mbps (23.9–23.9) | 23.9 Mbps (23.8–23.9) | 23.9 Mbps (23.8–23.9) | 23.4 Mbps (23.4–23.5) | −0.1 % (−0.2 to −0.0) wire, −0.1 % (−0.4 to +0.2) iperf3 | pass |
-| Upload | 4.8 Mbps (4.7–4.8) | 4.8 Mbps (4.8–4.8) | 4.9 Mbps (4.9–4.9) | 4.6 Mbps (4.6–4.6) | +3.2 % (+2.2 to +3.4) wire, +2.9 % (+2.0 to +3.0) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 4.8 Mbps (4.7–4.8) | 4.8 Mbps (4.8–4.8) | 4.9 Mbps (4.9–4.9) | 4.6 Mbps (4.6–4.6) | +3.2 % (+2.2 to +3.4) wire, +2.9 % (+2.0 to +3.0) iperf3 | **fail** |
 | Idle latency | – | 30.1 ms ping | 30.4 ms (30.4–30.4) | 30.2 ms | +0.3 ms (+0.3 to +0.3) | pass |
 | Loaded latency, download | 46 ms (45–47) ping | – | 47 ms (46–47) | – | +0.8 ms (−0.5 to +2.2) | pass |
 | Loaded latency, upload | 44 ms (43–44) ping | – | 45 ms (43–45) | – | +1.2 ms (−1.3 to +1.6) | pass |
@@ -209,8 +209,7 @@ DSL 25/5, shallow buffer. 25/5 Mbps · 30 ms RTT · 20 ms buffer.
 | Data used | 22 MB (22–22) on the wire | – | counts 99 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
-- upload.wire: worst 3.4 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
-- upload.physics: highest 4.9 Mbps; the link can carry 4.9 Mbps. Suspect: weir-math. expected fail ([F-5](#f-5)).
+- upload.physics: highest 4.9 Mbps; the link can carry 4.9 Mbps. Suspect: weir-math. **fail**.
 
 ### cable-100-10
 
@@ -239,7 +238,7 @@ Cable 100/10, 30 ms server time. 100/10 Mbps · 20 ms RTT · 100 ms buffer · 30
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 95.6 Mbps (95.6–95.6) | 95.6 Mbps (95.5–95.7) | 95.6 Mbps (95.5–95.6) | 93.5 Mbps (93.5–93.5) | −0.0 % (−0.0 to −0.0) wire, −0.1 % (−0.1 to +0.1) iperf3 | pass |
-| Upload | 9.6 Mbps | 9.6 Mbps (9.6–9.6) | 9.9 Mbps (9.9–10.0) | 9.5 Mbps | +3.8 % (+3.8 to +4.6) wire, +3.7 % (+3.6 to +4.3) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 9.6 Mbps | 9.6 Mbps (9.6–9.6) | 9.9 Mbps (9.9–10.0) | 9.5 Mbps | +3.8 % (+3.8 to +4.6) wire, +3.7 % (+3.6 to +4.3) iperf3 | **fail** |
 | Idle latency | – | 20.1 ms ping | 20.5 ms (20.4–20.5) | 20.2 ms (20.2–20.2) | +0.4 ms (+0.3 to +0.4) | pass |
 | Loaded latency, download | 99 ms (97–103) ping | – | 100 ms (99–101) | – | +1.7 ms (−2.9 to +2.6) | pass |
 | Loaded latency, upload | 103 ms (100–105) ping | – | 103 ms (103–107) | – | +2.5 ms (+0.1 to +2.6) | pass |
@@ -247,8 +246,7 @@ Cable 100/10, 30 ms server time. 100/10 Mbps · 20 ms RTT · 100 ms buffer · 30
 | Data used | 75 MB (73–75) on the wire | – | counts 98 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
-- upload.wire: worst 4.6 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
-- upload.physics: highest 10.0 Mbps; the link can carry 9.8 Mbps. Suspect: weir-math. expected fail ([F-5](#f-5)).
+- upload.physics: highest 10.0 Mbps; the link can carry 9.8 Mbps. Suspect: weir-math. **fail**.
 
 ### qreal-up
 
@@ -305,7 +303,7 @@ Fibre 300/100, 120 ms away. 300/100 Mbps · 120 ms RTT · 50 ms buffer.
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 269.3 Mbps (264.4–278.4) | 290.9 Mbps (286.9–291.0) | 269.3 Mbps (264.4–278.4) | 104.3 Mbps (103.4–105.6) | −0.0 % (−0.0 to −0.0) wire, −7.4 % (−9.1 to −2.9) iperf3 | unexpected pass ([F-6](#f-6)) |
-| Upload | 78.1 Mbps (76.9–80.0) | 95.6 Mbps (95.5–95.7) | 78.8 Mbps (78.0–83.4) | 35.1 Mbps (35.1–58.4) | +2.5 % (−0.2 to +4.3) wire, −17.5 % (−18.5 to −12.8) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 78.1 Mbps (76.9–80.0) | 95.6 Mbps (95.5–95.7) | 78.8 Mbps (78.0–83.4) | 35.1 Mbps (35.1–58.4) | +2.5 % (−0.2 to +4.3) wire, −17.5 % (−18.5 to −12.8) iperf3 | expected fail ([F-6](#f-6)) |
 | Idle latency | – | 120.0 ms ping | 120.4 ms (120.4–120.4) | 120.3 ms | +0.4 ms (+0.4 to +0.4) | pass |
 | Loaded latency, download | 136 ms (128–144) ping | – | 137 ms (132–145) | – | +1.2 ms (+0.6 to +3.8) | pass |
 | Loaded latency, upload | 126 ms (120–129) ping | – | 121 ms (120–129) | – | +0.1 ms (−4.8 to +0.3) | pass |
@@ -314,7 +312,6 @@ Fibre 300/100, 120 ms away. 300/100 Mbps · 120 ms RTT · 50 ms buffer.
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
 - download.capacity: median -7.4 %, worst 9.1 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 1.4 %. unexpected pass ([F-6](#f-6)).
-- upload.wire: worst 4.3 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
 - upload.capacity: median -17.5 %, worst 18.5 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.2 %. Suspect: weir-load. expected fail ([F-6](#f-6)).
 
 ### mobile
@@ -326,7 +323,7 @@ Mobile 30/8, jittery, 0.5% loss. 30/8 Mbps · 50 ms RTT · 0.5 % loss each way �
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 17.9 Mbps (15.8–18.4) | 18.4 Mbps (15.6–19.8) | 17.8 Mbps (15.8–18.4) | 5.7 Mbps (3.7–6.5) | −0.0 % (−0.1 to +0.2) wire, −7.1 % (−16.0 to +14.9) iperf3 | pass |
-| Upload | 7.6 Mbps (7.6–7.6) | 7.6 Mbps (7.6–7.6) | 7.8 Mbps (7.5–8.0) | 4.6 Mbps (4.2–6.4) | +3.0 % (−1.5 to +5.3) wire, +2.7 % (−1.4 to +4.7) iperf3 | expected fail ([F-5](#f-5)) |
+| Upload | 7.6 Mbps (7.6–7.6) | 7.6 Mbps (7.6–7.6) | 7.8 Mbps (7.5–8.0) | 4.6 Mbps (4.2–6.4) | +3.0 % (−1.5 to +5.3) wire, +2.7 % (−1.4 to +4.7) iperf3 | **fail** |
 | Idle latency | – | 48.5 ms (47.3–49.7) ping | 50.1 ms (47.8–53.2) | 49.4 ms (47.9–49.4) | +1.6 ms (−1.4 to +4.6) | pass |
 | Loaded latency, download | 70 ms (68–72) ping | – | 69 ms (60–70) | – | −0.8 ms (−9.6 to +1.3) | pass |
 | Loaded latency, upload | 129 ms (118–175) ping | – | 144 ms (114–193) | – | +6.5 ms (−4.5 to +18.5) | pass |
@@ -334,8 +331,8 @@ Mobile 30/8, jittery, 0.5% loss. 30/8 Mbps · 50 ms RTT · 0.5 % loss each way �
 | Data used | 25 MB (19–28) on the wire | – | counts 99 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
-- upload.wire: worst 5.3 % against the wire in Weir's own steady window (limit 5 %). Suspect: weir-math. expected fail ([F-5](#f-5)).
-- upload.physics: highest 8.0 Mbps; the link can carry 7.8 Mbps. Suspect: weir-math. expected fail ([F-5](#f-5)).
+- upload.wire: worst 5.3 % against the wire in Weir's own steady window (limit 5 %). Suspect: weir-math. **fail**.
+- upload.physics: highest 8.0 Mbps; the link can carry 7.8 Mbps. Suspect: weir-math. **fail**.
 
 ### lossy-0.1
 
@@ -346,7 +343,7 @@ Fibre 300/50, 0.1% loss. 300/50 Mbps · 20 ms RTT · 0.1 % loss each way · 30 m
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 141.7 Mbps (133.6–144.1) | 133.1 Mbps (122.8–138.1) | 141.7 Mbps (133.6–144.1) | 41.4 Mbps (36.5–153.9) | +0.0 % (−0.0 to +0.1) wire, +6.5 % (−2.1 to +17.3) iperf3 | pass |
-| Upload | 47.7 Mbps (47.7–47.8) | 47.8 Mbps (47.8–47.8) | 47.8 Mbps (47.6–48.0) | 34.9 Mbps (33.6–43.1) | +0.0 % (−0.3 to +0.7) wire, +0.1 % (−0.5 to +0.4) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 47.7 Mbps (47.7–47.8) | 47.8 Mbps (47.8–47.8) | 47.8 Mbps (47.6–48.0) | 34.9 Mbps (33.6–43.1) | +0.0 % (−0.3 to +0.7) wire, +0.1 % (−0.5 to +0.4) iperf3 | pass |
 | Idle latency | – | 20.1 ms ping | 20.4 ms (20.3–20.4) | 20.2 ms (20.1–20.2) | +0.3 ms (+0.2 to +0.3) | pass |
 | Loaded latency, download | 20 ms ping | – | 20 ms (20–20) | – | +0.2 ms (+0.2 to +0.2) | pass |
 | Loaded latency, upload | 36 ms (30–40) ping | – | 36 ms (30–41) | – | +1.2 ms (−0.2 to +1.3) | pass |
@@ -354,7 +351,6 @@ Fibre 300/50, 0.1% loss. 300/50 Mbps · 20 ms RTT · 0.1 % loss each way · 30 m
 | Data used | 225 MB (156–249) on the wire | – | counts 100 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
-- upload.physics: highest 48.0 Mbps; the link can carry 48.8 Mbps. unexpected pass ([F-5](#f-5)).
 
 ### lossy-1
 
@@ -383,7 +379,7 @@ DSL 25/5, 2% loss, 80 ms. 25/5 Mbps · 80 ms RTT · 2 % loss each way · 100 ms 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 6.6 Mbps (6.0–7.3) | 6.3 Mbps (6.2–6.9) | 6.7 Mbps (6.0–7.3) | 1.3 Mbps (1.3–1.6) | +0.5 % (−0.2 to +0.7) wire, +6.0 % (−5.7 to +12.8) iperf3 | pass |
-| Upload | 4.1 Mbps (3.9–4.3) | 4.1 Mbps (3.9–4.2) | 4.0 Mbps (3.7–4.3) | 1.3 Mbps (1.0–1.4) | −3.0 % (−5.7 to +6.9) wire, +3.0 % (−11.8 to +7.8) iperf3 | expected fail ([F-5](#f-5)) |
+| Upload | 4.1 Mbps (3.9–4.3) | 4.1 Mbps (3.9–4.2) | 4.0 Mbps (3.7–4.3) | 1.3 Mbps (1.0–1.4) | −3.0 % (−5.7 to +6.9) wire, +3.0 % (−11.8 to +7.8) iperf3 | **fail** |
 | Idle latency | – | 80.1 ms ping | 80.5 ms (80.4–80.5) | 80.3 ms | +0.4 ms (+0.3 to +0.4) | pass |
 | Loaded latency, download | 80 ms ping | – | 80 ms (80–80) | – | +0.3 ms (+0.2 to +0.3) | pass |
 | Loaded latency, upload | 82 ms (80–86) ping | – | 83 ms (80–85) | – | +0.8 ms (−2.3 to +2.4) | pass |
@@ -391,7 +387,7 @@ DSL 25/5, 2% loss, 80 ms. 25/5 Mbps · 80 ms RTT · 2 % loss each way · 100 ms 
 | Data used | 14 MB (11–14) on the wire | – | counts 98 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
-- upload.wire: worst 6.9 % against the wire in Weir's own steady window (limit 5 %). Suspect: weir-math. expected fail ([F-5](#f-5)).
+- upload.wire: worst 6.9 % against the wire in Weir's own steady window (limit 5 %). Suspect: weir-math. **fail**.
 
 ### wifi-jitter
 
@@ -513,7 +509,7 @@ Expected to fail until fixed, and only like this:
 
 ### F-5
 
-**Upload can read off the wire when requests leave gaps** (open). Where: `src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211`.
+**Upload can read off the wire when requests leave gaps** (fixed). Where: `src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211`.
 
 Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads 9.9 Mbps on a link whose payload ceiling is below that, against 9.6 Mbps on the same link without server time, and on mobile 7.8 Mbps, past its ceiling in some runs. On fiber-300-far, with long round trips, it sits 2.5 % above the wire in its own window, and on lossy-2 -3.0 %. On dsl-25-shallow and cable-100-10-cf single repeats also read below the wire (dsl-25-shallow median 3.2 %), which the gap explanation does not cover; the same per-request timing is the suspect there too, unproven. The bounds were first set from four runs; the seventh run, on unchanged lab code, went past them on dsl-25-shallow, cable-100-10-cf and lossy-0.1, so every bound in the lab was re-derived from all seven runs with the same rule. This bug moves the most from run to run, and its fix is the one that makes the gate steady. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.
 
@@ -521,15 +517,15 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| dsl-25-shallow | upload.wire | every per-repeat error within -12 to +12 | 4 of 7 runs | unexpected pass |
-| dsl-25-shallow | upload.physics | every per-repeat error at most +10 | 3 of 7 runs | expected fail |
-| cable-100-10-cf | upload.wire | every per-repeat error within -12 to +8 | 1 of 7 runs | unexpected pass |
-| cable-100-10-cf | upload.physics | every per-repeat error at most +6 | 7 of 7 runs | expected fail |
-| mobile | upload.wire | every per-repeat error within -5 to +16 | 2 of 7 runs | expected fail |
-| mobile | upload.physics | every per-repeat error at most +12 | 6 of 7 runs | expected fail |
-| lossy-0.1 | upload.physics | every per-repeat error at most +5 | 1 of 7 runs | unexpected pass |
-| lossy-2 | upload.wire | every per-repeat error within -9 to +14 | 5 of 7 runs | expected fail |
-| fiber-300-far | upload.wire | every per-repeat error within -5 to +11 | 3 of 7 runs | unexpected pass |
+| dsl-25-shallow | upload.wire | every per-repeat error within -12 to +12 | 4 of 7 runs | pass |
+| dsl-25-shallow | upload.physics | every per-repeat error at most +10 | 3 of 7 runs | **fail** |
+| cable-100-10-cf | upload.wire | every per-repeat error within -12 to +8 | 1 of 7 runs | pass |
+| cable-100-10-cf | upload.physics | every per-repeat error at most +6 | 7 of 7 runs | **fail** |
+| mobile | upload.wire | every per-repeat error within -5 to +16 | 2 of 7 runs | **fail** |
+| mobile | upload.physics | every per-repeat error at most +12 | 6 of 7 runs | **fail** |
+| lossy-0.1 | upload.physics | every per-repeat error at most +5 | 1 of 7 runs | pass |
+| lossy-2 | upload.wire | every per-repeat error within -9 to +14 | 5 of 7 runs | **fail** |
+| fiber-300-far | upload.wire | every per-repeat error within -5 to +11 | 3 of 7 runs | pass |
 
 ### F-6
 
@@ -585,7 +581,7 @@ Expected to fail until fixed, and only like this:
 
 ### F-doc-1
 
-**docs/method.md claims an upload byte cross-check the code does not do** (open). Where: `docs/method.md:70, src-tauri/src/core/backends/cloudflare.rs:186`.
+**docs/method.md claims an upload byte cross-check the code does not do** (fixed). Where: `docs/method.md:70, src-tauri/src/core/backends/cloudflare.rs:186`.
 
 method.md says the cf-meta-upload-bytes header cross-checks the upload count, but the Cloudflare backend never reads that header. Fix the doc or add the check in its own pull request. Documentation only: no lab check depends on it.
 
