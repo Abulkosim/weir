@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44265126705) on commit `3fd94e97dc60` (Weir 0.7.3), started 2026-11-18 08:37 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 184 pass, 12 fail, 13 expected fail, 7 unexpected pass, 115 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 183 pass, 12 fail, 13 expected fail, 8 unexpected pass, 115 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -75,7 +75,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | [qreal-up](#qreal-up) | – | – | +0.5 ms (+0.4 to +0.5) | −0.8 ms (−2.1 to +1.9) / −1.9 ms (−7.4 to +0.9) | 75 MB (74–75) | pass |
 | [geo-250](#geo-250) | −13.1 % (−14.5 to −11.6) | – | +0.5 ms (+0.5 to +0.5) | +6.2 ms (−49.2 to +11.7) / – | 20 MB (19–28) | **fail** (validity) |
 | [fiber-300-far](#fiber-300-far) | −3.7 % (−4.2 to −3.1) | −12.7 % (−15.0 to −11.4) | +0.5 ms (+0.5 to +0.5) | −1.0 ms (−3.2 to −0.6) / −3.1 ms (−4.0 to +1.1) | 273 MB (255–274) | unexpected pass (download.capacity) |
-| [mobile](#mobile) | −1.7 % (−18.1 to +26.5) | −1.2 % (−3.0 to −0.5) | +0.6 ms (−1.3 to +0.8) | −2.8 ms (−6.1 to +3.9) / +4.7 ms (−8.3 to +8.2) | 24 MB (21–27) | pass |
+| [mobile](#mobile) | −1.7 % (−18.1 to +26.5) | −1.2 % (−3.0 to −0.5) | +0.6 ms (−1.3 to +0.8) | −2.8 ms (−6.1 to +3.9) / +4.7 ms (−8.3 to +8.2) | 24 MB (21–27) | unexpected pass (loaded.upload) |
 | [lossy-0.1](#lossy-01) | +12.5 % (−0.0 to +19.4) | −0.3 % (−0.4 to +0.0) | +0.4 ms (+0.4 to +0.5) | +0.3 ms (+0.2 to +0.3) / +0.2 ms (−2.1 to +1.9) | 188 MB (146–217) | pass |
 | [lossy-1](#lossy-1) | −3.1 % (−9.0 to +17.1) | −3.9 % (−13.4 to +2.9) | +0.6 ms (+0.4 to +0.6) | +0.2 ms (+0.2 to +0.2) / +0.2 ms (+0.2 to +0.4) | 32 MB (28–35) | pass |
 | [lossy-2](#lossy-2) | +10.0 % (−2.5 to +27.4) | +3.0 % (−12.7 to +8.0) | +0.4 ms (+0.4 to +0.5) | +0.2 ms (+0.2 to +0.2) / +0.2 ms (+0.1 to +1.1) | 13 MB (11–13) | pass |
@@ -279,7 +279,7 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 | Upload | – | 2.9 Mbps (2.9–2.9) | – | 2.6 Mbps | – wire, – iperf3 | **fail** |
 | Idle latency | – | 250.0 ms ping | 250.5 ms (250.5–250.5) | 250.3 ms | +0.5 ms (+0.5 to +0.5) | pass |
 | Loaded latency, download | 429 ms (427–457) ping | – | 435 ms (408–439) | – | +6.2 ms (−49.2 to +11.7) | unexpected pass ([F-8](#f-8)) |
-| Loaded latency, upload | 541 ms ping | – | – | – | – | **fail** |
+| Loaded latency, upload | 541 ms ping | – | – | – | – | **fail** ([F-8](#f-8)) |
 | Jitter | – | 0.00 ms ping | 0.06 ms (0.06–0.07) | – | – | report only |
 | Data used | 20 MB (19–28) on the wire | – | counts 91 % of the payload | – | – | pass |
 
@@ -287,12 +287,12 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 - download.wire: worst 4.2 % against the wire in Weir's own steady window (limit 3 %). Suspect: weir-math. expected fail ([F-7](#f-7)).
 - download.capacity: median -13.1 %, worst 14.5 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.2 %. Suspect: weir-math. expected fail ([F-6](#f-6)).
 - upload.wire: no Weir result to compare with the wire. Suspect: weir-math. **fail**.
-- upload.capacity: too few runs with both Weir and iperf3; outside F-6's expected failure (every per-repeat error within -34 to +5). Suspect: weir-math. **fail** ([F-6](#f-6)).
+- upload.capacity: too few runs with both Weir and iperf3; outside F-6's expected failure (every per-repeat error within -37 to +5). Suspect: weir-math. **fail** ([F-6](#f-6)).
 - upload.physics: no Weir result. Suspect: weir-math. **fail**.
 - loaded.download: worst 49.2 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
 - loaded.download.bias: median signed error 6.2 ms over 3 runs against a 429 ms ping (limit ±32.2 ms). unexpected pass ([F-8](#f-8)).
-- loaded.upload: no loaded latency to compare. Suspect: weir-math. **fail**.
-- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. **fail**.
+- loaded.upload: no loaded latency to compare; outside F-8's expected failure (every per-repeat error within -81 to +116). Suspect: weir-math. **fail** ([F-8](#f-8)).
+- loaded.upload.bias: no loaded latency to compare; outside F-8's expected failure (every per-repeat error within -5 to +94). Suspect: weir-math. **fail** ([F-8](#f-8)).
 
 ### fiber-300-far
 
@@ -326,11 +326,12 @@ Mobile 30/8, jittery, 0.5% loss. 30/8 Mbps · 50 ms RTT · 0.5 % loss each way �
 | Upload | 7.6 Mbps (7.5–7.6) | 7.6 Mbps (7.6–7.7) | 7.6 Mbps (7.4–7.6) | 3.9 Mbps (3.4–4.4) | −0.5 % (−0.7 to +0.2) wire, −1.2 % (−3.0 to −0.5) iperf3 | pass |
 | Idle latency | – | 48.5 ms (48.2–51.0) ping | 49.2 ms (47.4–49.7) | 49.1 ms (48.5–49.8) | +0.6 ms (−1.3 to +0.8) | pass |
 | Loaded latency, download | 70 ms (68–74) ping | – | 66 ms (62–75) | – | −2.8 ms (−6.1 to +3.9) | pass |
-| Loaded latency, upload | 143 ms (121–207) ping | – | 151 ms (113–213) | – | +4.7 ms (−8.3 to +8.2) | pass |
+| Loaded latency, upload | 143 ms (121–207) ping | – | 151 ms (113–213) | – | +4.7 ms (−8.3 to +8.2) | unexpected pass ([F-8](#f-8)) |
 | Jitter | – | 8.26 ms (6.56–10.56) ping | 9.01 ms (5.73–36.42) | – | – | report only |
 | Data used | 24 MB (21–27) on the wire | – | counts 99 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
+- loaded.upload: worst 8.3 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
 
 ### lossy-0.1
 
@@ -523,7 +524,7 @@ Expected to fail until fixed, and only like this:
 | fiber-300-far | upload.capacity | every per-repeat error within -29 to +5 | 7 of 7 runs | expected fail |
 | fiber-300-far | download.capacity | every per-repeat error within -21 to +5 | 1 of 7 runs | unexpected pass |
 | geo-250 | download.capacity | every per-repeat error within -20 to +5 | 3 of 7 runs | expected fail |
-| geo-250 | upload.capacity | every per-repeat error within -34 to +5 | 1 of 1 runs | **fail** |
+| geo-250 | upload.capacity | every per-repeat error within -37 to +5 | 3 of 3 runs | **fail** |
 
 ### F-7
 
@@ -541,7 +542,7 @@ Expected to fail until fixed, and only like this:
 
 **Loaded latency reads low on deep queues because Weir's probes are closed-loop** (open). Where: `src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49`.
 
-spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is -9.0 ms for download and -11.8 ms for upload, on geo-250 6.2 ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time. The bias follows the load's rhythm, not one sign: since uploads start with 32 kB requests (F-2), each upload holds less in flight, the deep buffer fills less, and on dsl-25-bloat the upload median sits above the ping instead (-11.8 ms). Open-loop probes fix both directions.
+spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is -9.0 ms for download and -11.8 ms for upload, on geo-250 6.2 ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time. Since uploads start with smaller requests (F-2), the upload median sits above the ping instead, on dsl-25-bloat (-11.8 ms) and on geo-250. Probe timing is ruled out: sending probes on a fixed schedule from a pool of warm connections left the bias unchanged in a full lab run, so that change was reverted. Next step: record each probe's round trip and the ping's losses, since a tail-drop queue drops pings at its fullest moments while a dropped probe segment is retransmitted.
 
 Expected to fail until fixed, and only like this:
 
@@ -550,8 +551,11 @@ Expected to fail until fixed, and only like this:
 | dsl-25-bloat | loaded.download.bias | every per-repeat error within -43 to +5 | 1 of 7 runs | unexpected pass |
 | geo-250 | loaded.download.bias | up to 1 runs without Weir's value, every per-repeat error within -72 to +5 | 2 of 7 runs | unexpected pass |
 | geo-250 | loaded.download | up to 1 runs without Weir's value, otherwise passing | 1 of 7 runs | unexpected pass |
-| dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 1 runs | unexpected pass |
-| dsl-25-bloat | loaded.upload.bias | every per-repeat error within -5 to +43 | 1 of 1 runs | unexpected pass |
+| dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 3 runs | unexpected pass |
+| dsl-25-bloat | loaded.upload.bias | every per-repeat error within -5 to +44 | 3 of 3 runs | unexpected pass |
+| geo-250 | loaded.upload | every per-repeat error within -81 to +116 | 2 of 3 runs | **fail** |
+| geo-250 | loaded.upload.bias | every per-repeat error within -5 to +94 | 1 of 3 runs | **fail** |
+| mobile | loaded.upload | every per-repeat error within -34 to +34 | 1 of 3 runs | unexpected pass |
 
 ### F-9
 
