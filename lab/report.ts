@@ -6,7 +6,7 @@
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { analyze, type Finding } from './analyze.ts';
+import { analyze, revalidate, type Finding } from './analyze.ts';
 import { renderAll, renderSummary } from './render.ts';
 import { slim, type Results, type ShardFile } from './schema.ts';
 
@@ -40,7 +40,7 @@ function write(out: string, results: Results) {
   mkdirSync(join(out, 'images'), { recursive: true });
   writeFileSync(join(out, 'results.json'), `${JSON.stringify(results)}\n`);
   for (const [name, text] of Object.entries(files)) writeFileSync(join(out, name), text);
-  const summary = renderSummary(slim(results), analysis);
+  const summary = renderSummary(revalidate(slim(results)), analysis);
   writeFileSync(join(out, 'summary.md'), summary);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
   console.log(summary);

@@ -1,7 +1,7 @@
 // Pure rendering: docs/accuracy.md and its chart from lab results. Deterministic:
 // fixed formatting, profile order from profiles.ts, dates only from the JSON.
 
-import { analyze, fill, type Analysis, type Finding, type Status, type Verdict } from './analyze.ts';
+import { analyze, fill, revalidate, type Analysis, type Finding, type Status, type Verdict } from './analyze.ts';
 import { netemArgs, tbfBurst, tbfLimit } from './net.ts';
 import { ceilingMbps, LEFT_OUT, PROFILES } from './profiles.ts';
 import { failed, type Results } from './schema.ts';
@@ -194,7 +194,9 @@ export function renderMarkdown(results: Results, findings: Finding[], analysis =
     const up = find(analysis, id, 'twin.upload');
     if (!down?.error && !up?.error) continue;
     const within = [down, up].every((item) => item?.error && Math.abs(item.error.median) <= 10);
-    out.push(`| ${id} | ${signed(down?.error?.median)} % | ${signed(up?.error?.median)} % | ${within ? 'yes' : 'no'} |`);
+    const pctCell = (item: Verdict | undefined) => (item?.error ? `${signed(item.error.median)} %` : '–');
+    const complete = !!down?.error && !!up?.error;
+    out.push(`| ${id} | ${pctCell(down)} | ${pctCell(up)} | ${complete ? (within ? 'yes' : 'no') : '–'} |`);
   }
   out.push('');
 
@@ -340,7 +342,8 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escape(`Weir accuracy per shaped link, ${ceilingNote}`)}"><style>${style}</style>${parts.join('')}</svg>\n`;
 }
 
-export function renderAll(results: Results, findings: Finding[]): Record<string, string> {
+export function renderAll(input: Results, findings: Finding[]): Record<string, string> {
+  const results = revalidate(input);
   const analysis = analyze(results, findings);
   return {
     'accuracy.md': renderMarkdown(results, findings, analysis),

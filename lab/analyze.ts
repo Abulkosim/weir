@@ -372,7 +372,7 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
     const theirs = reference ? stat(reference.repeats.map((repeat) => weirOf(repeat)?.report?.upload?.mbps)) : null;
     const diff = mine && theirs ? pct(mine.median, theirs.median) : null;
     out.push(verdict(id, 'qreal.upload', 'report',
-      `Weir's upload reads ${fmt(diff)} % against the same link when Server-Timing excludes the body`, { weir: mine, truth: theirs }));
+      `Weir's upload reads ${fmt(mine?.median)} Mbps when Server-Timing includes the body, ${diff !== null && diff >= 0 ? '+' : ''}${fmt(diff)} % against ${fmt(theirs?.median)} Mbps on the same link when it does not`, { weir: mine, truth: theirs }));
   }
 
   return out;
@@ -424,7 +424,39 @@ function twinCeiling(results: Results): number | null {
   return stat(values)?.min ?? null;
 }
 
-export function analyze(results: Results, findings: Finding[], expected: Profile[] = PROFILES): Analysis {
+/**
+ * The rate input check, from the iperf3 truth stored with each repeat. Recomputed when judging, so a
+ * change to the check applies to results already recorded. The best run per direction must reach the
+ * lower bound (one run can under-fill a shallow buffer); the median per direction must stay under the
+ * upper bound (a leaking shaper leaks every run, iperf3's edge noise does not).
+ */
+export function rateCheck(entry: Pick<Profile, 'down' | 'up' | 'lossPct' | 'jitter'>, truths: Truth[]): Validity['rate'] {
+  if (entry.lossPct !== 0 || entry.jitter || !truths.length) return null;
+  const down = truths.filter((truth) => usableTruth(truth, 'download')).map((truth) => truth.downMbps / ceilingMbps(entry.down));
+  const up = truths.filter((truth) => usableTruth(truth, 'upload')).map((truth) => truth.upMbps / ceilingMbps(entry.up));
+  const fits = (values: number[]) => !values.length
+    || (Math.max(...values) >= THRESHOLDS.rate.min && median(values)! <= THRESHOLDS.rate.max);
+  const ratios = [...down, ...up].map((ratio) => Number(ratio.toFixed(4)));
+  return { ok: fits(down) && fits(up), ratios, detail: 'loss-free iperf3 goodput over the shaped payload ceiling' };
+}
+
+const rateReason = (rate: NonNullable<Validity['rate']>) => `rate: iperf3/ceiling ${rate.ratios.map((ratio) => ratio.toFixed(3)).join(', ')}`;
+
+/** Results with each link's rate check recomputed by the current rule. */
+export function revalidate(results: Results): Results {
+  return {
+    ...results,
+    profiles: results.profiles.map((entry) => {
+      const truths = entry.repeats.map(truthOf).filter((truth): truth is Truth => !!truth);
+      const rate = rateCheck(entry.shape, truths);
+      const reasons = [...entry.validity.reasons.filter((reason) => !reason.startsWith('rate:')), ...(rate && !rate.ok ? [rateReason(rate)] : [])];
+      return { ...entry, validity: { ...entry.validity, rate, reasons, ok: reasons.length === 0 } };
+    }),
+  };
+}
+
+export function analyze(input: Results, findings: Finding[], expected: Profile[] = PROFILES): Analysis {
+  const results = revalidate(input);
   const verdicts: Verdict[] = [];
   for (const shard of [...new Set(expected.map((entry) => entry.shard))].sort((a, b) => a - b)) {
     const found = results.shards.find((item) => item.shard === shard);
@@ -530,16 +562,8 @@ export function validity(
     delayOk = medianMs !== null && Math.abs(medianMs - entry.rttMs) <= tolerance;
     if (!delayOk) reasons.push(`delay: median ${fmt(medianMs, 2)} ms for ${entry.rttMs} ms`);
   }
-  let rate: Validity['rate'] = null;
-  if (entry.lossPct === 0 && !entry.jitter && truths.length) {
-    const down = truths.filter((truth) => usableTruth(truth, 'download')).map((truth) => truth.downMbps / ceilingMbps(entry.down));
-    const up = truths.filter((truth) => usableTruth(truth, 'upload')).map((truth) => truth.upMbps / ceilingMbps(entry.up));
-    const ratios = [...down, ...up];
-    const reaches = (values: number[]) => !values.length || Math.max(...values) >= THRESHOLDS.rate.min;
-    const ok = reaches(down) && reaches(up) && ratios.every((ratio) => ratio <= THRESHOLDS.rate.max);
-    rate = { ok, ratios: ratios.map((ratio) => round(ratio, 4)!), detail: 'loss-free iperf3 goodput over the shaped payload ceiling' };
-    if (!ok) reasons.push(`rate: iperf3/ceiling ${ratios.map((ratio) => ratio.toFixed(3)).join(', ')}`);
-  }
+  const rate = rateCheck(entry, truths);
+  if (rate && !rate.ok) reasons.push(rateReason(rate));
   let lossCheck: Validity['loss'] = null;
   if (entry.lossPct > 0) {
     const target = entry.lossPct / 100;

@@ -68,7 +68,7 @@ export const THRESHOLDS = {
   rate: {
     min: 0.93,
     max: 1.015,
-    reason: 'Loss-free iperf3 goodput over the shaped payload ceiling. Below 0.93 the shaper or host is not delivering the configured rate; above 1.015 the shaper leaks. Raised from 1.005 after the first three runs: iperf3 read up to 1.1 % over the ceiling on 5–25 Mbps links whose tbf rate is exact, which is iperf3 interval timing, not a leak. The lower bound applies to the best iperf3 run per direction since the seventh run: one gig-60 upload run reached 0.81 while the others reached 0.99, which is TCP on a shallow buffer, not the shaper; such an under-filling run is not used as capacity truth.',
+    reason: 'Loss-free iperf3 goodput over the shaped payload ceiling. Below 0.93 the shaper or host is not delivering the configured rate; above 1.015 the shaper leaks. Raised from 1.005 after the first three runs: iperf3 read up to 1.1 % over the ceiling on 5–25 Mbps links whose tbf rate is exact, which is iperf3 interval timing, not a leak. The upper bound applies to the median run per direction since the eighth run (fiber-300-far read 1.016 once and 0.999 twice: a leaking shaper leaks every run). The lower bound applies to the best iperf3 run per direction since the seventh run: one gig-60 upload run reached 0.81 while the others reached 0.99, which is TCP on a shallow buffer, not the shaper; such an under-filling run is not used as capacity truth.',
   },
   iperfConsistency: {
     maxPct: 2,
