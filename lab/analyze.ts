@@ -87,6 +87,18 @@ const twinOf = (repeat: Repeat): Twin | null => (repeat.twin && !failed(repeat.t
 
 /** Truth a judge can stand on: not saturated and iperf3's own sums agree for that direction. */
 export function usableTruth(truth: Truth | null, dir: 'download' | 'upload'): truth is Truth {
+  return consistentTruth(truth, dir);
+}
+
+/** A usable truth that, on a loss-free link, also filled it: an iperf3 run that under-fills a clean link is not bulk TCP's capacity. */
+export function capacityTruth(truth: Truth | null, dir: 'download' | 'upload', shape: Profile | ProfileResult['shape']): truth is Truth {
+  if (!consistentTruth(truth, dir)) return false;
+  if (isNoisy(shape)) return true;
+  const ratio = dir === 'download' ? truth.downMbps / ceilingMbps(shape.down) : truth.upMbps / ceilingMbps(shape.up);
+  return ratio >= THRESHOLDS.rate.min;
+}
+
+function consistentTruth(truth: Truth | null, dir: 'download' | 'upload'): truth is Truth {
   return !!truth && !truth.saturated
     && (dir === 'download' ? truth.mismatch.down : truth.mismatch.up) <= THRESHOLDS.iperfConsistency.maxPct / 100;
 }
@@ -190,12 +202,12 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
 
     const truthPairs = pairs(repeats, speed, (repeat) => {
       const truth = truthOf(repeat);
-      return usableTruth(truth, dir) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
+      return capacityTruth(truth, dir, shape) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
     });
     const capErrors = errors(truthPairs, 'pct');
     const capMetric: Metric = `${dir}.capacity`;
     const truthValues = truthPairs.other.filter((value): value is number => typeof value === 'number');
-    const judgeProblems = repeats.filter((repeat) => truthOf(repeat) && !usableTruth(truthOf(repeat), dir)).length;
+    const judgeProblems = repeats.filter((repeat) => truthOf(repeat) && !capacityTruth(truthOf(repeat), dir, shape)).length;
     const farMismatch = repeats.filter((repeat) => {
       const far = weirOf(repeat)?.far;
       return typeof far === 'boolean' && far !== expectedFar(shape);
@@ -231,7 +243,7 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
         const wireVerdict = out.find((v) => v.metric === metric);
         const wireVsTruth = errors(pairs(repeats, (w) => (dir === 'download' ? w.wire.downMbps : w.wire.upMbps), (repeat) => {
           const truth = truthOf(repeat);
-          return usableTruth(truth, dir) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
+          return capacityTruth(truth, dir, shape) ? (dir === 'download' ? truth.downMbps : truth.upMbps) : null;
         }), 'pct');
         const wireMedian = stat(wireVsTruth)?.median ?? 0;
         if (wireVerdict?.status === 'fail') suspect = 'weir-math';
@@ -520,11 +532,11 @@ export function validity(
   }
   let rate: Validity['rate'] = null;
   if (entry.lossPct === 0 && !entry.jitter && truths.length) {
-    const ratios = truths.flatMap((truth) => [
-      ...(usableTruth(truth, 'download') ? [truth.downMbps / ceilingMbps(entry.down)] : []),
-      ...(usableTruth(truth, 'upload') ? [truth.upMbps / ceilingMbps(entry.up)] : []),
-    ]);
-    const ok = ratios.every((ratio) => ratio >= THRESHOLDS.rate.min && ratio <= THRESHOLDS.rate.max);
+    const down = truths.filter((truth) => usableTruth(truth, 'download')).map((truth) => truth.downMbps / ceilingMbps(entry.down));
+    const up = truths.filter((truth) => usableTruth(truth, 'upload')).map((truth) => truth.upMbps / ceilingMbps(entry.up));
+    const ratios = [...down, ...up];
+    const reaches = (values: number[]) => !values.length || Math.max(...values) >= THRESHOLDS.rate.min;
+    const ok = reaches(down) && reaches(up) && ratios.every((ratio) => ratio <= THRESHOLDS.rate.max);
     rate = { ok, ratios: ratios.map((ratio) => round(ratio, 4)!), detail: 'loss-free iperf3 goodput over the shaped payload ceiling' };
     if (!ok) reasons.push(`rate: iperf3/ceiling ${ratios.map((ratio) => ratio.toFixed(3)).join(', ')}`);
   }
