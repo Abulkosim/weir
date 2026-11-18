@@ -415,6 +415,25 @@
     ]
   },
   {
+    "id": "F-9",
+    "title": "A slow download reads a little below the wire in its own window",
+    "status": "open",
+    "where": "src-tauri/src/core/stats.rs:272, src-tauri/src/core/backends/cloudflare.rs:178",
+    "cause": "On slow-5 Weir's download sits at or below the client interface's payload rate over its own steady window in every run (median {slow-5.download.wireErr} %), and in the run after the bounds were first set one repeat fell past the downloadWire limit. The wire there is flat at the link's payload ceiling and the receiver saw no duplicate segments, so the wire is not the suspect. The steady window on this link is only a few seconds long, so bytes the kernel holds unread at the window's end weigh more; why the gap is one-sided is not settled. Fix or explain in its own pull request: compare Weir's byte counter against the socket's received bytes per tick, or lengthen the steady window on slow links.",
+    "expect": [
+      {
+        "profile": "slow-5",
+        "metric": "download.wire",
+        "min": -5,
+        "max": 3,
+        "seen": {
+          "failed": 1,
+          "runs": 5
+        }
+      }
+    ]
+  },
+  {
     "id": "F-doc-1",
     "title": "docs/method.md claims an upload byte cross-check the code does not do",
     "status": "open",

@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44224149331) on commit `c87ed8aea4d2` (Weir 0.7.3), started 2026-11-18 02:58 UTC.
 
-Gate at run time: not recorded. Re-judged with the findings and rules in this commit: **passing**. 180 pass, 29 expected fail, 7 unexpected pass, 115 report only.
+Gate at run time: not recorded. Re-judged with the findings and rules in this commit: **passing**. 179 pass, 29 expected fail, 8 unexpected pass, 115 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -93,7 +93,7 @@ Slow DSL, 5/1 Mbps. 5/1 Mbps · 40 ms RTT · 200 ms buffer.
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
-| Download | 4.8 Mbps (4.8–4.8) | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.6–4.7) | 4.7 Mbps | −1.4 % (−2.9 to −0.6) wire, −1.3 % (−2.5 to −0.6) iperf3 | pass |
+| Download | 4.8 Mbps (4.8–4.8) | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.6–4.7) | 4.7 Mbps | −1.4 % (−2.9 to −0.6) wire, −1.3 % (−2.5 to −0.6) iperf3 | unexpected pass ([F-9](#f-9)) |
 | Upload | – | 0.9 Mbps (0.9–0.9) | – | 1.0 Mbps | – wire, – iperf3 | expected fail ([F-2](#f-2)) |
 | Idle latency | – | 40.1 ms ping | 40.7 ms (40.6–40.9) | 40.5 ms (40.4–40.5) | +0.6 ms (+0.5 to +0.8) | pass |
 | Loaded latency, download | 220 ms (211–221) ping | – | 220 ms (201–222) | – | +0.2 ms (−9.8 to +0.9) | pass |
@@ -102,6 +102,7 @@ Slow DSL, 5/1 Mbps. 5/1 Mbps · 40 ms RTT · 200 ms buffer.
 | Data used | 4 MB (4–4) on the wire | – | counts 109 % of the payload | – | – | pass |
 
 - Validity: Weir did not finish every run: upload stalled ×3 in 3 runs. expected fail ([F-2](#f-2)).
+- download.wire: worst 2.9 % against the wire in Weir's own steady window (limit 3 %). unexpected pass ([F-9](#f-9)).
 - upload.wire: no Weir result to compare with the wire. Suspect: weir-math. expected fail ([F-2](#f-2)).
 - upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. expected fail ([F-2](#f-2)).
 - upload.physics: no Weir result. Suspect: weir-math. expected fail ([F-2](#f-2)).
@@ -551,6 +552,18 @@ Expected to fail until fixed, and only like this:
 | dsl-25-bloat | loaded.download.bias | every per-repeat error within -43 to +5 | 1 of 4 runs | unexpected pass |
 | geo-250 | loaded.download.bias | up to 1 runs without Weir's value, every per-repeat error within -72 to +5 | 2 of 4 runs | unexpected pass |
 | geo-250 | loaded.download | up to 1 runs without Weir's value, otherwise passing | 1 of 4 runs | unexpected pass |
+
+### F-9
+
+**A slow download reads a little below the wire in its own window** (open). Where: `src-tauri/src/core/stats.rs:272, src-tauri/src/core/backends/cloudflare.rs:178`.
+
+On slow-5 Weir's download sits at or below the client interface's payload rate over its own steady window in every run (median -1.4 %), and in the run after the bounds were first set one repeat fell past the downloadWire limit. The wire there is flat at the link's payload ceiling and the receiver saw no duplicate segments, so the wire is not the suspect. The steady window on this link is only a few seconds long, so bytes the kernel holds unread at the window's end weigh more; why the gap is one-sided is not settled. Fix or explain in its own pull request: compare Weir's byte counter against the socket's received bytes per tick, or lengthen the steady window on slow links.
+
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| slow-5 | download.wire | every per-repeat error within -5 to +3 | 1 of 5 runs | unexpected pass |
 
 ### F-doc-1
 
