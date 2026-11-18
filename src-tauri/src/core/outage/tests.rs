@@ -262,6 +262,40 @@ fn flapping_link_counts_one_outage() {
 }
 
 #[test]
+fn an_answer_from_before_the_network_went_away_does_not_end_the_outage() {
+    let mut watch = Watch::default();
+    watch.on(down(Cause::Router), 0);
+    watch.on(down(Cause::Router), MINUTE);
+    let started = 2 * MINUTE;
+    assert!(watch.on(PATH_OFFLINE, started + 2_000).is_empty());
+    let late_up = Check::Up {
+        router_now: Some(true),
+    };
+    assert!(
+        watch.on_from(late_up, started, started + 6_000).is_empty(),
+        "the router re-check ran past the Wi-Fi drop"
+    );
+    assert_eq!(watch.outage_since_ms(), Some(0));
+    assert_eq!(
+        watch.on_from(UP, 3 * MINUTE, 3 * MINUTE),
+        [back(0, 3 * MINUTE, causes(1, 0, 0, 2))]
+    );
+}
+
+#[test]
+fn a_down_from_before_the_network_went_away_still_counts() {
+    let mut watch = Watch::default();
+    watch.on(PATH_OFFLINE, 1_000);
+    watch.on(UP, 2_000);
+    assert_eq!(
+        watch.on_from(FAIL, 0, 3_000),
+        [],
+        "one failure isn't an outage"
+    );
+    assert_eq!(watch.causes(), causes(0, 0, 0, 1));
+}
+
+#[test]
 fn reset_forgets_an_open_outage_and_its_tally() {
     let mut watch = Watch::default();
     watch.on(TICK_OFFLINE, 0);

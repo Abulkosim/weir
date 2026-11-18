@@ -6,6 +6,7 @@ use crate::{
         backends::{cloudflare::Cloudflare, Backend, Connection},
         outage::{classify_on, Check},
         probe,
+        time::unix_ms,
     },
     runtime::Runtime,
 };
@@ -40,6 +41,7 @@ pub fn start(app: AppHandle, runtime: Arc<Runtime>) {
             if runtime.testing() {
                 continue;
             }
+            let started_ms = unix_ms();
             let changes = runtime.network_changes();
             let path = runtime.path();
             if path.is_some_and(|path| !path.online) {
@@ -68,7 +70,7 @@ pub fn start(app: AppHandle, runtime: Arc<Runtime>) {
                 Check::Down(classify_on(signals, runtime.network_changes() == changes))
             };
             if runtime.view().settings.watch_outages {
-                runtime.watch_tick(&app, check);
+                runtime.watch_tick_from(&app, check, started_ms);
             }
         }
     });
