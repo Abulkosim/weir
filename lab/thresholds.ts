@@ -14,7 +14,7 @@ export const THRESHOLDS = {
   },
   uploadWire: {
     maxAbsPct: 5,
-    reason: 'Weir times whole requests that started in the steady window; the wire is a continuous window. Request edges add a few percent.',
+    reason: 'Weir spreads each completed request evenly over its transfer, and the wire is counted over the same window Weir used. Bursts inside a request and the half round trip between client and server timing add a few percent.',
   },
   capacityClean: {
     medianMinPct: -10,

@@ -82,7 +82,15 @@ struct Row {
 
 /// The steady window the engine used for one direction, rebuilt with the
 /// engine's own `Tracker` from the per-tick progress.
-fn window(rows: &[Row], phase: Phase, base_bytes: u64, capped: bool) -> Value {
+/// `result` is the window the engine's result came from, when it reports one
+/// (upload: steady start to the first stream's last completed transfer).
+fn window(
+    rows: &[Row],
+    phase: Phase,
+    base_bytes: u64,
+    capped: bool,
+    result: Option<(u64, f64)>,
+) -> Value {
     let mine: Vec<&Row> = rows.iter().filter(|row| row.phase == phase).collect();
     let Some(first) = mine.first() else {
         return Value::Null;
@@ -98,16 +106,20 @@ fn window(rows: &[Row], phase: Phase, base_bytes: u64, capped: bool) -> Value {
     let phase_start = first.unix_ms - first.phase_ms as f64;
     let stop = if capped { Stop::Cap } else { Stop::Converged };
     let rebuilt = tracker.result(stop).ok();
-    let steady_start = rebuilt
-        .as_ref()
-        .map(|throughput| throughput.steady_start_ms)
-        .or_else(|| tracker.steady_start().map(|(start, _)| start));
+    let steady_start = result.map(|(start, _)| start).or_else(|| {
+        rebuilt
+            .as_ref()
+            .map(|throughput| throughput.steady_start_ms)
+            .or_else(|| tracker.steady_start().map(|(start, _)| start))
+    });
+    let end_ms = result.map_or(tracker.elapsed_ms() as f64, |(_, end)| end);
     json!({
         "phaseStartUnixMs": phase_start,
         "steadyStartMs": steady_start,
-        "endMs": tracker.elapsed_ms(),
+        "endMs": end_ms,
+        "phaseEndMs": tracker.elapsed_ms(),
         "startUnixMs": steady_start.map(|start| phase_start + start as f64),
-        "endUnixMs": phase_start + tracker.elapsed_ms() as f64,
+        "endUnixMs": phase_start + end_ms,
         "rebuiltMbps": rebuilt.as_ref().map(|throughput| throughput.mbps),
         "phaseBytes": tracker.bytes(),
     })
@@ -164,8 +176,14 @@ fn main() {
         })
     };
     let windows = json!({
-        "download": window(&rows, Phase::Download, 0, capped(Phase::Download)),
-        "upload": window(&rows, Phase::Upload, upload_base, capped(Phase::Upload)),
+        "download": window(&rows, Phase::Download, 0, capped(Phase::Download), None),
+        "upload": window(
+            &rows,
+            Phase::Upload,
+            upload_base,
+            capped(Phase::Upload),
+            control.upload_window_ms.lock().ok().and_then(|window| *window),
+        ),
     });
     let trace: Vec<Value> = rows
         .iter()

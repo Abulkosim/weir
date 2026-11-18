@@ -74,6 +74,10 @@ impl Default for Plan {
 pub struct Control {
     pub cancel: AtomicBool,
     pub network_changed: AtomicBool,
+    /// The upload's result window, phase-relative ms, for the accuracy lab's
+    /// wire comparison.
+    #[cfg(feature = "lab")]
+    pub upload_window_ms: Mutex<Option<(u64, f64)>>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -561,7 +565,13 @@ pub async fn run<B: Backend>(
                 uploads.len(),
                 direction.throughput.steady_start_ms,
             ) {
-                Some(mbps) => speed.mbps = mbps,
+                Some((mbps, _end_ms)) => {
+                    speed.mbps = mbps;
+                    #[cfg(feature = "lab")]
+                    if let Ok(mut window) = control.upload_window_ms.lock() {
+                        *window = Some((direction.throughput.steady_start_ms, _end_ms));
+                    }
+                }
                 None => speed.rough = true,
             }
             Ok(speed)

@@ -27,7 +27,10 @@ export interface WeirReport {
 export interface Window {
   phaseStartUnixMs: number;
   steadyStartMs: number | null;
+  /** End of the window Weir's speed came from: the phase end, or for upload the first stream's last completed transfer. */
   endMs: number;
+  /** End of the phase, which is also the end of Weir's loaded-latency window. Absent in runs before it was recorded. */
+  phaseEndMs?: number;
   startUnixMs: number | null;
   endUnixMs: number;
   rebuiltMbps: number | null;

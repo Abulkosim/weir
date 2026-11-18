@@ -41,7 +41,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | Check | Limit | Reason |
 |---|---|---|
 | downloadWire | maxAbsPct 3 | Same run, same window: the only gap is app-versus-kernel buffering at the window edges plus Weir's 100 ms tick interpolation. |
-| uploadWire | maxAbsPct 5 | Weir times whole requests that started in the steady window; the wire is a continuous window. Request edges add a few percent. |
+| uploadWire | maxAbsPct 5 | Weir spreads each completed request evenly over its transfer, and the wire is counted over the same window Weir used. Bursts inside a request and the half round trip between client and server timing add a few percent. |
 | capacityClean | medianMinPct -10, medianMaxPct 5, worstAbsPct 20 | docs/method.md promises agreement within about 10 %. Over-reading is held tighter because iperf3 already sits near the physical ceiling. |
 | capacityNoisy | medianAbsPct 20, worstAbsPct 35 | Loss-limited TCP is high-variance, and HTTP requests recover from tail loss differently from one long bulk transfer. Five repeats, not a wider band, carry the noise. |
 | physics | factor 1.02 | No run may report more than the shaped rate can carry (payload per frame, 1448/1514), plus 2 % for tbf burst and window-edge effects. |

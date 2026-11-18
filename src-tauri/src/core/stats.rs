@@ -389,9 +389,13 @@ pub struct Completed {
 /// evenly over its transfer, from its start for `duration_ms`. The window ends
 /// where the first stream's last completed transfer ends, so no stream has a
 /// request in flight inside it, and the time a stream sits between requests
-/// counts as time. `None` when any stream started fewer than three requests in
-/// the window.
-pub fn upload_mbps(requests: &[Completed], streams: usize, steady_start_ms: u64) -> Option<f64> {
+/// counts as time. `(mbps, window end ms)`, or `None` when any stream started
+/// fewer than three requests in the window.
+pub fn upload_mbps(
+    requests: &[Completed],
+    streams: usize,
+    steady_start_ms: u64,
+) -> Option<(f64, f64)> {
     let start = steady_start_ms as f64;
     let span = |request: &Completed| {
         let begin = request.started_ms as f64;
@@ -428,7 +432,7 @@ pub fn upload_mbps(requests: &[Completed], streams: usize, steady_start_ms: u64)
         })
         .sum();
     let rate = mbps(bytes, end - start);
-    (rate > 0.0).then_some(rate)
+    (rate > 0.0).then_some((rate, end))
 }
 
 pub const DOWNLOAD_CAP_MB: f64 = 380.0;

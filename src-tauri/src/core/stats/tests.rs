@@ -260,7 +260,7 @@ fn upload_uses_completed_requests_per_stream() {
             requests.push(request(stream, 1_000 + step * 1_000, 2_500_000, 1_000.0));
         }
     }
-    let rate = upload_mbps(&requests, 2, 1_000).unwrap();
+    let (rate, _) = upload_mbps(&requests, 2, 1_000).unwrap();
     assert!(close(rate, 40.0, 0.001), "{rate}");
     assert_eq!(upload_mbps(&requests, 3, 1_000), None);
     assert_eq!(upload_mbps(&requests, 2, 2_500), None);
@@ -281,7 +281,7 @@ fn upload_counts_the_time_a_stream_waits_between_requests() {
             });
         }
     }
-    let rate = upload_mbps(&requests, 2, 1_000).unwrap();
+    let (rate, _) = upload_mbps(&requests, 2, 1_000).unwrap();
     assert!(close(rate, 20.0, 0.001), "{rate}");
 }
 
@@ -297,8 +297,9 @@ fn upload_spreads_a_request_across_the_window_edge() {
     for step in 0..4 {
         requests.push(request(0, 1_250 + step * 500));
     }
-    let rate = upload_mbps(&requests, 1, 1_000).unwrap();
+    let (rate, end) = upload_mbps(&requests, 1, 1_000).unwrap();
     assert!(close(rate, 20.0, 0.001), "{rate}");
+    assert_eq!(end, 3_250.0);
 }
 
 #[test]
