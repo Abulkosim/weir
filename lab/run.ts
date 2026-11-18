@@ -106,7 +106,7 @@ async function iperf(dir: 'down' | 'up', parallel: number, seconds: number, mbps
     'iperf3', '-c', ADDR.server, '-P', String(parallel), '-t', String(seconds), '-O', '2', '-l', String(iperfBlock(mbps)), '-J',
     dir === 'down' ? '-R' : '--get-server-output',
   ];
-  const done = await run(clientUser(argv), 30_000);
+  const done = await run(clientUser(argv), (seconds + 20) * 1000);
   const pings = parsePing((await ping.stop()).stdout, 100);
   if (done.code !== 0) return { error: done.timedOut ? 'timeout' : `iperf3 exit ${done.code}` };
   try {
@@ -117,14 +117,19 @@ async function iperf(dir: 'down' | 'up', parallel: number, seconds: number, mbps
   }
 }
 
+/** Below 10 Mbps one receive burst after a tail drop is a few percent of a ten-second test, so slow links run longer. */
+function truthSeconds(mbps: number): number {
+  return mbps < 10 ? 20 : 10;
+}
+
 async function truthStep(entry: Profile): Promise<Truth | Failed> {
   const before = cpu();
   const idle = await idlePing(21);
   const count = streams(expectedFar(entry));
-  const down = await iperf('down', count.down, 10, entry.down);
+  const down = await iperf('down', count.down, truthSeconds(entry.down), entry.down);
   if ('error' in down) return down;
   await drain();
-  const up = await iperf('up', count.up, 10, entry.up);
+  const up = await iperf('up', count.up, truthSeconds(entry.up), entry.up);
   if ('error' in up) return up;
   const busiest = cpuMax(before, cpu());
   return {
