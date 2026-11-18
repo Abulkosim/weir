@@ -17,8 +17,8 @@ use std::{
     time::Duration,
 };
 use tokio::{
-    task::{JoinHandle, JoinSet},
-    time::{interval, sleep, Instant, MissedTickBehavior},
+    task::JoinHandle,
+    time::{sleep, Instant},
 };
 
 const MB: u64 = 1_000_000;
@@ -28,7 +28,6 @@ pub struct Plan {
     pub idle_probes: usize,
     pub probe_gap: Duration,
     pub loaded_every: Duration,
-    pub probe_connections: usize,
     pub tick: Duration,
     pub pause: Duration,
     pub download: Limits,
@@ -49,7 +48,6 @@ impl Default for Plan {
             idle_probes: 20,
             probe_gap: Duration::from_millis(50),
             loaded_every: Duration::from_millis(250),
-            probe_connections: 3,
             tick: Duration::from_millis(100),
             pause: Duration::from_millis(300),
             download: Limits {
@@ -381,44 +379,23 @@ fn spawn_streams<C: Connection + 'static>(
     }
 }
 
-/// Loaded-latency probes on a fixed schedule, one every `every` on whichever
-/// connection is idle; a slot with every connection busy is skipped. A probe
-/// sent the moment the last one returns lands behind the upload burst that the
-/// same moment's responses release, and reads the queue high (F-8 in
-/// docs/accuracy.md).
 fn spawn_probes<C: Connection + 'static>(
-    connections: &[Arc<C>],
+    probe: &Arc<C>,
     every: Duration,
     phase: Instant,
 ) -> (JoinHandle<()>, Arc<Mutex<Vec<Probe>>>) {
     let probes = Arc::new(Mutex::new(Vec::new()));
-    let pool: Vec<(Arc<C>, Arc<AtomicBool>)> = connections
-        .iter()
-        .map(|connection| (connection.clone(), Arc::new(AtomicBool::new(false))))
-        .collect();
-    let sink = probes.clone();
+    let (connection, sink) = (probe.clone(), probes.clone());
     let handle = tokio::spawn(async move {
-        let mut running = JoinSet::new();
-        let mut slots = interval(every);
-        slots.set_missed_tick_behavior(MissedTickBehavior::Skip);
+        let mut next = Instant::now();
         loop {
-            slots.tick().await;
-            while running.try_join_next().is_some() {}
-            let Some((connection, busy)) = pool
-                .iter()
-                .find(|(_, busy)| !busy.swap(true, Ordering::AcqRel))
-            else {
-                continue;
-            };
-            let (connection, busy, sink) = (connection.clone(), busy.clone(), sink.clone());
+            next += every;
             let sent_ms = millis(phase);
-            running.spawn(async move {
-                let rtt_ms = connection.probe().await.ok();
-                if let Ok(mut probes) = sink.lock() {
-                    probes.push(Probe { sent_ms, rtt_ms });
-                }
-                busy.store(false, Ordering::Release);
-            });
+            let rtt_ms = connection.probe().await.ok();
+            if let Ok(mut probes) = sink.lock() {
+                probes.push(Probe { sent_ms, rtt_ms });
+            }
+            tokio::time::sleep_until(next.max(Instant::now())).await;
         }
     });
     (handle, probes)
@@ -433,7 +410,7 @@ async fn transfer<C: Connection + 'static>(
     phases: &Phases<'_>,
     phase: Phase,
     connections: &[Arc<C>],
-    probe_pool: &[Arc<C>],
+    probe: &Arc<C>,
     completed: Option<Arc<Mutex<Vec<Completed>>>>,
     progress: &mut impl FnMut(Progress),
 ) -> Result<Direction, TestError> {
@@ -450,7 +427,7 @@ async fn transfer<C: Connection + 'static>(
         &counter,
         completed.map(|completed| (started, completed)),
     );
-    let (prober, probes) = spawn_probes(probe_pool, phases.plan.loaded_every, started);
+    let (prober, probes) = spawn_probes(probe, phases.plan.loaded_every, started);
     let mut tracker = Tracker::new();
     let mut counted = 0;
     let outcome = loop {
@@ -538,11 +515,8 @@ pub async fn run<B: Backend>(
             .collect()
     };
     let mut downloads = connect(plan.download_streams)?;
-    let mut loaded_probes = vec![probe.clone()];
-    loaded_probes.extend(connect(plan.probe_connections.saturating_sub(1))?);
     let warm: Vec<_> = downloads
         .iter()
-        .chain(&loaded_probes[1..])
         .map(|connection| {
             let connection = connection.clone();
             tokio::spawn(async move { connection.probe().await })
@@ -573,7 +547,7 @@ pub async fn run<B: Backend>(
         &phases,
         Phase::Download,
         &downloads,
-        &loaded_probes,
+        &probe,
         None,
         &mut progress,
     )
@@ -589,7 +563,7 @@ pub async fn run<B: Backend>(
         &phases,
         Phase::Upload,
         &uploads,
-        &loaded_probes,
+        &probe,
         Some(completed.clone()),
         &mut progress,
     )

@@ -287,32 +287,6 @@ async fn refused_upload_keeps_the_download_and_says_why() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn loaded_probes_keep_their_schedule_and_skip_when_all_are_busy() {
-    let fake = Fake {
-        rtt_ms: 600.0,
-        bloat_ms: 0.0,
-        ..Fake::default()
-    };
-    let pool = [
-        Arc::new(fake.connect().unwrap()),
-        Arc::new(fake.connect().unwrap()),
-    ];
-    let (handle, probes) = spawn_probes(&pool, Duration::from_millis(250), Instant::now());
-    sleep(Duration::from_millis(1_900)).await;
-    handle.abort();
-    let mut sent: Vec<u64> = probes
-        .lock()
-        .unwrap()
-        .iter()
-        .map(|probe| probe.sent_ms)
-        .collect();
-    sent.sort_unstable();
-    // Two connections, 600 ms each: 0 and 250 go out, 500 finds both busy, 750
-    // reuses the first. Nothing is sent the moment a probe returns.
-    assert_eq!(sent, [0, 250, 750, 1_000]);
-}
-
-#[tokio::test(start_paused = true)]
 async fn distant_server_gets_more_streams() {
     let fake = Fake {
         rtt_ms: 150.0,
@@ -321,7 +295,7 @@ async fn distant_server_gets_more_streams() {
     let report = run(&fake, &Plan::default(), &Control::default(), |_| {})
         .await
         .unwrap();
-    assert_eq!(fake.connections.load(Ordering::Relaxed), 3 + 8 + 6);
+    assert_eq!(fake.connections.load(Ordering::Relaxed), 1 + 8 + 6);
     assert!(
         close(report.download.mbps, 400.0, 0.06),
         "{}",

@@ -44,7 +44,7 @@ export const THRESHOLDS = {
   loaded: {
     absMs: 10,
     pct: 15,
-    reason: "Per run. Weir's probes go out on a fixed 250 ms schedule and the ping every 50 ms, so the two sample the same queue at different instants; on a deep queue that alone moves a median by several ms. A larger gap is Weir's probe method or its runtime scheduling.",
+    reason: "Per run. Weir's probes are closed-loop (each waits for the last, every 250 ms at most) and the ping is open-loop at 50 ms, so on a deep queue the two sample different moments of the same sawtooth; a larger gap is Weir's probe method or its runtime scheduling.",
   },
   loadedBias: {
     absMs: 5,

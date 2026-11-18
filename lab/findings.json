@@ -407,7 +407,7 @@
   {
     "id": "F-8",
     "title": "Loaded latency reads low on deep queues because Weir's probes are closed-loop",
-    "status": "fixed",
+    "status": "open",
     "where": "src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49",
     "cause": "spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is {dsl-25-bloat.download.loaded.bias} ms for download and {dsl-25-bloat.upload.loaded.bias} ms for upload, on geo-250 {geo-250.download.loaded.bias} ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time. The bias follows the load's rhythm, not one sign: since uploads start with 32 kB requests (F-2), each upload holds less in flight, the deep buffer fills less, and on dsl-25-bloat the upload median sits above the ping instead ({dsl-25-bloat.upload.loaded.bias} ms). Open-loop probes fix both directions.",
     "expect": [
