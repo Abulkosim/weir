@@ -42,9 +42,11 @@ struct FakeConnection {
 impl FakeConnection {
     async fn pace(&self, bytes: u64, mbps: f64, counter: &AtomicU64) {
         let first = *self.first.lock().unwrap().get_or_insert_with(Instant::now);
+        // 50 ms of data per step, so the ramp below moves on slow links too.
+        let step = ((mbps * 1e6 / 8.0 * 0.05) as u64).clamp(1_024, 64 * 1024);
         let mut sent = 0;
         while sent < bytes {
-            let chunk = (bytes - sent).min(64 * 1024);
+            let chunk = (bytes - sent).min(step);
             let t = first.elapsed();
             if self.fake.stall_after.is_some_and(|after| t >= after) {
                 pending::<()>().await;
