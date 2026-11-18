@@ -1,0 +1,8121 @@
+{
+ "schema": 1,
+ "commit": "b98c66d0a3ccacc848b8028bfb401e67a55c5368",
+ "weirVersion": "0.7.3",
+ "runUrl": "https://github.com/Abulkosim/weir/actions/runs/44243331961",
+ "startedAt": "2026-11-18T05:23:51.596Z",
+ "runner": {
+  "kernel": "7.0.0-1017-azure",
+  "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+  "cpus": 4,
+  "iperf3": "3.16",
+  "chromium": "158.0.8127.18",
+  "speedtestLib": "1.16.0",
+  "tcpCc": "cubic",
+  "sysctls": {
+   "net.ipv4.tcp_no_metrics_save": "1",
+   "net.ipv4.tcp_congestion_control": "cubic",
+   "net.ipv4.tcp_timestamps": "1",
+   "net.ipv4.tcp_rmem": "4096\t131072\t6291456",
+   "net.ipv4.tcp_wmem": "4096\t16384\t4194304"
+  },
+  "offloads": "tso, gso and gro off on every lab interface",
+  "jitterMode": "pareto",
+  "netdevMaxBacklog": 10000,
+  "weirProfile": "lab (opt-level s, panic abort, no LTO, 16 codegen units)"
+ },
+ "shards": [
+  {
+   "shard": 1,
+   "wallMs": 1183180,
+   "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+   "kernel": "7.0.0-1017-azure",
+   "baseline": {
+    "iperfDown": 17419.486,
+    "iperfUp": 16759.336,
+    "weirDown": 15492.176,
+    "weirUp": 14430.477,
+    "weirError": null,
+    "twinDown": 4410.308,
+    "twinUp": 3846.89,
+    "serverCpuCores": 0.893,
+    "serverGbps": 12.046,
+    "softnetDrops": 0,
+    "weirLoadedInflationMs": 3.818
+   },
+   "runner": {
+    "kernel": "7.0.0-1017-azure",
+    "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+    "cpus": 4,
+    "iperf3": "3.16",
+    "chromium": "158.0.8127.18",
+    "speedtestLib": "1.16.0",
+    "tcpCc": "cubic",
+    "sysctls": {
+     "net.ipv4.tcp_no_metrics_save": "1",
+     "net.ipv4.tcp_congestion_control": "cubic",
+     "net.ipv4.tcp_timestamps": "1",
+     "net.ipv4.tcp_rmem": "4096\t131072\t6291456",
+     "net.ipv4.tcp_wmem": "4096\t16384\t4194304"
+    },
+    "offloads": "tso, gso and gro off on every lab interface",
+    "jitterMode": "pareto",
+    "netdevMaxBacklog": 10000,
+    "weirProfile": "lab (opt-level s, panic abort, no LTO, 16 codegen units)"
+   }
+  },
+  {
+   "shard": 2,
+   "wallMs": 1369899,
+   "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+   "kernel": "7.0.0-1017-azure",
+   "baseline": {
+    "iperfDown": 16536.677,
+    "iperfUp": 16056.997,
+    "weirDown": 16075.827,
+    "weirUp": 14400.305,
+    "weirError": null,
+    "twinDown": 4494.517,
+    "twinUp": 6008.969,
+    "serverCpuCores": 1.016,
+    "serverGbps": 12.118,
+    "softnetDrops": 0,
+    "weirLoadedInflationMs": 6.27
+   },
+   "runner": {
+    "kernel": "7.0.0-1017-azure",
+    "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+    "cpus": 4,
+    "iperf3": "3.16",
+    "chromium": "158.0.8127.18",
+    "speedtestLib": "1.16.0",
+    "tcpCc": "cubic",
+    "sysctls": {
+     "net.ipv4.tcp_no_metrics_save": "1",
+     "net.ipv4.tcp_congestion_control": "cubic",
+     "net.ipv4.tcp_timestamps": "1",
+     "net.ipv4.tcp_rmem": "4096\t131072\t6291456",
+     "net.ipv4.tcp_wmem": "4096\t16384\t4194304"
+    },
+    "offloads": "tso, gso and gro off on every lab interface",
+    "jitterMode": "pareto",
+    "netdevMaxBacklog": 10000,
+    "weirProfile": "lab (opt-level s, panic abort, no LTO, 16 codegen units)"
+   }
+  },
+  {
+   "shard": 3,
+   "wallMs": 1220618,
+   "cpuModel": "AMD EPYC 7763 64-Core Processor",
+   "kernel": "7.0.0-1017-azure",
+   "baseline": {
+    "iperfDown": 11429.168,
+    "iperfUp": 11168.285,
+    "weirDown": 10743.998,
+    "weirUp": 9845.899,
+    "weirError": null,
+    "twinDown": 2989.786,
+    "twinUp": 2764.787,
+    "serverCpuCores": 1.408,
+    "serverGbps": 8.209,
+    "softnetDrops": 0,
+    "weirLoadedInflationMs": 35.01
+   },
+   "runner": {
+    "kernel": "7.0.0-1017-azure",
+    "cpuModel": "AMD EPYC 7763 64-Core Processor",
+    "cpus": 4,
+    "iperf3": "3.16",
+    "chromium": "158.0.8127.18",
+    "speedtestLib": "1.16.0",
+    "tcpCc": "cubic",
+    "sysctls": {
+     "net.ipv4.tcp_no_metrics_save": "1",
+     "net.ipv4.tcp_congestion_control": "cubic",
+     "net.ipv4.tcp_timestamps": "1",
+     "net.ipv4.tcp_rmem": "4096\t131072\t6291456",
+     "net.ipv4.tcp_wmem": "4096\t16384\t4194304"
+    },
+    "offloads": "tso, gso and gro off on every lab interface",
+    "jitterMode": "pareto",
+    "netdevMaxBacklog": 10000,
+    "weirProfile": "lab (opt-level s, panic abort, no LTO, 16 codegen units)"
+   }
+  },
+  {
+   "shard": 4,
+   "wallMs": 814871,
+   "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+   "kernel": "7.0.0-1017-azure",
+   "baseline": {
+    "iperfDown": 16169.103,
+    "iperfUp": 15327.97,
+    "weirDown": 14657.006,
+    "weirUp": 13617.568,
+    "weirError": null,
+    "twinDown": 3589.78,
+    "twinUp": 3810.427,
+    "serverCpuCores": 1.635,
+    "serverGbps": 11.28,
+    "softnetDrops": 0,
+    "weirLoadedInflationMs": 13.649
+   },
+   "runner": {
+    "kernel": "7.0.0-1017-azure",
+    "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+    "cpus": 4,
+    "iperf3": "3.16",
+    "chromium": "158.0.8127.18",
+    "speedtestLib": "1.16.0",
+    "tcpCc": "cubic",
+    "sysctls": {
+     "net.ipv4.tcp_no_metrics_save": "1",
+     "net.ipv4.tcp_congestion_control": "cubic",
+     "net.ipv4.tcp_timestamps": "1",
+     "net.ipv4.tcp_rmem": "4096\t131072\t6291456",
+     "net.ipv4.tcp_wmem": "4096\t16384\t4194304"
+    },
+    "offloads": "tso, gso and gro off on every lab interface",
+    "jitterMode": "pareto",
+    "netdevMaxBacklog": 10000,
+    "weirProfile": "lab (opt-level s, panic abort, no LTO, 16 codegen units)"
+   }
+  },
+  {
+   "shard": 5,
+   "wallMs": 1210662,
+   "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+   "kernel": "7.0.0-1017-azure",
+   "baseline": {
+    "iperfDown": 15625.88,
+    "iperfUp": 15677.649,
+    "weirDown": 14923.64,
+    "weirUp": 14113.542,
+    "weirError": null,
+    "twinDown": 3827.866,
+    "twinUp": 5694.051,
+    "serverCpuCores": 1.036,
+    "serverGbps": 11.458,
+    "softnetDrops": 0,
+    "weirLoadedInflationMs": 6.516
+   },
+   "runner": {
+    "kernel": "7.0.0-1017-azure",
+    "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+    "cpus": 4,
+    "iperf3": "3.16",
+    "chromium": "158.0.8127.18",
+    "speedtestLib": "1.16.0",
+    "tcpCc": "cubic",
+    "sysctls": {
+     "net.ipv4.tcp_no_metrics_save": "1",
+     "net.ipv4.tcp_congestion_control": "cubic",
+     "net.ipv4.tcp_timestamps": "1",
+     "net.ipv4.tcp_rmem": "4096\t131072\t6291456",
+     "net.ipv4.tcp_wmem": "4096\t16384\t4194304"
+    },
+    "offloads": "tso, gso and gro off on every lab interface",
+    "jitterMode": "pareto",
+    "netdevMaxBacklog": 10000,
+    "weirProfile": "lab (opt-level s, panic abort, no LTO, 16 codegen units)"
+   }
+  }
+ ],
+ "profiles": [
+  {
+   "id": "slow-5",
+   "shape": {
+    "down": 5,
+    "up": 1,
+    "rttMs": 40,
+    "lossPct": 0,
+    "bufferMs": 200,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 1,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 40,
+     "p5": 40,
+     "p95": 40.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      0.9943,
+      0.9929,
+      0.9939,
+      0.9839,
+      0.986,
+      0.986
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 0,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 142933,
+     "truth": {
+      "downMbps": 4.755,
+      "upMbps": 0.941,
+      "idleMs": 40,
+      "jitterMs": 0.037,
+      "loadedDownMs": 225,
+      "loadedUpMs": 216,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00172
+      },
+      "cpuMax": 0.009,
+      "cpuPeak": 0.2,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 4286644,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 221.81440899999998,
+        "mbps": 4.710996228688976,
+        "p10": 4.121207128712872,
+        "p90": 5.531372736633671,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 10955,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.04177194444444668,
+        "medianMs": 40.418245,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979549624,
+       "upload": null,
+       "uploadError": "stalled"
+      },
+      "error": null,
+      "wallMs": 10955,
+      "windows": {
+       "download": {
+        "endMs": 5562,
+        "endUnixMs": 1794979557141.3074,
+        "phaseBytes": 3262644,
+        "phaseStartUnixMs": 1794979551579.3074,
+        "rebuiltMbps": 4.710996228688976,
+        "startUnixMs": 1794979553329.3074,
+        "steadyStartMs": 1750
+       },
+       "upload": {
+        "endMs": 3138,
+        "endUnixMs": 1794979560580.0117,
+        "phaseBytes": 1024000,
+        "phaseStartUnixMs": 1794979557442.0117,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794979558442.0117,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 4.77,
+       "upMbps": 0.947,
+       "idleMs": 40.1,
+       "loadedDownMs": 223,
+       "loadedUpMs": 225,
+       "ipBytes": 4466285,
+       "payloadBytes": 4169521,
+       "tailIpBytes": 249869,
+       "pingSent": 217,
+       "serverSpan": [
+        9137,
+        2874,
+        284
+       ]
+      },
+      "serverBytes": {
+       "down": 3840000,
+       "up": 607368,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.033,
+      "cpuPeak": 0.208,
+      "saturated": false
+     },
+     "twin": {
+      "down": 4.679,
+      "up": 0.953,
+      "idle": 40.2,
+      "jitter": 0.057,
+      "downLoaded": 192.15,
+      "upLoaded": 200,
+      "durationMs": 75604,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.022,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 142867,
+     "truth": {
+      "downMbps": 4.748,
+      "upMbps": 0.943,
+      "idleMs": 40.1,
+      "jitterMs": 0.042,
+      "loadedDownMs": 226,
+      "loadedUpMs": 218,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00008
+      },
+      "cpuMax": 0.01,
+      "cpuPeak": 0.286,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 4005666,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 227.710407,
+        "mbps": 4.753534054131806,
+        "p10": 4.488318986138616,
+        "p90": 4.839116293069306,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 10447,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.0540465000000003,
+        "medianMs": 40.397534,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979642625,
+       "upload": null,
+       "uploadError": "stalled"
+      },
+      "error": null,
+      "wallMs": 10448,
+      "windows": {
+       "download": {
+        "endMs": 5054,
+        "endUnixMs": 1794979649633.2368,
+        "phaseBytes": 2981666,
+        "phaseStartUnixMs": 1794979644579.2368,
+        "rebuiltMbps": 4.753534054131806,
+        "startUnixMs": 1794979646329.2368,
+        "steadyStartMs": 1750
+       },
+       "upload": {
+        "endMs": 3138,
+        "endUnixMs": 1794979653073.349,
+        "phaseBytes": 1024000,
+        "phaseStartUnixMs": 1794979649935.349,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794979650935.349,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 4.77,
+       "upMbps": 0.944,
+       "idleMs": 40.1,
+       "loadedDownMs": 226,
+       "loadedUpMs": 223,
+       "ipBytes": 4237903,
+       "payloadBytes": 3952683,
+       "tailIpBytes": 311321,
+       "pingSent": 208,
+       "serverSpan": [
+        8631,
+        3432,
+        285
+       ]
+      },
+      "serverBytes": {
+       "down": 4096000,
+       "up": 668184,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.049,
+      "cpuPeak": 0.208,
+      "saturated": false
+     },
+     "twin": {
+      "down": 4.679,
+      "up": 0.953,
+      "idle": 40.2,
+      "jitter": 0.057,
+      "downLoaded": 193.3,
+      "upLoaded": 205.8,
+      "durationMs": 75613,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.022,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 143345,
+     "truth": {
+      "downMbps": 4.753,
+      "upMbps": 0.943,
+      "idleMs": 40.1,
+      "jitterMs": 0.011,
+      "loadedDownMs": 228,
+      "loadedUpMs": 215,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.0022
+      },
+      "cpuMax": 0.015,
+      "cpuPeak": 0.313,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 4002540,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 225.38709599999999,
+        "mbps": 4.764931661166116,
+        "p10": 4.013009241980199,
+        "p90": 5.298105551543385,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 10442,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.048484388888888695,
+        "medianMs": 40.416402,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979913530,
+       "upload": null,
+       "uploadError": "stalled"
+      },
+      "error": null,
+      "wallMs": 10442,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794979920534.0767,
+        "phaseBytes": 2978540,
+        "phaseStartUnixMs": 1794979915484.0767,
+        "rebuiltMbps": 4.764931661166116,
+        "startUnixMs": 1794979916484.0767,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 3137,
+        "endUnixMs": 1794979923972.9106,
+        "phaseBytes": 1024000,
+        "phaseStartUnixMs": 1794979920835.9106,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794979921835.9106,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 4.77,
+       "upMbps": 0.942,
+       "idleMs": 40.1,
+       "loadedDownMs": 225.5,
+       "loadedUpMs": 226.5,
+       "ipBytes": 4240799,
+       "payloadBytes": 3958595,
+       "tailIpBytes": 312929,
+       "pingSent": 209,
+       "serverSpan": [
+        8631,
+        3432,
+        285
+       ]
+      },
+      "serverBytes": {
+       "down": 4096000,
+       "up": 668184,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.033,
+      "cpuPeak": 0.208,
+      "saturated": false
+     },
+     "twin": {
+      "down": 4.679,
+      "up": 0.953,
+      "idle": 40.2,
+      "jitter": 0.054,
+      "downLoaded": 192.25,
+      "upLoaded": 199.9,
+      "durationMs": 75612,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.019,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "gig-5",
+   "shape": {
+    "down": 1000,
+    "up": 1000,
+    "rttMs": 5,
+    "lossPct": 0,
+    "bufferMs": 10,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 1,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 5.09,
+     "p5": 5.06,
+     "p95": 5.09,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      1,
+      0.9999,
+      0.9999,
+      0.9994,
+      0.9999,
+      0.9999
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 21205,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 60772,
+     "truth": {
+      "downMbps": 956.405,
+      "upMbps": 955.835,
+      "idleMs": 5.08,
+      "jitterMs": 0.011,
+      "loadedDownMs": 13.95,
+      "loadedUpMs": 13.9,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00035
+      },
+      "cpuMax": 0.282,
+      "cpuPeak": 0.357,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 575871874,
+       "colo": "LAB",
+       "download": {
+        "capped": true,
+        "loadedMs": 14.472304,
+        "mbps": 956.3500784179718,
+        "p10": 956.1093504316837,
+        "p90": 956.698140293069,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 6196,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.03751438888888857,
+        "medianMs": 5.33565,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979961844,
+       "upload": null,
+       "uploadError": "tooShort"
+      },
+      "error": null,
+      "wallMs": 6197,
+      "windows": {
+       "download": {
+        "endMs": 3231,
+        "endUnixMs": 1794979966221.2034,
+        "phaseBytes": 384208700,
+        "phaseStartUnixMs": 1794979962990.2034,
+        "rebuiltMbps": 956.3500784179718,
+        "startUnixMs": 1794979963990.2034,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 1518,
+        "endUnixMs": 1794979968040.4785,
+        "phaseBytes": 191663174,
+        "phaseStartUnixMs": 1794979966522.4785,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794979967522.4785,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 956.387,
+       "upMbps": 956.335,
+       "idleMs": 5.07,
+       "loadedDownMs": 13.85,
+       "loadedUpMs": 13.7,
+       "ipBytes": 604728344,
+       "payloadBytes": 577287736,
+       "tailIpBytes": 10952582,
+       "pingSent": 129,
+       "serverSpan": [
+        6018,
+        914,
+        150
+       ]
+      },
+      "serverBytes": {
+       "down": 400344124,
+       "up": 190592327,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 1,
+       "up": 0
+      },
+      "cpuMax": 0.24,
+      "cpuPeak": 0.379,
+      "saturated": false
+     },
+     "twin": {
+      "down": 937.043,
+      "up": 913.844,
+      "idle": 5.1,
+      "jitter": 0.051,
+      "downLoaded": 10.5,
+      "upLoaded": 8.5,
+      "durationMs": 23026,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.498,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 60715,
+     "truth": {
+      "downMbps": 956.3,
+      "upMbps": 956.308,
+      "idleMs": 5.07,
+      "jitterMs": 0.012,
+      "loadedDownMs": 14,
+      "loadedUpMs": 13.75,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00008
+      },
+      "cpuMax": 0.286,
+      "cpuPeak": 0.36,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 577012271,
+       "colo": "LAB",
+       "download": {
+        "capped": true,
+        "loadedMs": 14.30129,
+        "mbps": 956.5408469140954,
+        "p10": 942.9503372356439,
+        "p90": 970.6361786930693,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 6194,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.023877055555555464,
+        "medianMs": 5.310868,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979995342,
+       "upload": null,
+       "uploadError": "tooShort"
+      },
+      "error": null,
+      "wallMs": 6194,
+      "windows": {
+       "download": {
+        "endMs": 3231,
+        "endUnixMs": 1794979999719.1487,
+        "phaseBytes": 384241965,
+        "phaseStartUnixMs": 1794979996488.1487,
+        "rebuiltMbps": 956.5408469140954,
+        "startUnixMs": 1794979997488.1487,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 1515,
+        "endUnixMs": 1794980001536.716,
+        "phaseBytes": 192770306,
+        "phaseStartUnixMs": 1794980000021.716,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794980001021.716,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 956.398,
+       "upMbps": 956.207,
+       "idleMs": 5.07,
+       "loadedDownMs": 13.95,
+       "loadedUpMs": 13.2,
+       "ipBytes": 606344448,
+       "payloadBytes": 578868272,
+       "tailIpBytes": 12548860,
+       "pingSent": 129,
+       "serverSpan": [
+        6016,
+        868,
+        149
+       ]
+      },
+      "serverBytes": {
+       "down": 398781547,
+       "up": 191644210,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 4,
+       "up": 0
+      },
+      "cpuMax": 0.234,
+      "cpuPeak": 0.386,
+      "saturated": false
+     },
+     "twin": {
+      "down": 937.218,
+      "up": 906.844,
+      "idle": 5.1,
+      "jitter": 0.056,
+      "downLoaded": 14.4,
+      "upLoaded": 8.05,
+      "durationMs": 22985,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.456,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 60588,
+     "truth": {
+      "downMbps": 956.3,
+      "upMbps": 956.275,
+      "idleMs": 5.08,
+      "jitterMs": 0.012,
+      "loadedDownMs": 14.2,
+      "loadedUpMs": 14.05,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0
+      },
+      "cpuMax": 0.287,
+      "cpuPeak": 0.376,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 580238718,
+       "colo": "LAB",
+       "download": {
+        "capped": true,
+        "loadedMs": 14.366332,
+        "mbps": 956.4574865952754,
+        "p10": 951.7639733227728,
+        "p90": 959.2306946534652,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 6296,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.03197316666666689,
+        "medianMs": 5.3367059999999995,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980108024,
+       "upload": null,
+       "uploadError": "tooShort"
+      },
+      "error": null,
+      "wallMs": 6297,
+      "windows": {
+       "download": {
+        "endMs": 3231,
+        "endUnixMs": 1794980112401.9065,
+        "phaseBytes": 384241689,
+        "phaseStartUnixMs": 1794980109170.9065,
+        "rebuiltMbps": 956.4574865952754,
+        "startUnixMs": 1794980110170.9065,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 1617,
+        "endUnixMs": 1794980114321.3857,
+        "phaseBytes": 195997029,
+        "phaseStartUnixMs": 1794980112704.3857,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794980113704.3857,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 956.393,
+       "upMbps": 956.38,
+       "idleMs": 5.07,
+       "loadedDownMs": 14,
+       "loadedUpMs": 13.35,
+       "ipBytes": 609253460,
+       "payloadBytes": 581936404,
+       "tailIpBytes": 4214576,
+       "pingSent": 131,
+       "serverSpan": [
+        6000,
+        884,
+        151
+       ]
+      },
+      "serverBytes": {
+       "down": 398371860,
+       "up": 195852509,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 25,
+       "up": 0
+      },
+      "cpuMax": 0.253,
+      "cpuPeak": 0.386,
+      "saturated": false
+     },
+     "twin": {
+      "down": 937.218,
+      "up": 915.718,
+      "idle": 5.2,
+      "jitter": 0.068,
+      "downLoaded": 15.95,
+      "upLoaded": 8.9,
+      "durationMs": 23049,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.487,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "gig-60",
+   "shape": {
+    "down": 1000,
+    "up": 500,
+    "rttMs": 60,
+    "lossPct": 0,
+    "bufferMs": 20,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 1,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 60.1,
+     "p5": 60.1,
+     "p95": 60.2,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      0.9992,
+      1.0001,
+      0.9923,
+      0.9961,
+      0.9999,
+      1
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 8846,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 87744,
+     "truth": {
+      "downMbps": 955.672,
+      "upMbps": 476.32,
+      "idleMs": 60.1,
+      "jitterMs": 0.021,
+      "loadedDownMs": 71.4,
+      "loadedUpMs": 66.55,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00003
+      },
+      "cpuMax": 0.19,
+      "cpuPeak": 0.367,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 578163572,
+       "colo": "LAB",
+       "download": {
+        "capped": true,
+        "loadedMs": 61.320897499999994,
+        "mbps": 744.6563916305694,
+        "p10": 677.1441026851485,
+        "p90": 797.1487407599308,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 11715,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.06282844444444377,
+        "medianMs": 60.484787999999995,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980151555,
+       "upload": {
+        "capped": true,
+        "loadedMs": 60.32002250000001,
+        "mbps": 380.3554152782389,
+        "p10": 354.88448126732686,
+        "p90": 401.25097504950526,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 11715,
+      "windows": {
+       "download": {
+        "endMs": 4548,
+        "endUnixMs": 1794980158519.4814,
+        "phaseBytes": 385336240,
+        "phaseStartUnixMs": 1794980153971.4814,
+        "rebuiltMbps": 744.6563916305694,
+        "startUnixMs": 1794980156471.4814,
+        "steadyStartMs": 2500
+       },
+       "upload": {
+        "endMs": 4449,
+        "endUnixMs": 1794980163271.259,
+        "phaseBytes": 192827332,
+        "phaseStartUnixMs": 1794980158822.259,
+        "rebuiltMbps": 381.5997084428687,
+        "startUnixMs": 1794980160322.259,
+        "steadyStartMs": 1500
+       }
+      },
+      "wire": {
+       "downMbps": 745.071,
+       "upMbps": 376.862,
+       "idleMs": 60.1,
+       "loadedDownMs": 60.1,
+       "loadedUpMs": 60,
+       "ipBytes": 615713885,
+       "payloadBytes": 588293557,
+       "tailIpBytes": 6719816,
+       "pingSent": 237,
+       "serverSpan": [
+        9067,
+        1134,
+        264
+       ]
+      },
+      "serverBytes": {
+       "down": 405273649,
+       "up": 191743253,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 50,
+       "up": 0
+      },
+      "cpuMax": 0.1,
+      "cpuPeak": 0.293,
+      "saturated": false
+     },
+     "twin": {
+      "down": 281.344,
+      "up": 218.109,
+      "idle": 60.3,
+      "jitter": 0.078,
+      "downLoaded": 60.2,
+      "upLoaded": 60.2,
+      "durationMs": 42133,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.206,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 87427,
+     "truth": {
+      "downMbps": 956.463,
+      "upMbps": 478.133,
+      "idleMs": 60.1,
+      "jitterMs": 0.016,
+      "loadedDownMs": 75.25,
+      "loadedUpMs": 70,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00022
+      },
+      "cpuMax": 0.192,
+      "cpuPeak": 0.354,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 573840081,
+       "colo": "LAB",
+       "download": {
+        "capped": true,
+        "loadedMs": 60.723793,
+        "mbps": 859.7427332366709,
+        "p10": 767.6402864158417,
+        "p90": 943.8715072633661,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 11209,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.044312722222225806,
+        "medianMs": 60.414431,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980210198,
+       "upload": {
+        "capped": true,
+        "loadedMs": 60.2765735,
+        "mbps": 387.72622898723637,
+        "p10": 328.48959730382444,
+        "p90": 421.9970344554462,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 11209,
+      "windows": {
+       "download": {
+        "endMs": 4140,
+        "endUnixMs": 1794980216752.9172,
+        "phaseBytes": 381093018,
+        "phaseStartUnixMs": 1794980212612.9172,
+        "rebuiltMbps": 859.7427332366709,
+        "startUnixMs": 1794980214362.9172,
+        "steadyStartMs": 1750
+       },
+       "upload": {
+        "endMs": 4353,
+        "endUnixMs": 1794980221407.9727,
+        "phaseBytes": 192747063,
+        "phaseStartUnixMs": 1794980217054.9727,
+        "rebuiltMbps": 383.0288969540487,
+        "startUnixMs": 1794980218554.9727,
+        "steadyStartMs": 1500
+       }
+      },
+      "wire": {
+       "downMbps": 859.587,
+       "upMbps": 387.17,
+       "idleMs": 60.1,
+       "loadedDownMs": 61.7,
+       "loadedUpMs": 60,
+       "ipBytes": 611706319,
+       "payloadBytes": 584215271,
+       "tailIpBytes": 5116165,
+       "pingSent": 228,
+       "serverSpan": [
+        8650,
+        997,
+        251
+       ]
+      },
+      "serverBytes": {
+       "down": 403873489,
+       "up": 191960809,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 1,
+       "up": 4
+      },
+      "cpuMax": 0.106,
+      "cpuPeak": 0.25,
+      "saturated": false
+     },
+     "twin": {
+      "down": 296.872,
+      "up": 208.656,
+      "idle": 60.3,
+      "jitter": 0.085,
+      "downLoaded": 60.2,
+      "upLoaded": 60.2,
+      "durationMs": 42636,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.193,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 85672,
+     "truth": {
+      "downMbps": 949.021,
+      "upMbps": 478.191,
+      "idleMs": 60.1,
+      "jitterMs": 0,
+      "loadedDownMs": 65.4,
+      "loadedUpMs": 71.85,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00015
+      },
+      "cpuMax": 0.207,
+      "cpuPeak": 0.367,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 579923795,
+       "colo": "LAB",
+       "download": {
+        "capped": true,
+        "loadedMs": 70.25534099999999,
+        "mbps": 892.3395818808983,
+        "p10": 793.8178066376228,
+        "p90": 947.6582522930706,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 11012,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.04212044444444471,
+        "medianMs": 60.471619,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980369740,
+       "upload": {
+        "capped": true,
+        "loadedMs": 60.325063,
+        "mbps": 403.73254005789636,
+        "p10": 303.9117195896718,
+        "p90": 487.0705758769947,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 11012,
+      "windows": {
+       "download": {
+        "endMs": 4141,
+        "endUnixMs": 1794980376296.7207,
+        "phaseBytes": 388897232,
+        "phaseStartUnixMs": 1794980372155.7207,
+        "rebuiltMbps": 892.3395818808983,
+        "startUnixMs": 1794980373905.7207,
+        "steadyStartMs": 1750
+       },
+       "upload": {
+        "endMs": 4154,
+        "endUnixMs": 1794980380752.8186,
+        "phaseBytes": 191026563,
+        "phaseStartUnixMs": 1794980376598.8186,
+        "rebuiltMbps": 408.9029317674797,
+        "startUnixMs": 1794980378098.8186,
+        "steadyStartMs": 1500
+       }
+      },
+      "wire": {
+       "downMbps": 887.979,
+       "upMbps": 404.814,
+       "idleMs": 60.1,
+       "loadedDownMs": 66.8,
+       "loadedUpMs": 60.1,
+       "ipBytes": 618116722,
+       "payloadBytes": 590185442,
+       "tailIpBytes": 7743154,
+       "pingSent": 223,
+       "serverSpan": [
+        8694,
+        1102,
+        250
+       ]
+      },
+      "serverBytes": {
+       "down": 410960005,
+       "up": 190300468,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 1,
+       "up": 0
+      },
+      "cpuMax": 0.117,
+      "cpuPeak": 0.273,
+      "saturated": false
+     },
+     "twin": {
+      "down": 296.037,
+      "up": 236.939,
+      "idle": 60.3,
+      "jitter": 0.102,
+      "downLoaded": 60.2,
+      "upLoaded": 60.2,
+      "durationMs": 40704,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.215,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "fiber-300",
+   "shape": {
+    "down": 300,
+    "up": 300,
+    "rttMs": 10,
+    "lossPct": 0,
+    "bufferMs": 30,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 1,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 10.1,
+     "p5": 10.1,
+     "p95": 10.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      0.9998,
+      0.9999,
+      1,
+      0.9983,
+      0.9998,
+      1.0002
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 254,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 77372,
+     "truth": {
+      "downMbps": 286.879,
+      "upMbps": 286.444,
+      "idleMs": 10.1,
+      "jitterMs": 0,
+      "loadedDownMs": 37.15,
+      "loadedUpMs": 35.7,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00038
+      },
+      "cpuMax": 0.111,
+      "cpuPeak": 0.258,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 371971491,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 35.25104949999999,
+        "mbps": 286.79526572173006,
+        "p10": 286.0754671127161,
+        "p90": 287.43203217146174,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 11878,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.052615666666666866,
+        "medianMs": 10.360841,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980416518,
+       "upload": {
+        "capped": true,
+        "loadedMs": 37.06489200000001,
+        "mbps": 287.0743481714395,
+        "p10": 173.87330173465347,
+        "p90": 395.5089411379537,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 11878,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794980422831.0793,
+        "phaseBytes": 180151991,
+        "phaseStartUnixMs": 1794980417781.0793,
+        "rebuiltMbps": 286.84204842105265,
+        "startUnixMs": 1794980419031.0793,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 5264,
+        "endUnixMs": 1794980428396.327,
+        "phaseBytes": 191819500,
+        "phaseStartUnixMs": 1794980423132.327,
+        "rebuiltMbps": 280.4560780933628,
+        "startUnixMs": 1794980424132.327,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 286.853,
+       "upMbps": 286.909,
+       "idleMs": 10.1,
+       "loadedDownMs": 36.3,
+       "loadedUpMs": 36.5,
+       "ipBytes": 393255708,
+       "payloadBytes": 373188908,
+       "tailIpBytes": 3336325,
+       "pingSent": 241,
+       "serverSpan": [
+        7927,
+        909,
+        263
+       ]
+      },
+      "serverBytes": {
+       "down": 190374658,
+       "up": 191433520,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.126,
+      "cpuPeak": 0.224,
+      "saturated": false
+     },
+     "twin": {
+      "down": 283.169,
+      "up": 279.07,
+      "idle": 10.2,
+      "jitter": 0.049,
+      "downLoaded": 28.55,
+      "upLoaded": 30.2,
+      "durationMs": 34084,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.502,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 78171,
+     "truth": {
+      "downMbps": 286.89,
+      "upMbps": 286.861,
+      "idleMs": 10.1,
+      "jitterMs": 0,
+      "loadedDownMs": 37.8,
+      "loadedUpMs": 36.9,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00011
+      },
+      "cpuMax": 0.105,
+      "cpuPeak": 0.26,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 374051458,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 36.703119,
+        "mbps": 286.8858484418968,
+        "p10": 286.8675092277228,
+        "p90": 286.9141702970299,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 11871,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.03596883333333375,
+        "medianMs": 10.323634,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980466414,
+       "upload": {
+        "capped": true,
+        "loadedMs": 35.890841,
+        "mbps": 288.1667080413417,
+        "p10": 137.0897137425743,
+        "p90": 448.8184861483982,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 11871,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794980472726.524,
+        "phaseBytes": 180176171,
+        "phaseStartUnixMs": 1794980467676.524,
+        "rebuiltMbps": 286.8858484418968,
+        "startUnixMs": 1794980468926.524,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 5257,
+        "endUnixMs": 1794980478286.0286,
+        "phaseBytes": 193875287,
+        "phaseStartUnixMs": 1794980473029.0286,
+        "rebuiltMbps": 285.0095721013962,
+        "startUnixMs": 1794980474029.0286,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 286.909,
+       "upMbps": 286.907,
+       "idleMs": 10.1,
+       "loadedDownMs": 36.9,
+       "loadedUpMs": 36.6,
+       "ipBytes": 395340813,
+       "payloadBytes": 375166893,
+       "tailIpBytes": 5522162,
+       "pingSent": 241,
+       "serverSpan": [
+        7924,
+        1019,
+        265
+       ]
+      },
+      "serverBytes": {
+       "down": 190416501,
+       "up": 193458842,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.134,
+      "cpuPeak": 0.305,
+      "saturated": false
+     },
+     "twin": {
+      "down": 283.129,
+      "up": 280.205,
+      "idle": 10.2,
+      "jitter": 0.049,
+      "downLoaded": 27.9,
+      "upLoaded": 30.05,
+      "durationMs": 34260,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.502,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 78059,
+     "truth": {
+      "downMbps": 286.915,
+      "upMbps": 286.966,
+      "idleMs": 10.1,
+      "jitterMs": 0,
+      "loadedDownMs": 37.4,
+      "loadedUpMs": 35.6,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00027
+      },
+      "cpuMax": 0.124,
+      "cpuPeak": 0.239,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 371634277,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 37.58632300000001,
+        "mbps": 286.8879180607716,
+        "p10": 286.8592579168318,
+        "p90": 286.92755485148507,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 11778,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.07349816666666648,
+        "medianMs": 10.43368,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980608400,
+       "upload": {
+        "capped": true,
+        "loadedMs": 36.283425,
+        "mbps": 287.27560837386216,
+        "p10": 187.5077290374682,
+        "p90": 382.35083865346576,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 11778,
+      "windows": {
+       "download": {
+        "endMs": 5049,
+        "endUnixMs": 1794980614715.7578,
+        "phaseBytes": 180094646,
+        "phaseStartUnixMs": 1794980609666.7578,
+        "rebuiltMbps": 286.8879180607716,
+        "startUnixMs": 1794980610916.7578,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 5161,
+        "endUnixMs": 1794980620178.6804,
+        "phaseBytes": 191539631,
+        "phaseStartUnixMs": 1794980615017.6804,
+        "rebuiltMbps": 287.817236526825,
+        "startUnixMs": 1794980616017.6804,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 286.912,
+       "upMbps": 286.91,
+       "idleMs": 10.1,
+       "loadedDownMs": 38,
+       "loadedUpMs": 36.8,
+       "ipBytes": 392396449,
+       "payloadBytes": 372398497,
+       "tailIpBytes": 6303808,
+       "pingSent": 239,
+       "serverSpan": [
+        7913,
+        1026,
+        263
+       ]
+      },
+      "serverBytes": {
+       "down": 190051056,
+       "up": 190849349,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.126,
+      "cpuPeak": 0.247,
+      "saturated": false
+     },
+     "twin": {
+      "down": 282.118,
+      "up": 279.016,
+      "idle": 10.2,
+      "jitter": 0.063,
+      "downLoaded": 32.45,
+      "upLoaded": 32.7,
+      "durationMs": 34240,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.489,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "dsl-25-bloat",
+   "shape": {
+    "down": 25,
+    "up": 5,
+    "rttMs": 30,
+    "lossPct": 0,
+    "bufferMs": 600,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 2,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 30.1,
+     "p5": 30,
+     "p95": 30.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      1.0016,
+      0.9994,
+      0.9994,
+      0.9971,
+      0.9971,
+      0.9971
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": {
+     "ok": true,
+     "loadedMs": 495.3,
+     "detail": "iperf3 fills the deep buffer"
+    },
+    "reorder": {
+     "ok": true,
+     "events": 0,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 98697,
+     "truth": {
+      "downMbps": 23.948,
+      "upMbps": 4.768,
+      "idleMs": 30.1,
+      "jitterMs": 0.047,
+      "loadedDownMs": 445.5,
+      "loadedUpMs": 545,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00036
+      },
+      "cpuMax": 0.017,
+      "cpuPeak": 0.424,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 20100036,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 208.793855,
+        "mbps": 23.871239442724463,
+        "p10": 23.81025509848336,
+        "p90": 23.914846604076896,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15165,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.15205933333333396,
+        "medianMs": 30.266392000000003,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979533806,
+       "upload": {
+        "capped": false,
+        "loadedMs": 383.1783505,
+        "mbps": 4.693833890136779,
+        "p10": 0,
+        "p90": 22.248174257425745,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15165,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794979540580.6426,
+        "phaseBytes": 14980036,
+        "phaseStartUnixMs": 1794979535530.6426,
+        "rebuiltMbps": 23.871239442724463,
+        "startUnixMs": 1794979536780.6426,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8090,
+        "endUnixMs": 1794979548971.831,
+        "phaseBytes": 5120000,
+        "phaseStartUnixMs": 1794979540881.831,
+        "rebuiltMbps": 4.621720733427362,
+        "startUnixMs": 1794979541881.831,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.895,
+       "upMbps": 4.771,
+       "idleMs": 30.1,
+       "loadedDownMs": 213.5,
+       "loadedUpMs": 402,
+       "ipBytes": 22503782,
+       "payloadBytes": 21254430,
+       "tailIpBytes": 225182,
+       "pingSent": 289,
+       "serverSpan": [
+        8382,
+        1428,
+        339
+       ]
+      },
+      "serverBytes": {
+       "down": 16509387,
+       "up": 5073958,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 5,
+       "up": 0
+      },
+      "cpuMax": 0.008,
+      "cpuPeak": 0.03,
+      "saturated": false
+     },
+     "twin": {
+      "down": 23.584,
+      "up": 4.718,
+      "idle": 30.2,
+      "jitter": 0.081,
+      "downLoaded": 301.7,
+      "upLoaded": 174.2,
+      "durationMs": 37755,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.087,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 98474,
+     "truth": {
+      "downMbps": 23.897,
+      "upMbps": 4.768,
+      "idleMs": 30.1,
+      "jitterMs": 0.011,
+      "loadedDownMs": 445.5,
+      "loadedUpMs": 551,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00022
+      },
+      "cpuMax": 0.022,
+      "cpuPeak": 0.566,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 20099062,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 201.8166845,
+        "mbps": 23.874176998115708,
+        "p10": 23.85716416633662,
+        "p90": 23.892509782178237,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15160,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.07216949999999914,
+        "medianMs": 30.181791,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979591434,
+       "upload": {
+        "capped": false,
+        "loadedMs": 389.1067885,
+        "mbps": 4.7790659438651195,
+        "p10": 0,
+        "p90": 18.019561188118814,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15161,
+      "windows": {
+       "download": {
+        "endMs": 5049,
+        "endUnixMs": 1794979598202.2017,
+        "phaseBytes": 14979062,
+        "phaseStartUnixMs": 1794979593153.2017,
+        "rebuiltMbps": 23.874176998115708,
+        "startUnixMs": 1794979594403.2017,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8091,
+        "endUnixMs": 1794979606595.3147,
+        "phaseBytes": 5120000,
+        "phaseStartUnixMs": 1794979598504.3147,
+        "rebuiltMbps": 4.621068960654351,
+        "startUnixMs": 1794979599504.3147,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.899,
+       "upMbps": 4.772,
+       "idleMs": 30,
+       "loadedDownMs": 212,
+       "loadedUpMs": 401,
+       "ipBytes": 22506661,
+       "payloadBytes": 21255333,
+       "tailIpBytes": 247765,
+       "pingSent": 290,
+       "serverSpan": [
+        8354,
+        1455,
+        339
+       ]
+      },
+      "serverBytes": {
+       "down": 16484895,
+       "up": 5095580,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 6,
+       "up": 1
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.02,
+      "saturated": false
+     },
+     "twin": {
+      "down": 23.583,
+      "up": 4.718,
+      "idle": 30.2,
+      "jitter": 0.081,
+      "downLoaded": 300.8,
+      "upLoaded": 171.85,
+      "durationMs": 37793,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.093,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 98959,
+     "truth": {
+      "downMbps": 23.895,
+      "upMbps": 4.768,
+      "idleMs": 30.1,
+      "jitterMs": 0,
+      "loadedDownMs": 441,
+      "loadedUpMs": 548,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00072
+      },
+      "cpuMax": 0.009,
+      "cpuPeak": 0.05,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 20098482,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 224.600057,
+        "mbps": 23.874503970818136,
+        "p10": 23.851597180198038,
+        "p90": 23.89783648316831,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15171,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.045562777777777716,
+        "medianMs": 30.435643999999996,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979770844,
+       "upload": {
+        "capped": false,
+        "loadedMs": 390.13563800000003,
+        "mbps": 4.722915065599511,
+        "p10": 0,
+        "p90": 19.789301960784325,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15171,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794979777620.4365,
+        "phaseBytes": 14978482,
+        "phaseStartUnixMs": 1794979772570.4365,
+        "rebuiltMbps": 23.874503970818136,
+        "startUnixMs": 1794979773820.4365,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8093,
+        "endUnixMs": 1794979786015.096,
+        "phaseBytes": 5120000,
+        "phaseStartUnixMs": 1794979777922.096,
+        "rebuiltMbps": 4.619765966445791,
+        "startUnixMs": 1794979778922.096,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.897,
+       "upMbps": 4.771,
+       "idleMs": 30.1,
+       "loadedDownMs": 238,
+       "loadedUpMs": 412,
+       "ipBytes": 22501431,
+       "payloadBytes": 21249947,
+       "tailIpBytes": 224165,
+       "pingSent": 290,
+       "serverSpan": [
+        8372,
+        1435,
+        339
+       ]
+      },
+      "serverBytes": {
+       "down": 16468816,
+       "up": 5074056,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 7,
+       "up": 1
+      },
+      "cpuMax": 0.01,
+      "cpuPeak": 0.03,
+      "saturated": false
+     },
+     "twin": {
+      "down": 23.583,
+      "up": 4.718,
+      "idle": 30.2,
+      "jitter": 0.086,
+      "downLoaded": 300.7,
+      "upLoaded": 172.1,
+      "durationMs": 37797,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.096,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "dsl-25-shallow",
+   "shape": {
+    "down": 25,
+    "up": 5,
+    "rttMs": 30,
+    "lossPct": 0,
+    "bufferMs": 20,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 2,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 30.1,
+     "p5": 30.1,
+     "p95": 30.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      0.9994,
+      0.9973,
+      1.0005,
+      0.9971,
+      0.9971,
+      0.9975
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": {
+     "ok": true,
+     "loadedMs": 45,
+     "detail": "the shallow buffer stays shallow"
+    },
+    "reorder": {
+     "ok": true,
+     "events": 0,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 99171,
+     "truth": {
+      "downMbps": 23.895,
+      "upMbps": 4.768,
+      "idleMs": 30.1,
+      "jitterMs": 0,
+      "loadedDownMs": 46.6,
+      "loadedUpMs": 43.65,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.0002
+      },
+      "cpuMax": 0.034,
+      "cpuPeak": 0.119,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 20299140,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 47.17296399999999,
+        "mbps": 23.865217959838603,
+        "p10": 23.31788945742573,
+        "p90": 24.5774613037624,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15168,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.07994355555555582,
+        "medianMs": 30.408051999999998,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979833016,
+       "upload": {
+        "capped": false,
+        "loadedMs": 44.995428,
+        "mbps": 4.91127098321343,
+        "p10": 0,
+        "p90": 9.838510891089113,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15168,
+      "windows": {
+       "download": {
+        "endMs": 5051,
+        "endUnixMs": 1794979839793.8552,
+        "phaseBytes": 14923140,
+        "phaseStartUnixMs": 1794979834742.8552,
+        "rebuiltMbps": 23.865217959838603,
+        "startUnixMs": 1794979835992.8552,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8089,
+        "endUnixMs": 1794979848185.6782,
+        "phaseBytes": 5376000,
+        "phaseStartUnixMs": 1794979840096.6782,
+        "rebuiltMbps": 4.91127098321343,
+        "startUnixMs": 1794979841096.6782,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.888,
+       "upMbps": 4.759,
+       "idleMs": 30.1,
+       "loadedDownMs": 44.95,
+       "loadedUpMs": 43.8,
+       "ipBytes": 21761436,
+       "payloadBytes": 20557584,
+       "tailIpBytes": 368074,
+       "pingSent": 309,
+       "serverSpan": [
+        8396,
+        1564,
+        342
+       ]
+      },
+      "serverBytes": {
+       "down": 16593572,
+       "up": 5122992,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.056,
+      "cpuPeak": 0.121,
+      "saturated": false
+     },
+     "twin": {
+      "down": 23.46,
+      "up": 4.593,
+      "idle": 30.2,
+      "jitter": 0.056,
+      "downLoaded": 43.65,
+      "upLoaded": 41.25,
+      "durationMs": 40581,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.091,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 98319,
+     "truth": {
+      "downMbps": 23.845,
+      "upMbps": 4.768,
+      "idleMs": 30.1,
+      "jitterMs": 0.047,
+      "loadedDownMs": 46.45,
+      "loadedUpMs": 43.35,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00007
+      },
+      "cpuMax": 0.059,
+      "cpuPeak": 0.129,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 20299196,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 46.016703500000006,
+        "mbps": 23.89250736842105,
+        "p10": 22.967534991108522,
+        "p90": 24.99859767874199,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15168,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.0774173333333338,
+        "medianMs": 30.434383,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979893784,
+       "upload": {
+        "capped": false,
+        "loadedMs": 42.565778,
+        "mbps": 4.865481577777525,
+        "p10": 0,
+        "p90": 13.058534653465358,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15168,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794979900558.0095,
+        "phaseBytes": 14923196,
+        "phaseStartUnixMs": 1794979895508.0095,
+        "rebuiltMbps": 23.89250736842105,
+        "startUnixMs": 1794979896758.0095,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8093,
+        "endUnixMs": 1794979908953.3938,
+        "phaseBytes": 5376000,
+        "phaseStartUnixMs": 1794979900860.3938,
+        "rebuiltMbps": 4.908501339348653,
+        "startUnixMs": 1794979901860.3938,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.895,
+       "upMbps": 4.76,
+       "idleMs": 30.1,
+       "loadedDownMs": 46.55,
+       "loadedUpMs": 43.9,
+       "ipBytes": 21748862,
+       "payloadBytes": 20545738,
+       "tailIpBytes": 356416,
+       "pingSent": 309,
+       "serverSpan": [
+        8410,
+        1446,
+        340
+       ]
+      },
+      "serverBytes": {
+       "down": 16904869,
+       "up": 5115752,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.049,
+      "cpuPeak": 0.109,
+      "saturated": false
+     },
+     "twin": {
+      "down": 23.418,
+      "up": 4.62,
+      "idle": 30.2,
+      "jitter": 0.058,
+      "downLoaded": 41.5,
+      "upLoaded": 44.75,
+      "durationMs": 40503,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.084,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 99041,
+     "truth": {
+      "downMbps": 23.922,
+      "upMbps": 4.77,
+      "idleMs": 30.1,
+      "jitterMs": 0,
+      "loadedDownMs": 47.2,
+      "loadedUpMs": 42.75,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00043
+      },
+      "cpuMax": 0.06,
+      "cpuPeak": 0.129,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 20306131,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 46.9228375,
+        "mbps": 23.82235524262766,
+        "p10": 22.98869595247526,
+        "p90": 24.549113916831683,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15168,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.028180388888888866,
+        "medianMs": 30.433142,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980073114,
+       "upload": {
+        "capped": false,
+        "loadedMs": 44.627502,
+        "mbps": 4.909193457416808,
+        "p10": 0,
+        "p90": 12.271778217821783,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15168,
+      "windows": {
+       "download": {
+        "endMs": 5051,
+        "endUnixMs": 1794980079888.9175,
+        "phaseBytes": 14930131,
+        "phaseStartUnixMs": 1794980074837.9175,
+        "rebuiltMbps": 23.82235524262766,
+        "startUnixMs": 1794980076087.9175,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8092,
+        "endUnixMs": 1794980088283.4563,
+        "phaseBytes": 5376000,
+        "phaseStartUnixMs": 1794980080191.4563,
+        "rebuiltMbps": 4.909193457416808,
+        "startUnixMs": 1794980081191.4563,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.881,
+       "upMbps": 4.749,
+       "idleMs": 30.1,
+       "loadedDownMs": 46.15,
+       "loadedUpMs": 43,
+       "ipBytes": 21750401,
+       "payloadBytes": 20551281,
+       "tailIpBytes": 343540,
+       "pingSent": 309,
+       "serverSpan": [
+        8392,
+        1416,
+        339
+       ]
+      },
+      "serverBytes": {
+       "down": 16890652,
+       "up": 5095480,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.043,
+      "cpuPeak": 0.119,
+      "saturated": false
+     },
+     "twin": {
+      "down": 23.418,
+      "up": 4.593,
+      "idle": 30.2,
+      "jitter": 0.058,
+      "downLoaded": 41.35,
+      "upLoaded": 38.3,
+      "durationMs": 40819,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.087,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "cable-100-10",
+   "shape": {
+    "down": 100,
+    "up": 10,
+    "rttMs": 20,
+    "lossPct": 0,
+    "bufferMs": 100,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 2,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 20.1,
+     "p5": 20.1,
+     "p95": 20.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      1,
+      1.0011,
+      1.0011,
+      0.9959,
+      0.9981,
+      0.997
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 25,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 105240,
+     "truth": {
+      "downMbps": 95.639,
+      "upMbps": 9.525,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 105,
+      "loadedUpMs": 110,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00355
+      },
+      "cpuMax": 0.019,
+      "cpuPeak": 0.093,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 70138391,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 100.97318399999999,
+        "mbps": 95.60261165248332,
+        "p10": 84.91656585020385,
+        "p90": 106.27950315573678,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 14935,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.13304783333333348,
+        "medianMs": 20.384723,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980125267,
+       "upload": {
+        "capped": false,
+        "loadedMs": 106.485056,
+        "mbps": 9.569002568022096,
+        "p10": 0,
+        "p90": 18.922231799650564,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 14935,
+      "windows": {
+       "download": {
+        "endMs": 5051,
+        "endUnixMs": 1794980131811.3833,
+        "phaseBytes": 59898391,
+        "phaseStartUnixMs": 1794980126760.3833,
+        "rebuiltMbps": 95.60261165248332,
+        "startUnixMs": 1794980128010.3833,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8090,
+        "endUnixMs": 1794980140203.9324,
+        "phaseBytes": 10240000,
+        "phaseStartUnixMs": 1794980132113.9324,
+        "rebuiltMbps": 9.243441466854724,
+        "startUnixMs": 1794980133113.9324,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.627,
+       "upMbps": 9.55,
+       "idleMs": 20.1,
+       "loadedDownMs": 103.5,
+       "loadedUpMs": 107,
+       "ipBytes": 75380539,
+       "payloadBytes": 71360939,
+       "tailIpBytes": 543589,
+       "pingSent": 297,
+       "serverSpan": [
+        8164,
+        1346,
+        333
+       ]
+      },
+      "serverBytes": {
+       "down": 65651327,
+       "up": 10234600,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.017,
+      "cpuPeak": 0.073,
+      "saturated": false
+     },
+     "twin": {
+      "down": 93.865,
+      "up": 9.583,
+      "idle": 20.2,
+      "jitter": 0.082,
+      "downLoaded": 91.3,
+      "upLoaded": 107.5,
+      "durationMs": 57370,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.129,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 104782,
+     "truth": {
+      "downMbps": 95.744,
+      "upMbps": 9.546,
+      "idleMs": 20.1,
+      "jitterMs": 0.016,
+      "loadedDownMs": 108,
+      "loadedUpMs": 110,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00021
+      },
+      "cpuMax": 0.022,
+      "cpuPeak": 0.092,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 69808674,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 105.340879,
+        "mbps": 95.60334822303282,
+        "p10": 87.43470322059403,
+        "p90": 103.7739289445933,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 14938,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.10206122222222172,
+        "medianMs": 20.316477,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980202120,
+       "upload": {
+        "capped": false,
+        "loadedMs": 107.07267499999999,
+        "mbps": 9.553070106109933,
+        "p10": 0,
+        "p90": 18.104701688992428,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 14938,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794980208662.2246,
+        "phaseBytes": 59824674,
+        "phaseStartUnixMs": 1794980203612.2246,
+        "rebuiltMbps": 95.60334822303282,
+        "startUnixMs": 1794980204862.2246,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8094,
+        "endUnixMs": 1794980217058.472,
+        "phaseBytes": 9984000,
+        "phaseStartUnixMs": 1794980208964.472,
+        "rebuiltMbps": 8.949534818156188,
+        "startUnixMs": 1794980209964.472,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.626,
+       "upMbps": 9.549,
+       "idleMs": 20.1,
+       "loadedDownMs": 105,
+       "loadedUpMs": 109,
+       "ipBytes": 75236923,
+       "payloadBytes": 71237551,
+       "tailIpBytes": 330801,
+       "pingSent": 298,
+       "serverSpan": [
+        8164,
+        1092,
+        328
+       ]
+      },
+      "serverBytes": {
+       "down": 67946358,
+       "up": 9979950,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.019,
+      "cpuPeak": 0.084,
+      "saturated": false
+     },
+     "twin": {
+      "down": 93.881,
+      "up": 9.583,
+      "idle": 20.1,
+      "jitter": 0.074,
+      "downLoaded": 91.4,
+      "upLoaded": 107.5,
+      "durationMs": 57281,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.127,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 105193,
+     "truth": {
+      "downMbps": 95.745,
+      "upMbps": 9.535,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 108,
+      "loadedUpMs": 109,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00232
+      },
+      "cpuMax": 0.024,
+      "cpuPeak": 0.125,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 69882929,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 101.78063900000001,
+        "mbps": 95.60631488745084,
+        "p10": 92.62043462970304,
+        "p90": 98.5803163881187,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 14932,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.04455761111111064,
+        "medianMs": 20.274231999999998,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980394641,
+       "upload": {
+        "capped": false,
+        "loadedMs": 104.844427,
+        "mbps": 9.590072267937394,
+        "p10": 0,
+        "p90": 18.64491089108911,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 14932,
+      "windows": {
+       "download": {
+        "endMs": 5049,
+        "endUnixMs": 1794980401182.9146,
+        "phaseBytes": 59898929,
+        "phaseStartUnixMs": 1794980396133.9146,
+        "rebuiltMbps": 95.60631488745084,
+        "startUnixMs": 1794980397383.9146,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8090,
+        "endUnixMs": 1794980409575.084,
+        "phaseBytes": 9984000,
+        "phaseStartUnixMs": 1794980401485.084,
+        "rebuiltMbps": 8.986043653730675,
+        "startUnixMs": 1794980402485.084,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.628,
+       "upMbps": 9.55,
+       "idleMs": 20.1,
+       "loadedDownMs": 104,
+       "loadedUpMs": 105,
+       "ipBytes": 75158800,
+       "payloadBytes": 71180800,
+       "tailIpBytes": 279253,
+       "pingSent": 295,
+       "serverSpan": [
+        8135,
+        1125,
+        328
+       ]
+      },
+      "serverBytes": {
+       "down": 66244105,
+       "up": 9978600,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.013,
+      "cpuPeak": 0.063,
+      "saturated": false
+     },
+     "twin": {
+      "down": 93.478,
+      "up": 9.583,
+      "idle": 20.2,
+      "jitter": 0.05,
+      "downLoaded": 96.85,
+      "upLoaded": 106.95,
+      "durationMs": 57410,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.134,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "cable-100-10-cf",
+   "shape": {
+    "down": 100,
+    "up": 10,
+    "rttMs": 20,
+    "lossPct": 0,
+    "bufferMs": 100,
+    "serverMs": 30,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 2,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 20.1,
+     "p5": 20.1,
+     "p95": 20.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      1.0011,
+      0.999,
+      1,
+      1.0001,
+      1.0017,
+      0.9993
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 15,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 107151,
+     "truth": {
+      "downMbps": 95.745,
+      "upMbps": 9.565,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 108,
+      "loadedUpMs": 110,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00075
+      },
+      "cpuMax": 0.027,
+      "cpuPeak": 0.132,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 67919644,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 100.70870099999999,
+        "mbps": 95.60572979676915,
+        "p10": 92.3956697980198,
+        "p90": 98.3575719287129,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 14251,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.03622155555555414,
+        "medianMs": 20.425095999999996,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980446261,
+       "upload": {
+        "capped": false,
+        "loadedMs": 107.48488899999998,
+        "mbps": 9.908456364825943,
+        "p10": 0.17669019607843178,
+        "p90": 17.132428499320532,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 14251,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794980453427.9165,
+        "phaseBytes": 59215644,
+        "phaseStartUnixMs": 1794980448377.9165,
+        "rebuiltMbps": 95.60572979676915,
+        "startUnixMs": 1794980449627.9165,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 6783,
+        "endUnixMs": 1794980460512.6667,
+        "phaseBytes": 8704000,
+        "phaseStartUnixMs": 1794980453729.6667,
+        "rebuiltMbps": 9.291830099489284,
+        "startUnixMs": 1794980454729.6667,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.628,
+       "upMbps": 9.55,
+       "idleMs": 20.1,
+       "loadedDownMs": 99,
+       "loadedUpMs": 105,
+       "ipBytes": 72764944,
+       "payloadBytes": 68896352,
+       "tailIpBytes": 580606,
+       "pingSent": 283,
+       "serverSpan": [
+        8780,
+        1338,
+        319
+       ]
+      },
+      "serverBytes": {
+       "down": 62586911,
+       "up": 8686918,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.015,
+      "cpuPeak": 0.071,
+      "saturated": false
+     },
+     "twin": {
+      "down": 93.495,
+      "up": 9.548,
+      "idle": 20.245,
+      "jitter": 0.092,
+      "downLoaded": 90.256,
+      "upLoaded": 105.335,
+      "durationMs": 60030,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.125,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 108655,
+     "truth": {
+      "downMbps": 95.545,
+      "upMbps": 9.58,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 111,
+      "loadedUpMs": 109,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.0054
+      },
+      "cpuMax": 0.021,
+      "cpuPeak": 0.163,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 69234387,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 99.626821,
+        "mbps": 95.60659960396039,
+        "p10": 94.71739239138027,
+        "p90": 97.29747851555042,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15556,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.0366788333333342,
+        "medianMs": 20.470461000000004,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980524971,
+       "upload": {
+        "capped": false,
+        "loadedMs": 103.068587,
+        "mbps": 9.987863503030447,
+        "p10": 0,
+        "p90": 20.73954851485148,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15556,
+      "windows": {
+       "download": {
+        "endMs": 5050,
+        "endUnixMs": 1794980532137.3848,
+        "phaseBytes": 59250387,
+        "phaseStartUnixMs": 1794980527087.3848,
+        "rebuiltMbps": 95.60659960396039,
+        "startUnixMs": 1794980528337.3848,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8088,
+        "endUnixMs": 1794980540527.5752,
+        "phaseBytes": 9984000,
+        "phaseStartUnixMs": 1794980532439.5752,
+        "rebuiltMbps": 8.982857653711195,
+        "startUnixMs": 1794980533439.5752,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.628,
+       "upMbps": 9.55,
+       "idleMs": 20.1,
+       "loadedDownMs": 102.5,
+       "loadedUpMs": 103,
+       "ipBytes": 74720940,
+       "payloadBytes": 70725312,
+       "tailIpBytes": 346272,
+       "pingSent": 310,
+       "serverSpan": [
+        8789,
+        1222,
+        343
+       ]
+      },
+      "serverBytes": {
+       "down": 64698041,
+       "up": 9981300,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 1,
+       "up": 0
+      },
+      "cpuMax": 0.014,
+      "cpuPeak": 0.084,
+      "saturated": false
+     },
+     "twin": {
+      "down": 93.495,
+      "up": 9.548,
+      "idle": 20.217,
+      "jitter": 0.075,
+      "downLoaded": 89.765,
+      "upLoaded": 106.108,
+      "durationMs": 60331,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.124,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 108783,
+     "truth": {
+      "downMbps": 95.645,
+      "upMbps": 9.557,
+      "idleMs": 20.1,
+      "jitterMs": 0.021,
+      "loadedDownMs": 103,
+      "loadedUpMs": 111,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00096
+      },
+      "cpuMax": 0.023,
+      "cpuPeak": 0.12,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 69263808,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 99.45259899999999,
+        "mbps": 95.5337923737096,
+        "p10": 92.4429483089108,
+        "p90": 98.16460502178225,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15552,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.10609177777777784,
+        "medianMs": 20.456082000000002,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980724106,
+       "upload": {
+        "capped": false,
+        "loadedMs": 102.577168,
+        "mbps": 9.912648408993613,
+        "p10": 0,
+        "p90": 19.36880792079209,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15553,
+      "windows": {
+       "download": {
+        "endMs": 5049,
+        "endUnixMs": 1794980731267.593,
+        "phaseBytes": 59023808,
+        "phaseStartUnixMs": 1794980726218.593,
+        "rebuiltMbps": 95.5337923737096,
+        "startUnixMs": 1794980727468.593,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8090,
+        "endUnixMs": 1794980739660.1958,
+        "phaseBytes": 10240000,
+        "phaseStartUnixMs": 1794980731570.1958,
+        "rebuiltMbps": 9.300640980882292,
+        "startUnixMs": 1794980732570.1958,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.565,
+       "upMbps": 9.55,
+       "idleMs": 20.1,
+       "loadedDownMs": 96.9,
+       "loadedUpMs": 100,
+       "ipBytes": 74688577,
+       "payloadBytes": 70691129,
+       "tailIpBytes": 533102,
+       "pingSent": 309,
+       "serverSpan": [
+        8770,
+        1340,
+        345
+       ]
+      },
+      "serverBytes": {
+       "down": 65542593,
+       "up": 10209984,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 2,
+       "up": 0
+      },
+      "cpuMax": 0.014,
+      "cpuPeak": 0.085,
+      "saturated": false
+     },
+     "twin": {
+      "down": 93.491,
+      "up": 9.548,
+      "idle": 20.17,
+      "jitter": 0.088,
+      "downLoaded": 89.113,
+      "upLoaded": 105.431,
+      "durationMs": 60103,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.128,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "qreal-up",
+   "shape": {
+    "down": 100,
+    "up": 10,
+    "rttMs": 20,
+    "lossPct": 0,
+    "bufferMs": 100,
+    "serverMs": 30,
+    "uploadTimingIncludesBody": true
+   },
+   "shard": 2,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 20.1,
+     "p5": 20,
+     "p95": 20.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": null,
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 8,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "weir"
+     ],
+     "wallMs": 18296,
+     "truth": null,
+     "weir": {
+      "report": {
+       "bytesUsed": 69263730,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 96.759828,
+        "mbps": 95.51266049689991,
+        "p10": 92.16907900198017,
+        "p90": 98.3008284514852,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15558,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.13811527777777696,
+        "medianMs": 20.383878000000003,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980748131,
+       "upload": {
+        "capped": false,
+        "loadedMs": 101.751704,
+        "mbps": 19.150168039288157,
+        "p10": 0,
+        "p90": 18.37754729411764,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15559,
+      "windows": {
+       "download": {
+        "endMs": 5049,
+        "endUnixMs": 1794980755294.8032,
+        "phaseBytes": 59023730,
+        "phaseStartUnixMs": 1794980750245.8032,
+        "rebuiltMbps": 95.51266049689991,
+        "startUnixMs": 1794980751495.8032,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8094,
+        "endUnixMs": 1794980763691.0212,
+        "phaseBytes": 10240000,
+        "phaseStartUnixMs": 1794980755597.0212,
+        "rebuiltMbps": 9.311818327556566,
+        "startUnixMs": 1794980756597.0212,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.538,
+       "upMbps": 9.552,
+       "idleMs": 20.1,
+       "loadedDownMs": 97.5,
+       "loadedUpMs": 102,
+       "ipBytes": 74660773,
+       "payloadBytes": 70677781,
+       "tailIpBytes": 540354,
+       "pingSent": 309,
+       "serverSpan": [
+        8797,
+        1309,
+        345
+       ]
+      },
+      "serverBytes": {
+       "down": 65490957,
+       "up": 10234600,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.019,
+      "cpuPeak": 0.091,
+      "saturated": false
+     },
+     "twin": null
+    },
+    {
+     "order": [
+      "weir"
+     ],
+     "wallMs": 18078,
+     "truth": null,
+     "weir": {
+      "report": {
+       "bytesUsed": 69016200,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 95.36009600000001,
+        "mbps": 95.4988438581822,
+        "p10": 93.22658762772276,
+        "p90": 97.02639562772276,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15557,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.12653144444444683,
+        "medianMs": 20.326249,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980766427,
+       "upload": {
+        "capped": false,
+        "loadedMs": 104.13403600000001,
+        "mbps": 19.08531248344937,
+        "p10": 0.7924340594059408,
+        "p90": 18.054843564356418,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15557,
+      "windows": {
+       "download": {
+        "endMs": 5051,
+        "endUnixMs": 1794980773592.6155,
+        "phaseBytes": 59032200,
+        "phaseStartUnixMs": 1794980768541.6155,
+        "rebuiltMbps": 95.4988438581822,
+        "startUnixMs": 1794980769791.6155,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8090,
+        "endUnixMs": 1794980781984.8828,
+        "phaseBytes": 9984000,
+        "phaseStartUnixMs": 1794980773894.8828,
+        "rebuiltMbps": 8.98032370232792,
+        "startUnixMs": 1794980774894.8828,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.524,
+       "upMbps": 9.55,
+       "idleMs": 20.1,
+       "loadedDownMs": 95.1,
+       "loadedUpMs": 103.5,
+       "ipBytes": 74306474,
+       "payloadBytes": 70370594,
+       "tailIpBytes": 333889,
+       "pingSent": 308,
+       "serverSpan": [
+        8795,
+        1115,
+        341
+       ]
+      },
+      "serverBytes": {
+       "down": 67345039,
+       "up": 9981300,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.016,
+      "cpuPeak": 0.074,
+      "saturated": false
+     },
+     "twin": null
+    },
+    {
+     "order": [
+      "weir"
+     ],
+     "wallMs": 18299,
+     "truth": null,
+     "weir": {
+      "report": {
+       "bytesUsed": 69487396,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 101.93286799999998,
+        "mbps": 95.60538926606532,
+        "p10": 87.33978043564353,
+        "p90": 103.85435615049505,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 15558,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.047258277777778995,
+        "medianMs": 20.442588,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980784513,
+       "upload": {
+        "capped": false,
+        "loadedMs": 105.34623400000001,
+        "mbps": 19.078498197989454,
+        "p10": 0,
+        "p90": 16.384,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15558,
+      "windows": {
+       "download": {
+        "endMs": 5049,
+        "endUnixMs": 1794980791677.8782,
+        "phaseBytes": 59247396,
+        "phaseStartUnixMs": 1794980786628.8782,
+        "rebuiltMbps": 95.60538926606532,
+        "startUnixMs": 1794980787878.8782,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8092,
+        "endUnixMs": 1794980800072.205,
+        "phaseBytes": 10240000,
+        "phaseStartUnixMs": 1794980791980.205,
+        "rebuiltMbps": 9.266567265863642,
+        "startUnixMs": 1794980792980.205,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 95.628,
+       "upMbps": 9.551,
+       "idleMs": 20.1,
+       "loadedDownMs": 98.6,
+       "loadedUpMs": 104,
+       "ipBytes": 74530200,
+       "payloadBytes": 70556620,
+       "tailIpBytes": 518630,
+       "pingSent": 309,
+       "serverSpan": [
+        8780,
+        1327,
+        345
+       ]
+      },
+      "serverBytes": {
+       "down": 65983389,
+       "up": 10217224,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.019,
+      "cpuPeak": 0.095,
+      "saturated": false
+     },
+     "twin": null
+    }
+   ]
+  },
+  {
+   "id": "geo-250",
+   "shape": {
+    "down": 25,
+    "up": 3,
+    "rttMs": 250,
+    "lossPct": 0,
+    "bufferMs": 300,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 3,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 250,
+     "p5": 250,
+     "p95": 250,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      0.9994,
+      0.9997,
+      0.9984,
+      1.016,
+      1.0079,
+      1.002
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 0,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 140353,
+     "truth": {
+      "downMbps": 23.895,
+      "upMbps": 2.915,
+      "idleMs": 250,
+      "jitterMs": 0,
+      "loadedDownMs": 475,
+      "loadedUpMs": 529,
+      "streams": {
+       "down": 8,
+       "up": 6
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.0084
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.071,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 18793369,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 461.35456200000004,
+        "mbps": 23.801725059083562,
+        "p10": 18.583046924325384,
+        "p90": 23.90931263112871,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 17196,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.05768399999999,
+        "medianMs": 250.51265399999997,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979567544,
+       "upload": null,
+       "uploadError": "stalled"
+      },
+      "error": null,
+      "wallMs": 17197,
+      "windows": {
+       "download": {
+        "endMs": 6769,
+        "endUnixMs": 1794979581098.8079,
+        "phaseBytes": 17257369,
+        "phaseStartUnixMs": 1794979574329.8079,
+        "rebuiltMbps": 23.801725059083562,
+        "startUnixMs": 1794979576829.8079,
+        "steadyStartMs": 2500
+       },
+       "upload": {
+        "endMs": 3340,
+        "endUnixMs": 1794979584741.3074,
+        "phaseBytes": 1536000,
+        "phaseStartUnixMs": 1794979581401.3074,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794979582401.3074,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.82,
+       "upMbps": 2.856,
+       "idleMs": 250,
+       "loadedDownMs": 456.5,
+       "loadedUpMs": 541,
+       "ipBytes": 21846485,
+       "payloadBytes": 20607949,
+       "tailIpBytes": 414701,
+       "pingSent": 330,
+       "serverSpan": [
+        15163,
+        2596,
+        403
+       ]
+      },
+      "serverBytes": {
+       "down": 20431725,
+       "up": 1530600,
+       "unknown": 0
+      },
+      "far": true,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.039,
+      "saturated": false
+     },
+     "twin": {
+      "down": 22.158,
+      "up": 2.647,
+      "idle": 250.4,
+      "jitter": 0.089,
+      "downLoaded": 284.9,
+      "upLoaded": 369.1,
+      "durationMs": 69199,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.095,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 147477,
+     "truth": {
+      "downMbps": 23.902,
+      "upMbps": 2.892,
+      "idleMs": 250,
+      "jitterMs": 0,
+      "loadedDownMs": 474,
+      "loadedUpMs": 525,
+      "streams": {
+       "down": 8,
+       "up": 6
+      },
+      "mismatch": {
+       "down": 0.00236,
+       "up": 0.0066
+      },
+      "cpuMax": 0.018,
+      "cpuPeak": 0.53,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 25141663,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 445.716378,
+        "mbps": 23.365119992196266,
+        "p10": 15.390288583343018,
+        "p90": 31.47529335041738,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 19517,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.033889222222228454,
+        "medianMs": 250.49689700000002,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979661479,
+       "upload": null,
+       "uploadError": "stalled"
+      },
+      "error": null,
+      "wallMs": 19517,
+      "windows": {
+       "download": {
+        "endMs": 9090,
+        "endUnixMs": 1794979677357.6682,
+        "phaseBytes": 23605663,
+        "phaseStartUnixMs": 1794979668267.6682,
+        "rebuiltMbps": 23.365119992196266,
+        "startUnixMs": 1794979671267.6682,
+        "steadyStartMs": 3000
+       },
+       "upload": {
+        "endMs": 3337,
+        "endUnixMs": 1794979680996.9492,
+        "phaseBytes": 1536000,
+        "phaseStartUnixMs": 1794979677659.9492,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794979678659.9492,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 23.45,
+       "upMbps": 2.859,
+       "idleMs": 250,
+       "loadedDownMs": 434,
+       "loadedUpMs": 540,
+       "ipBytes": 28107516,
+       "payloadBytes": 26550272,
+       "tailIpBytes": 395901,
+       "pingSent": 375,
+       "serverSpan": [
+        17522,
+        2391,
+        446
+       ]
+      },
+      "serverBytes": {
+       "down": 25356173,
+       "up": 1528732,
+       "unknown": 0
+      },
+      "far": true,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.006,
+      "cpuPeak": 0.03,
+      "saturated": false
+     },
+     "twin": {
+      "down": 22.158,
+      "up": 2.647,
+      "idle": 250.3,
+      "jitter": 0.067,
+      "downLoaded": 284.85,
+      "upLoaded": 308.9,
+      "durationMs": 73636,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.082,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 146007,
+     "truth": {
+      "downMbps": 23.871,
+      "upMbps": 2.875,
+      "idleMs": 250,
+      "jitterMs": 0,
+      "loadedDownMs": 502,
+      "loadedUpMs": 527,
+      "streams": {
+       "down": 8,
+       "up": 6
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00055
+      },
+      "cpuMax": 0.015,
+      "cpuPeak": 0.48,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 17836171,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 423.09416450000003,
+        "mbps": 20.831189211718183,
+        "p10": 17.002096533544577,
+        "p90": 23.985095594119993,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 17701,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.04700933333331787,
+        "medianMs": 250.36827699999998,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979933022,
+       "upload": null,
+       "uploadError": "stalled"
+      },
+      "error": null,
+      "wallMs": 17701,
+      "windows": {
+       "download": {
+        "endMs": 7276,
+        "endUnixMs": 1794979947085.0034,
+        "phaseBytes": 16300171,
+        "phaseStartUnixMs": 1794979939809.0034,
+        "rebuiltMbps": 20.831189211718183,
+        "startUnixMs": 1794979942809.0034,
+        "steadyStartMs": 3000
+       },
+       "upload": {
+        "endMs": 3336,
+        "endUnixMs": 1794979950723.6802,
+        "phaseBytes": 1536000,
+        "phaseStartUnixMs": 1794979947387.6802,
+        "rebuiltMbps": null,
+        "startUnixMs": 1794979948387.6802,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 21.834,
+       "upMbps": 2.86,
+       "idleMs": 250,
+       "loadedDownMs": 429,
+       "loadedUpMs": 542,
+       "ipBytes": 20677165,
+       "payloadBytes": 19508985,
+       "tailIpBytes": 388841,
+       "pingSent": 339,
+       "serverSpan": [
+        15700,
+        2363,
+        409
+       ]
+      },
+      "serverBytes": {
+       "down": 18063030,
+       "up": 1527900,
+       "unknown": 0
+      },
+      "far": true,
+      "duplicates": {
+       "down": 1,
+       "up": 1
+      },
+      "cpuMax": 0.005,
+      "cpuPeak": 0.021,
+      "saturated": false
+     },
+     "twin": {
+      "down": 22.249,
+      "up": 2.647,
+      "idle": 250.3,
+      "jitter": 0.072,
+      "downLoaded": 314.35,
+      "upLoaded": 312.7,
+      "durationMs": 73580,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.081,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "fiber-300-far",
+   "shape": {
+    "down": 300,
+    "up": 100,
+    "rttMs": 120,
+    "lossPct": 0,
+    "bufferMs": 50,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 3,
+   "planned": 3,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 120,
+     "p5": 120,
+     "p95": 120,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": {
+     "ok": true,
+     "ratios": [
+      1.0138,
+      0.9998,
+      1.0141,
+      0.9999,
+      0.9989,
+      1.0009
+     ],
+     "detail": "loss-free iperf3 goodput over the shaped payload ceiling"
+    },
+    "loss": null,
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 190,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 92837,
+     "truth": {
+      "downMbps": 290.881,
+      "upMbps": 95.635,
+      "idleMs": 120,
+      "jitterMs": 0,
+      "loadedDownMs": 145,
+      "loadedUpMs": 146,
+      "streams": {
+       "down": 8,
+       "up": 6
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00088
+      },
+      "cpuMax": 0.017,
+      "cpuPeak": 0.196,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 224702907,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 137.1969955,
+        "mbps": 269.32179248120303,
+        "p10": 246.27185961188098,
+        "p90": 286.8671116356435,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 16938,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.0468462777777745,
+        "medianMs": 120.445629,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979991613,
+       "upload": {
+        "capped": false,
+        "loadedMs": 120.701526,
+        "mbps": 83.41936259797258,
+        "p10": 53.816717306930656,
+        "p90": 109.92890129742575,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 16938,
+      "windows": {
+       "download": {
+        "endMs": 5559,
+        "endUnixMs": 1794980000968.5945,
+        "phaseBytes": 158703973,
+        "phaseStartUnixMs": 1794979995409.5945,
+        "rebuiltMbps": 269.32179248120303,
+        "startUnixMs": 1794979997909.5945,
+        "steadyStartMs": 2500
+       },
+       "upload": {
+        "endMs": 7280,
+        "endUnixMs": 1794980008551.0942,
+        "phaseBytes": 65998934,
+        "phaseStartUnixMs": 1794980001271.0942,
+        "rebuiltMbps": 80.31368636363636,
+        "startUnixMs": 1794980003271.0942,
+        "steadyStartMs": 2000
+       }
+      },
+      "wire": {
+       "downMbps": 269.338,
+       "upMbps": 79.955,
+       "idleMs": 120,
+       "loadedDownMs": 136,
+       "loadedUpMs": 125.5,
+       "ipBytes": 245251066,
+       "payloadBytes": 233338126,
+       "tailIpBytes": 1567607,
+       "pingSent": 337,
+       "serverSpan": [
+        11983,
+        1236,
+        371
+       ]
+      },
+      "serverBytes": {
+       "down": 174755015,
+       "up": 65992182,
+       "unknown": 0
+      },
+      "far": true,
+      "duplicates": {
+       "down": 7,
+       "up": 0
+      },
+      "cpuMax": 0.024,
+      "cpuPeak": 0.071,
+      "saturated": false
+     },
+     "twin": {
+      "down": 105.624,
+      "up": 35.107,
+      "idle": 120.3,
+      "jitter": 0.095,
+      "downLoaded": 120.25,
+      "upLoaded": 120.25,
+      "durationMs": 39560,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.119,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 93493,
+     "truth": {
+      "downMbps": 286.874,
+      "upMbps": 95.535,
+      "idleMs": 120,
+      "jitterMs": 0,
+      "loadedDownMs": 144,
+      "loadedUpMs": 147,
+      "streams": {
+       "down": 8,
+       "up": 6
+      },
+      "mismatch": {
+       "down": 0.0003,
+       "up": 0.00021
+      },
+      "cpuMax": 0.021,
+      "cpuPeak": 0.198,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 240142923,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 144.594481,
+        "mbps": 278.43603624892876,
+        "p10": 253.9337416237625,
+        "p90": 286.9827694257424,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 17945,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.042010166666663115,
+        "medianMs": 120.368735,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980053484,
+       "upload": {
+        "capped": false,
+        "loadedMs": 120.339954,
+        "mbps": 78.83927906237884,
+        "p10": 41.807936950495005,
+        "p90": 111.713759049505,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 17945,
+      "windows": {
+       "download": {
+        "endMs": 5758,
+        "endUnixMs": 1794980063036.749,
+        "phaseBytes": 169886040,
+        "phaseStartUnixMs": 1794980057278.749,
+        "rebuiltMbps": 278.43603624892876,
+        "startUnixMs": 1794980059778.749,
+        "steadyStartMs": 2500
+       },
+       "upload": {
+        "endMs": 8091,
+        "endUnixMs": 1794980071429.9714,
+        "phaseBytes": 70256883,
+        "phaseStartUnixMs": 1794980063338.9714,
+        "rebuiltMbps": 76.90057297090877,
+        "startUnixMs": 1794980066088.9714,
+        "steadyStartMs": 2750
+       }
+      },
+      "wire": {
+       "downMbps": 278.441,
+       "upMbps": 76.935,
+       "idleMs": 120,
+       "loadedDownMs": 144,
+       "loadedUpMs": 120,
+       "ipBytes": 260066168,
+       "payloadBytes": 247452788,
+       "tailIpBytes": 2284735,
+       "pingSent": 356,
+       "serverSpan": [
+        12902,
+        1258,
+        391
+       ]
+      },
+      "serverBytes": {
+       "down": 181468418,
+       "up": 70249745,
+       "unknown": 0
+      },
+      "far": true,
+      "duplicates": {
+       "down": 2,
+       "up": 0
+      },
+      "cpuMax": 0.019,
+      "cpuPeak": 0.08,
+      "saturated": false
+     },
+     "twin": {
+      "down": 104.307,
+      "up": 35.113,
+      "idle": 120.3,
+      "jitter": 0.082,
+      "downLoaded": 120.25,
+      "upLoaded": 120.2,
+      "durationMs": 39025,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.119,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 89962,
+     "truth": {
+      "downMbps": 290.98,
+      "upMbps": 95.723,
+      "idleMs": 120,
+      "jitterMs": 0,
+      "loadedDownMs": 145,
+      "loadedUpMs": 147,
+      "streams": {
+       "down": 8,
+       "up": 6
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.01097
+      },
+      "cpuMax": 0.017,
+      "cpuPeak": 0.185,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 225176677,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 131.81694800000002,
+        "mbps": 264.4172896946763,
+        "p10": 222.18492869702987,
+        "p90": 301.7384643801976,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 17232,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.04881422222221943,
+        "medianMs": 120.375418,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980216796,
+       "upload": {
+        "capped": false,
+        "loadedMs": 129.086762,
+        "mbps": 77.98441225787585,
+        "p10": 38.36030574257426,
+        "p90": 120.13655078019795,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 17233,
+      "windows": {
+       "download": {
+        "endMs": 5556,
+        "endUnixMs": 1794980226147.0571,
+        "phaseBytes": 156399954,
+        "phaseStartUnixMs": 1794980220591.0571,
+        "rebuiltMbps": 264.4172896946763,
+        "startUnixMs": 1794980223091.0571,
+        "steadyStartMs": 2500
+       },
+       "upload": {
+        "endMs": 7580,
+        "endUnixMs": 1794980234029.1638,
+        "phaseBytes": 68776723,
+        "phaseStartUnixMs": 1794980226449.1638,
+        "rebuiltMbps": 78.41387682013485,
+        "startUnixMs": 1794980228199.1638,
+        "steadyStartMs": 1750
+       }
+      },
+      "wire": {
+       "downMbps": 264.433,
+       "upMbps": 78.108,
+       "idleMs": 120,
+       "loadedDownMs": 128,
+       "loadedUpMs": 129,
+       "ipBytes": 244344130,
+       "payloadBytes": 232533630,
+       "tailIpBytes": 1796256,
+       "pingSent": 342,
+       "serverSpan": [
+        11711,
+        1258,
+        377
+       ]
+      },
+      "serverBytes": {
+       "down": 166545398,
+       "up": 68770341,
+       "unknown": 0
+      },
+      "far": true,
+      "duplicates": {
+       "down": 18,
+       "up": 0
+      },
+      "cpuMax": 0.019,
+      "cpuPeak": 0.099,
+      "saturated": false
+     },
+     "twin": {
+      "down": 103.378,
+      "up": 58.418,
+      "idle": 120.3,
+      "jitter": 0.089,
+      "downLoaded": 120.2,
+      "upLoaded": 120.5,
+      "durationMs": 36023,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.126,
+      "saturated": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "mobile",
+   "shape": {
+    "down": 30,
+    "up": 8,
+    "rttMs": 50,
+    "lossPct": 0.5,
+    "bufferMs": 300,
+    "jitter": {
+     "ms": 6
+    },
+    "serverMs": 25,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 3,
+   "planned": 5,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 48.8,
+     "p5": 42.48,
+     "p95": 63.62,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": null,
+    "loss": {
+     "ok": true,
+     "down": 0.0048,
+     "up": 0.00507,
+     "detail": "netem drops within ±30 % of 0.5 % each way"
+    },
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 153,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 102282,
+     "truth": {
+      "downMbps": 18.398,
+      "upMbps": 7.64,
+      "idleMs": 46.25,
+      "jitterMs": 7.763,
+      "loadedDownMs": 70.9,
+      "loadedUpMs": 148,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00128
+      },
+      "cpuMax": 0.005,
+      "cpuPeak": 0.071,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 23041392,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 69.37864400000001,
+        "mbps": 17.83888779808607,
+        "p10": 14.990553682003497,
+        "p90": 20.39679112871289,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 17698,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 7.060177500000005,
+        "medianMs": 53.19032499999999,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980281609,
+       "upload": {
+        "capped": false,
+        "loadedMs": 113.5387275,
+        "mbps": 7.725960047636718,
+        "p10": 0,
+        "p90": 17.089647524752476,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 17699,
+      "windows": {
+       "download": {
+        "endMs": 6569,
+        "endUnixMs": 1794980290914.4019,
+        "phaseBytes": 14849392,
+        "phaseStartUnixMs": 1794980284345.4019,
+        "rebuiltMbps": 17.83888779808607,
+        "startUnixMs": 1794980285595.4019,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8091,
+        "endUnixMs": 1794980299307.6536,
+        "phaseBytes": 8192000,
+        "phaseStartUnixMs": 1794980291216.6536,
+        "rebuiltMbps": 7.546047046656768,
+        "startUnixMs": 1794980292216.6536,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 17.861,
+       "upMbps": 7.559,
+       "idleMs": 48.55,
+       "loadedDownMs": 70.2,
+       "loadedUpMs": 118,
+       "ipBytes": 24640056,
+       "payloadBytes": 23267204,
+       "tailIpBytes": 535130,
+       "pingSent": 353,
+       "serverSpan": [
+        10929,
+        1580,
+        393
+       ]
+      },
+      "serverBytes": {
+       "down": 15605784,
+       "up": 8147504,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.014,
+      "cpuPeak": 0.07,
+      "saturated": false
+     },
+     "twin": {
+      "down": 3.685,
+      "up": 6.442,
+      "idle": 47.863,
+      "jitter": 5.165,
+      "downLoaded": 54.938,
+      "upLoaded": 66.985,
+      "durationMs": 40298,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.041,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 104309,
+     "truth": {
+      "downMbps": 18.154,
+      "upMbps": 7.61,
+      "idleMs": 48.25,
+      "jitterMs": 9.474,
+      "loadedDownMs": 72.6,
+      "loadedUpMs": 114,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00069
+      },
+      "cpuMax": 0.006,
+      "cpuPeak": 0.061,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 22842397,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 60.157108,
+        "mbps": 16.84393371124832,
+        "p10": 14.336354516444938,
+        "p90": 22.103592423374124,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 17857,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 7.172936277777783,
+        "medianMs": 48.34627599999999,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980345008,
+       "upload": {
+        "capped": false,
+        "loadedMs": 135.49104849999998,
+        "mbps": 7.9710590764067994,
+        "p10": 0,
+        "p90": 20.00145742574258,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 17858,
+      "windows": {
+       "download": {
+        "endMs": 6771,
+        "endUnixMs": 1794980354473.3223,
+        "phaseBytes": 14906397,
+        "phaseStartUnixMs": 1794980347702.3223,
+        "rebuiltMbps": 16.84393371124832,
+        "startUnixMs": 1794980348952.3223,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8091,
+        "endUnixMs": 1794980362866.3591,
+        "phaseBytes": 7936000,
+        "phaseStartUnixMs": 1794980354775.3591,
+        "rebuiltMbps": 7.294040222209318,
+        "startUnixMs": 1794980355775.3591,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 16.869,
+       "upMbps": 7.567,
+       "idleMs": 49.7,
+       "loadedDownMs": 69.8,
+       "loadedUpMs": 129,
+       "ipBytes": 24427691,
+       "payloadBytes": 23032323,
+       "tailIpBytes": 272176,
+       "pingSent": 355,
+       "serverSpan": [
+        11087,
+        1221,
+        389
+       ]
+      },
+      "serverBytes": {
+       "down": 16402834,
+       "up": 7832038,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 3,
+       "up": 1
+      },
+      "cpuMax": 0.011,
+      "cpuPeak": 0.051,
+      "saturated": false
+     },
+     "twin": {
+      "down": 5.688,
+      "up": 4.604,
+      "idle": 49.366,
+      "jitter": 9.441,
+      "downLoaded": 48.347,
+      "upLoaded": 57.06,
+      "durationMs": 42484,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.042,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 100614,
+     "truth": {
+      "downMbps": 15.578,
+      "upMbps": 7.627,
+      "idleMs": 48.3,
+      "jitterMs": 6.032,
+      "loadedDownMs": 67.65,
+      "loadedUpMs": 131.5,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.0004
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.118,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 17275931,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 64.53832,
+        "mbps": 17.900355893979718,
+        "p10": 15.88455553267328,
+        "p90": 19.462149829702973,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 13599,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 6.382497888888889,
+        "medianMs": 50.068552,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980533210,
+       "upload": {
+        "capped": false,
+        "loadedMs": 144.17607400000003,
+        "mbps": 7.8777639979818925,
+        "p10": 0,
+        "p90": 16.384,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 13599,
+      "windows": {
+       "download": {
+        "endMs": 5052,
+        "endUnixMs": 1794980540947.4683,
+        "phaseBytes": 11643931,
+        "phaseStartUnixMs": 1794980535895.4683,
+        "rebuiltMbps": 17.900355893979718,
+        "startUnixMs": 1794980537145.4683,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 5560,
+        "endUnixMs": 1794980546809.486,
+        "phaseBytes": 5632000,
+        "phaseStartUnixMs": 1794980541249.486,
+        "rebuiltMbps": 8.08421052631579,
+        "startUnixMs": 1794980542249.486,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 17.907,
+       "upMbps": 7.63,
+       "idleMs": 48.5,
+       "loadedDownMs": 71.6,
+       "loadedUpMs": 129,
+       "ipBytes": 18588208,
+       "payloadBytes": 17537028,
+       "tailIpBytes": 382068,
+       "pingSent": 272,
+       "serverSpan": [
+        9362,
+        1478,
+        309
+       ]
+      },
+      "serverBytes": {
+       "down": 13267050,
+       "up": 5629300,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.014,
+      "cpuPeak": 0.08,
+      "saturated": false
+     },
+     "twin": {
+      "down": 6.473,
+      "up": 4.216,
+      "idle": 49.419,
+      "jitter": 7.538,
+      "downLoaded": 49.963,
+      "upLoaded": 56.817,
+      "durationMs": 42199,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.038,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "truth",
+      "weir"
+     ],
+     "wallMs": 59315,
+     "truth": {
+      "downMbps": 19.823,
+      "upMbps": 7.627,
+      "idleMs": 48.6,
+      "jitterMs": 6.868,
+      "loadedDownMs": 73.7,
+      "loadedUpMs": 128,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00048
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.061,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 22878738,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 69.6690005,
+        "mbps": 18.421404045667725,
+        "p10": 15.805438533566278,
+        "p90": 21.70991022791691,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 17405,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 8.559402388888891,
+        "medianMs": 50.871622,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980588945,
+       "upload": {
+        "capped": false,
+        "loadedMs": 144.189193,
+        "mbps": 7.832015771796504,
+        "p10": 0,
+        "p90": 14.1330686856921,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 17406,
+      "windows": {
+       "download": {
+        "endMs": 6266,
+        "endUnixMs": 1794980597957.3665,
+        "phaseBytes": 14942738,
+        "phaseStartUnixMs": 1794980591691.3665,
+        "rebuiltMbps": 18.421404045667725,
+        "startUnixMs": 1794980592941.3665,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8091,
+        "endUnixMs": 1794980606350.5461,
+        "phaseBytes": 7936000,
+        "phaseStartUnixMs": 1794980598259.5461,
+        "rebuiltMbps": 7.537832784829745,
+        "startUnixMs": 1794980599259.5461,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 18.393,
+       "upMbps": 7.606,
+       "idleMs": 47.25,
+       "loadedDownMs": 69.2,
+       "loadedUpMs": 139.5,
+       "ipBytes": 24544084,
+       "payloadBytes": 23173000,
+       "tailIpBytes": 258080,
+       "pingSent": 347,
+       "serverSpan": [
+        10622,
+        1237,
+        380
+       ]
+      },
+      "serverBytes": {
+       "down": 15946208,
+       "up": 7928576,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.013,
+      "cpuPeak": 0.07,
+      "saturated": false
+     },
+     "twin": null
+    },
+    {
+     "order": [
+      "weir",
+      "truth"
+     ],
+     "wallMs": 61629,
+     "truth": {
+      "downMbps": 18.793,
+      "upMbps": 7.618,
+      "idleMs": 50.9,
+      "jitterMs": 6.018,
+      "loadedDownMs": 72.45,
+      "loadedUpMs": 130,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.0015
+      },
+      "cpuMax": 0.009,
+      "cpuPeak": 0.092,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 26406040,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 69.4356665,
+        "mbps": 15.777562757681046,
+        "p10": 12.783869433663297,
+        "p90": 19.755193599999977,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 19895,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 4.687141555555556,
+        "medianMs": 47.843756,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980609023,
+       "upload": {
+        "capped": false,
+        "loadedMs": 193.48132700000002,
+        "mbps": 7.5092370610633195,
+        "p10": 0,
+        "p90": 16.992316831683173,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 19895,
+      "windows": {
+       "download": {
+        "endMs": 8793,
+        "endUnixMs": 1794980620526.1814,
+        "phaseBytes": 18470040,
+        "phaseStartUnixMs": 1794980611733.1814,
+        "rebuiltMbps": 15.777562757681046,
+        "startUnixMs": 1794980612983.1814,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8091,
+        "endUnixMs": 1794980628919.1392,
+        "phaseBytes": 7936000,
+        "phaseStartUnixMs": 1794980620828.1392,
+        "rebuiltMbps": 7.5092370610633195,
+        "startUnixMs": 1794980621828.1392,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 15.773,
+       "upMbps": 7.624,
+       "idleMs": 48.25,
+       "loadedDownMs": 68.1,
+       "loadedUpMs": 175,
+       "ipBytes": 28258626,
+       "payloadBytes": 26674550,
+       "tailIpBytes": 278148,
+       "pingSent": 395,
+       "serverSpan": [
+        13141,
+        1369,
+        433
+       ]
+      },
+      "serverBytes": {
+       "down": 19160138,
+       "up": 7931950,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.011,
+      "cpuPeak": 0.1,
+      "saturated": false
+     },
+     "twin": null
+    }
+   ]
+  },
+  {
+   "id": "lossy-0.1",
+   "shape": {
+    "down": 300,
+    "up": 50,
+    "rttMs": 20,
+    "lossPct": 0.1,
+    "bufferMs": 30,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 4,
+   "planned": 5,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 20.1,
+     "p5": 20.1,
+     "p95": 20.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": null,
+    "loss": {
+     "ok": true,
+     "down": 0.001,
+     "up": 0.001,
+     "detail": "netem drops within ±50 % of 0.1 % each way"
+    },
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 160,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 82855,
+     "truth": {
+      "downMbps": 122.788,
+      "upMbps": 47.818,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 20,
+      "loadedUpMs": 36.6,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00009
+      },
+      "cpuMax": 0.032,
+      "cpuPeak": 0.143,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 148759537,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 20.196371,
+        "mbps": 144.0666070751096,
+        "p10": 124.78149802244225,
+        "p90": 162.5351383445544,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 13628,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.042305555555556436,
+        "medianMs": 20.406035,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979539594,
+       "upload": {
+        "capped": false,
+        "loadedMs": 37.376004,
+        "mbps": 47.56799294282297,
+        "p10": 30.641934130693055,
+        "p90": 63.25445005940595,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 13628,
+      "windows": {
+       "download": {
+        "endMs": 5055,
+        "endUnixMs": 1794979546143.1665,
+        "phaseBytes": 107114069,
+        "phaseStartUnixMs": 1794979541088.1665,
+        "rebuiltMbps": 144.0666070751096,
+        "startUnixMs": 1794979542338.1665,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 6777,
+        "endUnixMs": 1794979553222.0996,
+        "phaseBytes": 41645468,
+        "phaseStartUnixMs": 1794979546445.0996,
+        "rebuiltMbps": 47.90296210462721,
+        "startUnixMs": 1794979547445.0996,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 144.066,
+       "upMbps": 47.695,
+       "idleMs": 20.1,
+       "loadedDownMs": 20,
+       "loadedUpMs": 36.15,
+       "ipBytes": 156286703,
+       "payloadBytes": 148965415,
+       "tailIpBytes": 1043409,
+       "pingSent": 277,
+       "serverSpan": [
+        8145,
+        1027,
+        300
+       ]
+      },
+      "serverBytes": {
+       "down": 112719458,
+       "up": 41229506,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 1,
+       "up": 0
+      },
+      "cpuMax": 0.045,
+      "cpuPeak": 0.121,
+      "saturated": false
+     },
+     "twin": {
+      "down": 153.892,
+      "up": 43.064,
+      "idle": 20.2,
+      "jitter": 0.068,
+      "downLoaded": 20.1,
+      "upLoaded": 20.2,
+      "durationMs": 36962,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.069,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 93032,
+     "truth": {
+      "downMbps": 125.299,
+      "upMbps": 47.752,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 20,
+      "loadedUpMs": 41.2,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00086
+      },
+      "cpuMax": 0.039,
+      "cpuPeak": 0.15,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 213940815,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 20.2236465,
+        "mbps": 134.6996299957543,
+        "p10": 112.25153926336613,
+        "p90": 191.96603239324398,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 18480,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.045679333333332885,
+        "medianMs": 20.384624,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979594351,
+       "upload": {
+        "capped": false,
+        "loadedMs": 35.630378,
+        "mbps": 47.811901057843265,
+        "p10": 14.562499419918478,
+        "p90": 83.37174058008152,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 18481,
+      "windows": {
+       "download": {
+        "endMs": 8593,
+        "endUnixMs": 1794979604437.894,
+        "phaseBytes": 165269775,
+        "phaseStartUnixMs": 1794979595844.894,
+        "rebuiltMbps": 134.6996299957543,
+        "startUnixMs": 1794979597094.894,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8092,
+        "endUnixMs": 1794979612831.8188,
+        "phaseBytes": 48671040,
+        "phaseStartUnixMs": 1794979604739.8188,
+        "rebuiltMbps": 46.29288076756705,
+        "startUnixMs": 1794979606239.8188,
+        "steadyStartMs": 1500
+       }
+      },
+      "wire": {
+       "downMbps": 134.689,
+       "upMbps": 47.767,
+       "idleMs": 20.1,
+       "loadedDownMs": 20,
+       "loadedUpMs": 35.8,
+       "ipBytes": 225083861,
+       "payloadBytes": 214614441,
+       "tailIpBytes": 446408,
+       "pingSent": 373,
+       "serverSpan": [
+        12190,
+        1018,
+        397
+       ]
+      },
+      "serverBytes": {
+       "down": 171857054,
+       "up": 48668683,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.031,
+      "cpuPeak": 0.096,
+      "saturated": false
+     },
+     "twin": {
+      "down": 36.473,
+      "up": 33.59,
+      "idle": 20.2,
+      "jitter": 0.046,
+      "downLoaded": 20.2,
+      "upLoaded": 20.1,
+      "durationMs": 42164,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.061,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 95107,
+     "truth": {
+      "downMbps": 138.097,
+      "upMbps": 47.818,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 20,
+      "loadedUpMs": 37.1,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00022
+      },
+      "cpuMax": 0.035,
+      "cpuPeak": 0.155,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 237269591,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 20.220819,
+        "mbps": 144.06713149647493,
+        "p10": 111.37368871287137,
+        "p90": 180.88691472475256,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 19092,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.035549611111110956,
+        "medianMs": 20.373027999999998,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979760972,
+       "upload": {
+        "capped": false,
+        "loadedMs": 33.785112,
+        "mbps": 47.63721704158335,
+        "p10": 10.220029659098422,
+        "p90": 78.35423640675604,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 19093,
+      "windows": {
+       "download": {
+        "endMs": 9502,
+        "endUnixMs": 1794979771968.5537,
+        "phaseBytes": 189622017,
+        "phaseStartUnixMs": 1794979762466.5537,
+        "rebuiltMbps": 144.06713149647493,
+        "startUnixMs": 1794979763716.5537,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 7795,
+        "endUnixMs": 1794979780065.5896,
+        "phaseBytes": 47647574,
+        "phaseStartUnixMs": 1794979772270.5896,
+        "rebuiltMbps": 47.67867317664372,
+        "startUnixMs": 1794979773270.5896,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 143.922,
+       "upMbps": 47.74,
+       "idleMs": 20.1,
+       "loadedDownMs": 20,
+       "loadedUpMs": 32.5,
+       "ipBytes": 249189603,
+       "payloadBytes": 237722459,
+       "tailIpBytes": 987786,
+       "pingSent": 385,
+       "serverSpan": [
+        12621,
+        984,
+        409
+       ]
+      },
+      "serverBytes": {
+       "down": 195616918,
+       "up": 47329311,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.034,
+      "cpuPeak": 0.168,
+      "saturated": false
+     },
+     "twin": {
+      "down": 41.353,
+      "up": 34.914,
+      "idle": 20.1,
+      "jitter": 0.084,
+      "downLoaded": 20.2,
+      "upLoaded": 20.2,
+      "durationMs": 43503,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.058,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "truth",
+      "weir"
+     ],
+     "wallMs": 49294,
+     "truth": {
+      "downMbps": 136.412,
+      "upMbps": 47.818,
+      "idleMs": 20.1,
+      "jitterMs": 0.005,
+      "loadedDownMs": 20,
+      "loadedUpMs": 40,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00025
+      },
+      "cpuMax": 0.042,
+      "cpuPeak": 0.175,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 214954593,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 20.211116999999998,
+        "mbps": 133.59108963365622,
+        "p10": 102.74055846976528,
+        "p90": 183.28500087128728,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 18675,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.02039016666666645,
+        "medianMs": 20.342601,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979810577,
+       "upload": {
+        "capped": false,
+        "loadedMs": 30.261748,
+        "mbps": 48.02112775806475,
+        "p10": 19.34729017029703,
+        "p90": 75.83011426217828,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 18675,
+      "windows": {
+       "download": {
+        "endMs": 9302,
+        "endUnixMs": 1794979821372.1316,
+        "phaseBytes": 169158844,
+        "phaseStartUnixMs": 1794979812070.1316,
+        "rebuiltMbps": 133.59108963365622,
+        "startUnixMs": 1794979813070.1316,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 7579,
+        "endUnixMs": 1794979829252.5781,
+        "phaseBytes": 45795749,
+        "phaseStartUnixMs": 1794979821673.5781,
+        "rebuiltMbps": 46.79391307966316,
+        "startUnixMs": 1794979822923.5781,
+        "steadyStartMs": 1250
+       }
+      },
+      "wire": {
+       "downMbps": 133.593,
+       "upMbps": 47.701,
+       "idleMs": 20.1,
+       "loadedDownMs": 20,
+       "loadedUpMs": 30.1,
+       "ipBytes": 225854574,
+       "payloadBytes": 215412610,
+       "tailIpBytes": 722871,
+       "pingSent": 378,
+       "serverSpan": [
+        12674,
+        1098,
+        403
+       ]
+      },
+      "serverBytes": {
+       "down": 176421291,
+       "up": 45720994,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.027,
+      "cpuPeak": 0.088,
+      "saturated": false
+     },
+     "twin": null
+    },
+    {
+     "order": [
+      "weir",
+      "truth"
+     ],
+     "wallMs": 46772,
+     "truth": {
+      "downMbps": 133.066,
+      "upMbps": 47.768,
+      "idleMs": 20.1,
+      "jitterMs": 0,
+      "loadedDownMs": 20,
+      "loadedUpMs": 37.8,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00095
+      },
+      "cpuMax": 0.041,
+      "cpuPeak": 0.141,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 193546164,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 20.217955999999997,
+        "mbps": 141.72506615280741,
+        "p10": 101.55624383366347,
+        "p90": 186.09590987070484,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 16352,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.01665083333333328,
+        "medianMs": 20.351535000000002,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979831784,
+       "upload": {
+        "capped": false,
+        "loadedMs": 41.036013,
+        "mbps": 47.80899565954802,
+        "p10": 17.086167255445528,
+        "p90": 80.71607228235297,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 16352,
+      "windows": {
+       "download": {
+        "endMs": 7277,
+        "endUnixMs": 1794979840552.5735,
+        "phaseBytes": 148469848,
+        "phaseStartUnixMs": 1794979833275.5735,
+        "rebuiltMbps": 141.72506615280741,
+        "startUnixMs": 1794979834525.5735,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 7283,
+        "endUnixMs": 1794979848136.8691,
+        "phaseBytes": 45076316,
+        "phaseStartUnixMs": 1794979840853.8691,
+        "rebuiltMbps": 48.23873006837623,
+        "startUnixMs": 1794979841853.8691,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 141.656,
+       "upMbps": 47.804,
+       "idleMs": 20.1,
+       "loadedDownMs": 20,
+       "loadedUpMs": 39.7,
+       "ipBytes": 203497265,
+       "payloadBytes": 193904513,
+       "tailIpBytes": 1182466,
+       "pingSent": 332,
+       "serverSpan": [
+        10404,
+        1113,
+        357
+       ]
+      },
+      "serverBytes": {
+       "down": 156000381,
+       "up": 44501302,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.046,
+      "cpuPeak": 0.143,
+      "saturated": false
+     },
+     "twin": null
+    }
+   ]
+  },
+  {
+   "id": "lossy-1",
+   "shape": {
+    "down": 100,
+    "up": 20,
+    "rttMs": 40,
+    "lossPct": 1,
+    "bufferMs": 50,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 4,
+   "planned": 5,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 40.1,
+     "p5": 40.1,
+     "p95": 40.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": null,
+    "loss": {
+     "ok": true,
+     "down": 0.00975,
+     "up": 0.0102,
+     "detail": "netem drops within ±30 % of 1 % each way"
+    },
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 3,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 92371,
+     "truth": {
+      "downMbps": 19.89,
+      "upMbps": 11.971,
+      "idleMs": 40.1,
+      "jitterMs": 0,
+      "loadedDownMs": 40,
+      "loadedUpMs": 40,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.02061
+      },
+      "cpuMax": 0.137,
+      "cpuPeak": 0.21,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 28510732,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 40.210675,
+        "mbps": 21.612542973912493,
+        "p10": 18.041714301689,
+        "p90": 24.080399992234526,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 15647,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 26.9354155,
+        "medianMs": 40.398378,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979914044,
+       "upload": {
+        "capped": false,
+        "loadedMs": 40.230483,
+        "mbps": 10.21761491937623,
+        "p10": 0,
+        "p90": 18.95364285241701,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15647,
+      "windows": {
+       "download": {
+        "endMs": 5053,
+        "endUnixMs": 1794979921296.0889,
+        "phaseBytes": 16692318,
+        "phaseStartUnixMs": 1794979916243.0889,
+        "rebuiltMbps": 21.612542973912493,
+        "startUnixMs": 1794979917243.0889,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 8094,
+        "endUnixMs": 1794979929692.2283,
+        "phaseBytes": 11818414,
+        "phaseStartUnixMs": 1794979921598.2283,
+        "rebuiltMbps": 10.296877759166819,
+        "startUnixMs": 1794979922598.2283,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 21.578,
+       "upMbps": 10.312,
+       "idleMs": 40.1,
+       "loadedDownMs": 40,
+       "loadedUpMs": 40,
+       "ipBytes": 30440979,
+       "payloadBytes": 28901103,
+       "tailIpBytes": 518496,
+       "pingSent": 316,
+       "serverSpan": [
+        8849,
+        1908,
+        358
+       ]
+      },
+      "serverBytes": {
+       "down": 18233684,
+       "up": 11811566,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 1
+      },
+      "cpuMax": 0.093,
+      "cpuPeak": 0.212,
+      "saturated": false
+     },
+     "twin": {
+      "down": 12.043,
+      "up": 3.575,
+      "idle": 40.2,
+      "jitter": 0.066,
+      "downLoaded": 40.2,
+      "upLoaded": 40.3,
+      "durationMs": 41858,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.028,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 100910,
+     "truth": {
+      "downMbps": 18.589,
+      "upMbps": 10.812,
+      "idleMs": 40.1,
+      "jitterMs": 0,
+      "loadedDownMs": 40,
+      "loadedUpMs": 40,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00038
+      },
+      "cpuMax": 0.112,
+      "cpuPeak": 0.218,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 33120380,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 40.231129,
+        "mbps": 19.41533747305063,
+        "p10": 15.161646080000006,
+        "p90": 23.370353742574313,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 17580,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 27.06963022222222,
+        "medianMs": 40.430369999999996,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979976944,
+       "upload": {
+        "capped": false,
+        "loadedMs": 40.300124000000004,
+        "mbps": 10.606381290371036,
+        "p10": 1.2141902574257255,
+        "p90": 19.588084213861382,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 17580,
+      "windows": {
+       "download": {
+        "endMs": 7287,
+        "endUnixMs": 1794979986428.4446,
+        "phaseBytes": 21051092,
+        "phaseStartUnixMs": 1794979979141.4446,
+        "rebuiltMbps": 19.41533747305063,
+        "startUnixMs": 1794979980141.4446,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 7794,
+        "endUnixMs": 1794979994525.2402,
+        "phaseBytes": 12069288,
+        "phaseStartUnixMs": 1794979986731.2402,
+        "rebuiltMbps": 10.581463586099558,
+        "startUnixMs": 1794979987731.2402,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 19.452,
+       "upMbps": 10.882,
+       "idleMs": 40.1,
+       "loadedDownMs": 40,
+       "loadedUpMs": 40,
+       "ipBytes": 35351026,
+       "payloadBytes": 33565710,
+       "tailIpBytes": 708580,
+       "pingSent": 356,
+       "serverSpan": [
+        11082,
+        1574,
+        390
+       ]
+      },
+      "serverBytes": {
+       "down": 22945384,
+       "up": 12056648,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 2
+      },
+      "cpuMax": 0.118,
+      "cpuPeak": 0.212,
+      "saturated": false
+     },
+     "twin": {
+      "down": 9.629,
+      "up": 2.997,
+      "idle": 40.2,
+      "jitter": 0.083,
+      "downLoaded": 40.25,
+      "upLoaded": 40.2,
+      "durationMs": 49622,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.024,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 89667,
+     "truth": {
+      "downMbps": 19.588,
+      "upMbps": 12.051,
+      "idleMs": 40.1,
+      "jitterMs": 0,
+      "loadedDownMs": 40,
+      "loadedUpMs": 40,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00092
+      },
+      "cpuMax": 0.101,
+      "cpuPeak": 0.21,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 33215072,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 40.220833,
+        "mbps": 21.39322269322339,
+        "p10": 17.594428065584182,
+        "p90": 25.12284804308911,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 16662,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 27.480451944444447,
+        "medianMs": 40.393158,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980148100,
+       "upload": {
+        "capped": false,
+        "loadedMs": 40.261077,
+        "mbps": 14.063005991839464,
+        "p10": 1.7662408294653715,
+        "p90": 22.90368003168315,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 16662,
+      "windows": {
+       "download": {
+        "endMs": 6065,
+        "endUnixMs": 1794980156368.4937,
+        "phaseBytes": 18845926,
+        "phaseStartUnixMs": 1794980150303.4937,
+        "rebuiltMbps": 21.39322269322339,
+        "startUnixMs": 1794980151303.4937,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 8093,
+        "endUnixMs": 1794980164762.4402,
+        "phaseBytes": 14369146,
+        "phaseStartUnixMs": 1794980156669.4402,
+        "rebuiltMbps": 13.423475539264064,
+        "startUnixMs": 1794980157669.4402,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 21.35,
+       "upMbps": 13.518,
+       "idleMs": 40.1,
+       "loadedDownMs": 40,
+       "loadedUpMs": 40,
+       "ipBytes": 35340278,
+       "payloadBytes": 33563854,
+       "tailIpBytes": 272657,
+       "pingSent": 338,
+       "serverSpan": [
+        9870,
+        1087,
+        362
+       ]
+      },
+      "serverBytes": {
+       "down": 20468019,
+       "up": 14326582,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.098,
+      "cpuPeak": 0.21,
+      "saturated": false
+     },
+     "twin": {
+      "down": 12.041,
+      "up": 4.836,
+      "idle": 40.2,
+      "jitter": 14.297,
+      "downLoaded": 40.2,
+      "upLoaded": 40.2,
+      "durationMs": 38801,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.032,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "truth",
+      "weir"
+     ],
+     "wallMs": 47353,
+     "truth": {
+      "downMbps": 18.988,
+      "upMbps": 11.556,
+      "idleMs": 40.1,
+      "jitterMs": 0,
+      "loadedDownMs": 40,
+      "loadedUpMs": 40,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00304
+      },
+      "cpuMax": 0.091,
+      "cpuPeak": 0.21,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 34220919,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 40.227312000000005,
+        "mbps": 21.996084594440575,
+        "p10": 17.432134276920216,
+        "p90": 27.783524469438944,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 15102,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.034217722222222115,
+        "medianMs": 40.375657000000004,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980196679,
+       "upload": {
+        "capped": false,
+        "loadedMs": 40.253775000000005,
+        "mbps": 14.561567859725175,
+        "p10": 6.264470588235289,
+        "p90": 21.509447516987027,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15102,
+      "windows": {
+       "download": {
+        "endMs": 6574,
+        "endUnixMs": 1794980205208.9375,
+        "phaseBytes": 21919800,
+        "phaseStartUnixMs": 1794980198634.9375,
+        "rebuiltMbps": 21.996084594440575,
+        "startUnixMs": 1794980199634.9375,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 6271,
+        "endUnixMs": 1794980211781.6968,
+        "phaseBytes": 12301119,
+        "phaseStartUnixMs": 1794980205510.6968,
+        "rebuiltMbps": 14.73421900141067,
+        "startUnixMs": 1794980206510.6968,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 21.976,
+       "upMbps": 14.679,
+       "idleMs": 40.1,
+       "loadedDownMs": 40,
+       "loadedUpMs": 40,
+       "ipBytes": 36378778,
+       "payloadBytes": 34557738,
+       "tailIpBytes": 592593,
+       "pingSent": 308,
+       "serverSpan": [
+        10161,
+        1468,
+        339
+       ]
+      },
+      "serverBytes": {
+       "down": 23926880,
+       "up": 12295794,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 1
+      },
+      "cpuMax": 0.098,
+      "cpuPeak": 0.208,
+      "saturated": false
+     },
+     "twin": null
+    },
+    {
+     "order": [
+      "weir",
+      "truth"
+     ],
+     "wallMs": 48965,
+     "truth": {
+      "downMbps": 19.189,
+      "upMbps": 12.424,
+      "idleMs": 40.1,
+      "jitterMs": 0,
+      "loadedDownMs": 40,
+      "loadedUpMs": 40,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00755
+      },
+      "cpuMax": 0.107,
+      "cpuPeak": 0.21,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 33777529,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 40.213344,
+        "mbps": 21.419696951421543,
+        "p10": 16.11468102970296,
+        "p90": 24.20653776587069,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 16616,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.04235972222222352,
+        "medianMs": 40.378792,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980214651,
+       "upload": {
+        "capped": false,
+        "loadedMs": 40.251433999999996,
+        "mbps": 12.494465247265897,
+        "p10": 3.127225626092005,
+        "p90": 20.82595386729412,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 16616,
+      "windows": {
+       "download": {
+        "endMs": 6267,
+        "endUnixMs": 1794980222873.0747,
+        "phaseBytes": 19839560,
+        "phaseStartUnixMs": 1794980216606.0747,
+        "rebuiltMbps": 21.419696951421543,
+        "startUnixMs": 1794980217606.0747,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 8093,
+        "endUnixMs": 1794980231268.1667,
+        "phaseBytes": 13937969,
+        "phaseStartUnixMs": 1794980223175.1667,
+        "rebuiltMbps": 12.886517975468772,
+        "startUnixMs": 1794980224175.1667,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 21.411,
+       "upMbps": 12.701,
+       "idleMs": 40.1,
+       "loadedDownMs": 40,
+       "loadedUpMs": 40,
+       "ipBytes": 36073705,
+       "payloadBytes": 34264105,
+       "tailIpBytes": 828968,
+       "pingSent": 336,
+       "serverSpan": [
+        9825,
+        1981,
+        379
+       ]
+      },
+      "serverBytes": {
+       "down": 21919139,
+       "up": 13929673,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 2
+      },
+      "cpuMax": 0.085,
+      "cpuPeak": 0.218,
+      "saturated": false
+     },
+     "twin": null
+    }
+   ]
+  },
+  {
+   "id": "lossy-2",
+   "shape": {
+    "down": 25,
+    "up": 5,
+    "rttMs": 80,
+    "lossPct": 2,
+    "bufferMs": 100,
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 5,
+   "planned": 5,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": true,
+     "medianMs": 80.1,
+     "p5": 80.1,
+     "p95": 80.1,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": null,
+    "loss": {
+     "ok": true,
+     "down": 0.0202,
+     "up": 0.02006,
+     "detail": "netem drops within ±30 % of 2 % each way"
+    },
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 0,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": true,
+    "reasons": []
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 189566,
+     "truth": {
+      "downMbps": 6.349,
+      "upMbps": 4.018,
+      "idleMs": 80.1,
+      "jitterMs": 0,
+      "loadedDownMs": 80,
+      "loadedUpMs": 83.5,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00013
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.09,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 9835204,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 80.243759,
+        "mbps": 5.985542871410736,
+        "p10": 5.126900796831667,
+        "p90": 7.375289628514849,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 16523,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.03875972222222165,
+        "medianMs": 80.413237,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979541333,
+       "upload": {
+        "capped": false,
+        "loadedMs": 83.835961,
+        "mbps": 4.33103059354293,
+        "p10": 0,
+        "p90": 10.423926383226563,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 16523,
+      "windows": {
+       "download": {
+        "endMs": 5255,
+        "endUnixMs": 1794979549461.9011,
+        "phaseBytes": 4971204,
+        "phaseStartUnixMs": 1794979544206.9011,
+        "rebuiltMbps": 5.985542871410736,
+        "startUnixMs": 1794979545456.9011,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8093,
+        "endUnixMs": 1794979557857.3884,
+        "phaseBytes": 4864000,
+        "phaseStartUnixMs": 1794979549764.3884,
+        "rebuiltMbps": 4.33103059354293,
+        "startUnixMs": 1794979550764.3884,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 5.996,
+       "upMbps": 4.335,
+       "idleMs": 80.1,
+       "loadedDownMs": 80,
+       "loadedUpMs": 86.1,
+       "ipBytes": 10579227,
+       "payloadBytes": 9941499,
+       "tailIpBytes": 349304,
+       "pingSent": 329,
+       "serverSpan": [
+        9759,
+        1897,
+        376
+       ]
+      },
+      "serverBytes": {
+       "down": 6060266,
+       "up": 4700768,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 2
+      },
+      "cpuMax": 0.008,
+      "cpuPeak": 0.04,
+      "saturated": false
+     },
+     "twin": {
+      "down": 1.588,
+      "up": 1.347,
+      "idle": 80.3,
+      "jitter": 32.98,
+      "downLoaded": 80.2,
+      "upLoaded": 80.25,
+      "durationMs": 127076,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.016,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 199595,
+     "truth": {
+      "downMbps": 6.222,
+      "upMbps": 4.121,
+      "idleMs": 80.1,
+      "jitterMs": 0,
+      "loadedDownMs": 80,
+      "loadedUpMs": 80.1,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00159
+      },
+      "cpuMax": 0.006,
+      "cpuPeak": 0.03,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 13241920,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 80.2850785,
+        "mbps": 6.059888348601406,
+        "p10": 4.9275088519976915,
+        "p90": 7.1883655857425826,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 21433,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 95.35137550000002,
+        "medianMs": 80.545469,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794979690815,
+       "upload": {
+        "capped": false,
+        "loadedMs": 82.71055199999999,
+        "mbps": 3.7535598477372054,
+        "p10": 0,
+        "p90": 10.503279524752477,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 21433,
+      "windows": {
+       "download": {
+        "endMs": 9303,
+        "endUnixMs": 1794979703854.8425,
+        "phaseBytes": 8889920,
+        "phaseStartUnixMs": 1794979694551.8425,
+        "rebuiltMbps": 6.059888348601406,
+        "startUnixMs": 1794979695801.8425,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8093,
+        "endUnixMs": 1794979712248.9478,
+        "phaseBytes": 4352000,
+        "phaseStartUnixMs": 1794979704155.9478,
+        "rebuiltMbps": 3.7535598477372054,
+        "startUnixMs": 1794979705155.9478,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 6.017,
+       "upMbps": 3.982,
+       "idleMs": 80.1,
+       "loadedDownMs": 80,
+       "loadedUpMs": 81.9,
+       "ipBytes": 14412878,
+       "payloadBytes": 13555866,
+       "tailIpBytes": 321469,
+       "pingSent": 426,
+       "serverSpan": [
+        14651,
+        2806,
+        492
+       ]
+      },
+      "serverBytes": {
+       "down": 9943438,
+       "up": 4340710,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 2
+      },
+      "cpuMax": 0.009,
+      "cpuPeak": 0.03,
+      "saturated": false
+     },
+     "twin": {
+      "down": 1.313,
+      "up": 1.358,
+      "idle": 80.3,
+      "jitter": 0.083,
+      "downLoaded": 80.3,
+      "upLoaded": 80.3,
+      "durationMs": 130831,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.016,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 208464,
+     "truth": {
+      "downMbps": 6.298,
+      "upMbps": 4.151,
+      "idleMs": 80.1,
+      "jitterMs": 0,
+      "loadedDownMs": 80,
+      "loadedUpMs": 81.1,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00047
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.04,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 12650424,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 80.26648700000001,
+        "mbps": 6.6739798603361535,
+        "p10": 5.402763936478368,
+        "p90": 7.959021646126971,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 21078,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 0.11443044444444755,
+        "medianMs": 80.514298,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980071788,
+       "upload": {
+        "capped": false,
+        "loadedMs": 82.70469499999999,
+        "mbps": 4.3298097251585626,
+        "p10": 0,
+        "p90": 12.454909415647442,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 21079,
+      "windows": {
+       "download": {
+        "endMs": 8506,
+        "endUnixMs": 1794980084469.3533,
+        "phaseBytes": 8042424,
+        "phaseStartUnixMs": 1794980075963.3533,
+        "rebuiltMbps": 6.6739798603361535,
+        "startUnixMs": 1794980076963.3533,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 8095,
+        "endUnixMs": 1794980092866.8372,
+        "phaseBytes": 4608000,
+        "phaseStartUnixMs": 1794980084771.8372,
+        "rebuiltMbps": 4.3298097251585626,
+        "startUnixMs": 1794980085771.8372,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 6.635,
+       "upMbps": 4.051,
+       "idleMs": 80.1,
+       "loadedDownMs": 80,
+       "loadedUpMs": 81.3,
+       "ipBytes": 13762831,
+       "payloadBytes": 12940971,
+       "tailIpBytes": 495752,
+       "pingSent": 419,
+       "serverSpan": [
+        14317,
+        4338,
+        516
+       ]
+      },
+      "serverBytes": {
+       "down": 8977436,
+       "up": 4569296,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 2
+      },
+      "cpuMax": 0.008,
+      "cpuPeak": 0.02,
+      "saturated": false
+     },
+     "twin": {
+      "down": 1.328,
+      "up": 0.997,
+      "idle": 80.3,
+      "jitter": 24.52,
+      "downLoaded": 80.3,
+      "upLoaded": 80.2,
+      "durationMs": 138493,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.015,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "truth",
+      "weir"
+     ],
+     "wallMs": 60069,
+     "truth": {
+      "downMbps": 6.857,
+      "upMbps": 3.922,
+      "idleMs": 80.2,
+      "jitterMs": 0.028,
+      "loadedDownMs": 80,
+      "loadedUpMs": 80,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00458
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.03,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 10531049,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 80.278292,
+        "mbps": 7.297947477567299,
+        "p10": 6.044810511356994,
+        "p90": 9.106899326732673,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 16819,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 15.74082283333333,
+        "medianMs": 80.453459,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980138697,
+       "upload": {
+        "capped": false,
+        "loadedMs": 85.140012,
+        "mbps": 4.040586245772266,
+        "p10": 0,
+        "p90": 12.239334653465345,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 16819,
+      "windows": {
+       "download": {
+        "endMs": 5262,
+        "endUnixMs": 1794980147119.1152,
+        "phaseBytes": 5923049,
+        "phaseStartUnixMs": 1794980141857.1152,
+        "rebuiltMbps": 7.297947477567299,
+        "startUnixMs": 1794980143107.1152,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8096,
+        "endUnixMs": 1794980155516.599,
+        "phaseBytes": 4608000,
+        "phaseStartUnixMs": 1794980147420.599,
+        "rebuiltMbps": 4.040586245772266,
+        "startUnixMs": 1794980148420.599,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 7.263,
+       "upMbps": 4.167,
+       "idleMs": 80.1,
+       "loadedDownMs": 80,
+       "loadedUpMs": 82.7,
+       "ipBytes": 11421896,
+       "payloadBytes": 10725304,
+       "tailIpBytes": 334916,
+       "pingSent": 336,
+       "serverSpan": [
+        10015,
+        1789,
+        379
+       ]
+      },
+      "serverBytes": {
+       "down": 6895676,
+       "up": 4535992,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 1
+      },
+      "cpuMax": 0.008,
+      "cpuPeak": 0.022,
+      "saturated": false
+     },
+     "twin": null
+    },
+    {
+     "order": [
+      "weir",
+      "truth"
+     ],
+     "wallMs": 63287,
+     "truth": {
+      "downMbps": 6.374,
+      "upMbps": 4.249,
+      "idleMs": 80.1,
+      "jitterMs": 0,
+      "loadedDownMs": 80,
+      "loadedUpMs": 82.45,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00282
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.091,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 13236069,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 80.2797745,
+        "mbps": 7.1928679694605835,
+        "p10": 5.5959471524752535,
+        "p90": 9.712744649504941,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 19857,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 32.042752388888886,
+        "medianMs": 80.45723100000001,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980158725,
+       "upload": {
+        "capped": false,
+        "loadedMs": 80.29354,
+        "mbps": 3.749331080129559,
+        "p10": 0,
+        "p90": 10.841875829935937,
+        "rampedSlowly": false,
+        "rough": true,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 19857,
+      "windows": {
+       "download": {
+        "endMs": 8293,
+        "endUnixMs": 1794980170180.711,
+        "phaseBytes": 8884069,
+        "phaseStartUnixMs": 1794980161887.711,
+        "rebuiltMbps": 7.1928679694605835,
+        "startUnixMs": 1794980163137.711,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 8101,
+        "endUnixMs": 1794980178583.5498,
+        "phaseBytes": 4352000,
+        "phaseStartUnixMs": 1794980170482.5498,
+        "rebuiltMbps": 3.749331080129559,
+        "startUnixMs": 1794980171482.5498,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 7.204,
+       "upMbps": 3.891,
+       "idleMs": 80.1,
+       "loadedDownMs": 80,
+       "loadedUpMs": 80,
+       "ipBytes": 14376298,
+       "payloadBytes": 13519598,
+       "tailIpBytes": 349281,
+       "pingSent": 394,
+       "serverSpan": [
+        13077,
+        2571,
+        456
+       ]
+      },
+      "serverBytes": {
+       "down": 9581609,
+       "up": 4297270,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 1
+      },
+      "cpuMax": 0.007,
+      "cpuPeak": 0.02,
+      "saturated": false
+     },
+     "twin": null
+    }
+   ]
+  },
+  {
+   "id": "wifi-jitter",
+   "shape": {
+    "down": 200,
+    "up": 50,
+    "rttMs": 15,
+    "lossPct": 0.2,
+    "bufferMs": 50,
+    "jitter": {
+     "ms": 3
+    },
+    "serverMs": 0,
+    "uploadTimingIncludesBody": false
+   },
+   "shard": 5,
+   "planned": 5,
+   "offloads": "off",
+   "validity": {
+    "delay": {
+     "ok": false,
+     "medianMs": 13.4,
+     "p5": 10.567,
+     "p95": 20.6,
+     "detail": "idle ping against the configured delay"
+    },
+    "rate": null,
+    "loss": {
+     "ok": true,
+     "down": 0.00193,
+     "up": 0.00204,
+     "detail": "netem drops within ±50 % of 0.2 % each way"
+    },
+    "drops": {
+     "ok": true,
+     "softnet": 0,
+     "txDropped": 0,
+     "detail": "no packets dropped before the shaper"
+    },
+    "bloat": null,
+    "reorder": {
+     "ok": true,
+     "events": 502,
+     "detail": "recorded, not gated: TCP also counts spurious-retransmit detections after tail drops"
+    },
+    "ok": false,
+    "reasons": [
+     "delay: median 13.40 ms, p5 10.57 ms, p95 20.60 ms (want median within 1.5 ms of 15, p95 ≤ 27.0 ms, spread ≥ 2 ms)"
+    ]
+   },
+   "repeats": [
+    {
+     "order": [
+      "truth",
+      "weir",
+      "twin"
+     ],
+     "wallMs": 114742,
+     "truth": {
+      "downMbps": 63.959,
+      "upMbps": 41.875,
+      "idleMs": 15.2,
+      "jitterMs": 5.121,
+      "loadedDownMs": 25.1,
+      "loadedUpMs": 29,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00042
+      },
+      "cpuMax": 0.018,
+      "cpuPeak": 0.082,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 95566888,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 26.599842,
+        "mbps": 65.07115288006098,
+        "p10": 54.591281400396035,
+        "p90": 82.25348218458554,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 15316,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 4.162902777777777,
+        "medianMs": 12.931841,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980255847,
+       "upload": {
+        "capped": false,
+        "loadedMs": 29.1382895,
+        "mbps": 40.85917955145683,
+        "p10": 14.957406162376238,
+        "p90": 62.29942921441584,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 15317,
+      "windows": {
+       "download": {
+        "endMs": 5559,
+        "endUnixMs": 1794980262769.308,
+        "phaseBytes": 52078981,
+        "phaseStartUnixMs": 1794980257210.308,
+        "rebuiltMbps": 65.07115288006098,
+        "startUnixMs": 1794980258210.308,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 8093,
+        "endUnixMs": 1794980271164.003,
+        "phaseBytes": 43487907,
+        "phaseStartUnixMs": 1794980263071.003,
+        "rebuiltMbps": 40.57592050270349,
+        "startUnixMs": 1794980264321.003,
+        "steadyStartMs": 1250
+       }
+      },
+      "wire": {
+       "downMbps": 65.072,
+       "upMbps": 41.485,
+       "idleMs": 14.3,
+       "loadedDownMs": 25.3,
+       "loadedUpMs": 28,
+       "ipBytes": 101044923,
+       "payloadBytes": 96015743,
+       "tailIpBytes": 930025,
+       "pingSent": 309,
+       "serverSpan": [
+        8766,
+        1091,
+        335
+       ]
+      },
+      "serverBytes": {
+       "down": 56047512,
+       "up": 43485534,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 1,
+       "up": 2
+      },
+      "cpuMax": 0.021,
+      "cpuPeak": 0.051,
+      "saturated": false
+     },
+     "twin": {
+      "down": 27.21,
+      "up": 16.386,
+      "idle": 14.65,
+      "jitter": 4.395,
+      "downLoaded": 18.3,
+      "upLoaded": 19,
+      "durationMs": 66789,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.045,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "weir",
+      "twin",
+      "truth"
+     ],
+     "wallMs": 107418,
+     "truth": {
+      "downMbps": 65.95,
+      "upMbps": 40.572,
+      "idleMs": 15.85,
+      "jitterMs": 4.579,
+      "loadedDownMs": 24.55,
+      "loadedUpMs": 27.25,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00089
+      },
+      "cpuMax": 0.02,
+      "cpuPeak": 0.08,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 88840791,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 23.930184999999998,
+        "mbps": 73.78937579866361,
+        "p10": 69.8535936726849,
+        "p90": 78.09696309221512,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 14047,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 3.9427290555555548,
+        "medianMs": 14.935723000000001,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980342510,
+       "upload": {
+        "capped": false,
+        "loadedMs": 28.832997999999996,
+        "mbps": 42.48332215775284,
+        "p10": 16.08700419801979,
+        "p90": 66.73751616633663,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 14047,
+      "windows": {
+       "download": {
+        "endMs": 5060,
+        "endUnixMs": 1794980348967.937,
+        "phaseBytes": 48003820,
+        "phaseStartUnixMs": 1794980343907.937,
+        "rebuiltMbps": 73.78937579866361,
+        "startUnixMs": 1794980344907.937,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 7288,
+        "endUnixMs": 1794980356557.6033,
+        "phaseBytes": 40836971,
+        "phaseStartUnixMs": 1794980349269.6033,
+        "rebuiltMbps": 43.01527705136925,
+        "startUnixMs": 1794980350269.6033,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 73.682,
+       "upMbps": 42.496,
+       "idleMs": 14.6,
+       "loadedDownMs": 24.65,
+       "loadedUpMs": 30.15,
+       "ipBytes": 93839101,
+       "payloadBytes": 89175117,
+       "tailIpBytes": 1822779,
+       "pingSent": 284,
+       "serverSpan": [
+        8065,
+        1247,
+        313
+       ]
+      },
+      "serverBytes": {
+       "down": 51131344,
+       "up": 40771810,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 2,
+       "up": 0
+      },
+      "cpuMax": 0.023,
+      "cpuPeak": 0.061,
+      "saturated": false
+     },
+     "twin": {
+      "down": 47.269,
+      "up": 27.855,
+      "idle": 15.25,
+      "jitter": 3.208,
+      "downLoaded": 15.85,
+      "upLoaded": 19.5,
+      "durationMs": 60958,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.053,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "twin",
+      "truth",
+      "weir"
+     ],
+     "wallMs": 110890,
+     "truth": {
+      "downMbps": 67.107,
+      "upMbps": 41.031,
+      "idleMs": 13.15,
+      "jitterMs": 3.405,
+      "loadedDownMs": 24.35,
+      "loadedUpMs": 28.1,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.0007
+      },
+      "cpuMax": 0.019,
+      "cpuPeak": 0.101,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 106696163,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 26.924614,
+        "mbps": 92.68116319550272,
+        "p10": 83.66846950728011,
+        "p90": 106.8368864253465,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 14841,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 2.2988079999999993,
+        "medianMs": 14.754554,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980543335,
+       "upload": {
+        "capped": false,
+        "loadedMs": 29.465556,
+        "mbps": 41.51001272925342,
+        "p10": 13.035757306930662,
+        "p90": 63.760158257425786,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 14842,
+      "windows": {
+       "download": {
+        "endMs": 5053,
+        "endUnixMs": 1794980549777.9998,
+        "phaseBytes": 62479587,
+        "phaseStartUnixMs": 1794980544724.9998,
+        "rebuiltMbps": 92.68116319550272,
+        "startUnixMs": 1794980545724.9998,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 8096,
+        "endUnixMs": 1794980558176.762,
+        "phaseBytes": 44216576,
+        "phaseStartUnixMs": 1794980550080.762,
+        "rebuiltMbps": 40.445548008894285,
+        "startUnixMs": 1794980551580.762,
+        "steadyStartMs": 1500
+       }
+      },
+      "wire": {
+       "downMbps": 92.678,
+       "upMbps": 41.667,
+       "idleMs": 13.5,
+       "loadedDownMs": 27.35,
+       "loadedUpMs": 29.65,
+       "ipBytes": 112817197,
+       "payloadBytes": 107196413,
+       "tailIpBytes": 1216837,
+       "pingSent": 300,
+       "serverSpan": [
+        8575,
+        1229,
+        329
+       ]
+      },
+      "serverBytes": {
+       "down": 67092273,
+       "up": 44213494,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 2,
+       "up": 0
+      },
+      "cpuMax": 0.023,
+      "cpuPeak": 0.069,
+      "saturated": false
+     },
+     "twin": {
+      "down": 25.578,
+      "up": 30.618,
+      "idle": 14.15,
+      "jitter": 4.153,
+      "downLoaded": 17.9,
+      "upLoaded": 20.2,
+      "durationMs": 63419,
+      "errors": [],
+      "blocked": 0,
+      "cpuMax": 0.049,
+      "saturated": false
+     }
+    },
+    {
+     "order": [
+      "truth",
+      "weir"
+     ],
+     "wallMs": 43204,
+     "truth": {
+      "downMbps": 74.339,
+      "upMbps": 40.255,
+      "idleMs": 14.95,
+      "jitterMs": 3.516,
+      "loadedDownMs": 24.9,
+      "loadedUpMs": 27.1,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0,
+       "up": 0.00994
+      },
+      "cpuMax": 0.02,
+      "cpuPeak": 0.071,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 76157331,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 26.330917999999997,
+        "mbps": 65.51512470951236,
+        "p10": 58.91760844884491,
+        "p90": 73.52407065346539,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": false
+       },
+       "durationMs": 12804,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 3.5289429999999995,
+        "medianMs": 15.076918,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980588684,
+       "upload": {
+        "capped": false,
+        "loadedMs": 30.138157999999997,
+        "mbps": 39.11668809094642,
+        "p10": 12.635771425882353,
+        "p90": 69.53548643764702,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 12804,
+      "windows": {
+       "download": {
+        "endMs": 5056,
+        "endUnixMs": 1794980595116.3362,
+        "phaseBytes": 44118545,
+        "phaseStartUnixMs": 1794980590060.3362,
+        "rebuiltMbps": 65.51512470951236,
+        "startUnixMs": 1794980591060.3362,
+        "steadyStartMs": 1000
+       },
+       "upload": {
+        "endMs": 6071,
+        "endUnixMs": 1794980601487.7664,
+        "phaseBytes": 32038786,
+        "phaseStartUnixMs": 1794980595416.7664,
+        "rebuiltMbps": 39.45834490433859,
+        "startUnixMs": 1794980596416.7664,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 65.588,
+       "upMbps": 39.809,
+       "idleMs": 14.4,
+       "loadedDownMs": 24.8,
+       "loadedUpMs": 27.5,
+       "ipBytes": 80642712,
+       "payloadBytes": 76641624,
+       "tailIpBytes": 1251934,
+       "pingSent": 259,
+       "serverSpan": [
+        8062,
+        1118,
+        286
+       ]
+      },
+      "serverBytes": {
+       "down": 46828336,
+       "up": 32037052,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 0,
+       "up": 0
+      },
+      "cpuMax": 0.021,
+      "cpuPeak": 0.06,
+      "saturated": false
+     },
+     "twin": null
+    },
+    {
+     "order": [
+      "weir",
+      "truth"
+     ],
+     "wallMs": 44213,
+     "truth": {
+      "downMbps": 73.925,
+      "upMbps": 44.863,
+      "idleMs": 15.6,
+      "jitterMs": 2.8,
+      "loadedDownMs": 25.9,
+      "loadedUpMs": 31.7,
+      "streams": {
+       "down": 6,
+       "up": 4
+      },
+      "mismatch": {
+       "down": 0.00001,
+       "up": 0.00609
+      },
+      "cpuMax": 0.025,
+      "cpuPeak": 0.092,
+      "saturated": false
+     },
+     "weir": {
+      "report": {
+       "bytesUsed": 82422417,
+       "colo": "LAB",
+       "download": {
+        "capped": false,
+        "loadedMs": 25.104304999999997,
+        "mbps": 66.4781907425434,
+        "p10": 55.6785813625067,
+        "p90": 76.83426614495053,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "durationMs": 13829,
+       "latency": {
+        "answered": 19,
+        "jitterMs": 5.739394999999998,
+        "medianMs": 13.912981000000002,
+        "sent": 19
+       },
+       "provider": "Cloudflare",
+       "startedAtMs": 1794980604023,
+       "upload": {
+        "capped": false,
+        "loadedMs": 27.077937,
+        "mbps": 40.27861404193469,
+        "p10": 20.454549356629784,
+        "p90": 61.16872543596194,
+        "rampedSlowly": false,
+        "rough": false,
+        "varied": true
+       },
+       "uploadError": null
+      },
+      "error": null,
+      "wallMs": 13829,
+      "windows": {
+       "download": {
+        "endMs": 5057,
+        "endUnixMs": 1794980610472.4756,
+        "phaseBytes": 45327553,
+        "phaseStartUnixMs": 1794980605415.4756,
+        "rebuiltMbps": 66.4781907425434,
+        "startUnixMs": 1794980606665.4756,
+        "steadyStartMs": 1250
+       },
+       "upload": {
+        "endMs": 7080,
+        "endUnixMs": 1794980617853.2322,
+        "phaseBytes": 37094864,
+        "phaseStartUnixMs": 1794980610773.2322,
+        "rebuiltMbps": 39.25470487616099,
+        "startUnixMs": 1794980611773.2322,
+        "steadyStartMs": 1000
+       }
+      },
+      "wire": {
+       "downMbps": 66.442,
+       "upMbps": 40.488,
+       "idleMs": 14.2,
+       "loadedDownMs": 25.3,
+       "loadedUpMs": 28.4,
+       "ipBytes": 87200982,
+       "payloadBytes": 82864494,
+       "tailIpBytes": 823208,
+       "pingSent": 280,
+       "serverSpan": [
+        8069,
+        1101,
+        306
+       ]
+      },
+      "serverBytes": {
+       "down": 48502324,
+       "up": 37093056,
+       "unknown": 0
+      },
+      "far": false,
+      "duplicates": {
+       "down": 2,
+       "up": 0
+      },
+      "cpuMax": 0.02,
+      "cpuPeak": 0.051,
+      "saturated": false
+     },
+     "twin": null
+    }
+   ]
+  }
+ ],
+ "gate": {
+  "ok": true,
+  "counts": {
+   "pass": 166,
+   "fail": 0,
+   "xfail": 29,
+   "xpass": 8,
+   "inconclusive": 0,
+   "invalid-input": 13,
+   "report": 115
+  },
+  "errors": []
+ }
+}

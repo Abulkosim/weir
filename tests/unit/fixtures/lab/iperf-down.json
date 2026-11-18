@@ -1,0 +1,11 @@
+{
+  "start": { "timestamp": { "timesecs": 1700000000 }, "test_start": { "num_streams": 6, "reverse": 1 } },
+  "intervals": [
+    { "sum": { "start": 0, "end": 1, "seconds": 1, "bytes": 50000000, "omitted": true } },
+    { "sum": { "start": 1, "end": 2, "seconds": 1, "bytes": 110000000, "omitted": true } },
+    { "sum": { "start": 0, "end": 1, "seconds": 1, "bytes": 119000000, "omitted": false } },
+    { "sum": { "start": 1, "end": 2, "seconds": 1, "bytes": 120000000, "omitted": false } },
+    { "sum": { "start": 2, "end": 3, "seconds": 1, "bytes": 121000000, "omitted": false } }
+  ],
+  "end": { "sum_received": { "bits_per_second": 960000000 }, "sum_sent": { "retransmits": 12 } }
+}

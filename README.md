@@ -76,6 +76,8 @@ Builds are not signed with an Apple Developer ID or a Windows publisher certific
 
 Numbers differ between tests because servers, stream counts and statistics differ. Weir uses parallel connections and the sustained rate after warm-up, never the peak. [How Weir measures](docs/method.md).
 
+Weir's numbers are checked against iperf3 and Cloudflare's own test on shaped links whenever the engine changes: [accuracy results](docs/accuracy.md).
+
 ## Privacy
 
 Weir contacts `speed.cloudflare.com` when you run a test or check your connection (and once a minute if you turn on outage watching), your own router and DNS server when you check your connection, when an outage-watch check fails, and once when the connection returns, and GitHub to check for updates. It sends no telemetry and stores no IP address, location or Wi-Fi name: history keeps the Cloudflare data-centre code and the numbers. Cloudflare sees your IP address, as with any website. Full list: [PRIVACY.md](PRIVACY.md).

@@ -1,0 +1,226 @@
+name: Accuracy lab
+
+on:
+  pull_request:
+    paths:
+      - lab/**
+      - src-tauri/src/core/speedtest.rs
+      - src-tauri/src/core/speedtest/**
+      - src-tauri/src/core/stats.rs
+      - src-tauri/src/core/stats/**
+      - src-tauri/src/core/backends/**
+      - src-tauri/src/core/time.rs
+      - src-tauri/src/core/mod.rs
+      - src-tauri/src/lib.rs
+      - src-tauri/build.rs
+      - src-tauri/Cargo.toml
+      - src-tauri/examples/lab.rs
+      - .github/workflows/lab.yml
+  schedule:
+    - cron: "41 5 * * 3"
+  workflow_dispatch:
+    inputs:
+      repeats:
+        description: Repeats per link (empty uses the matrix)
+        default: ""
+      profiles:
+        description: Comma-separated link ids (empty runs all)
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lab-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+  CI: true
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  build:
+    name: Build the lab
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install system libraries
+        timeout-minutes: 25
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libdbus-1-dev
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+        with:
+          cache: true
+      - name: Build frontend assets
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249
+        with:
+          toolchain: stable
+          components: clippy,rustfmt
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
+        with:
+          workspaces: |
+            src-tauri -> target
+            lab/server -> target
+          key: lab
+          save-if: ${{ github.event_name != 'pull_request' }}
+      - name: Check formatting
+        run: |
+          cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+          cargo fmt --manifest-path lab/server/Cargo.toml -- --check
+      - name: Check and build the Weir runner
+        env:
+          WEIR_LAB: "1"
+        run: |
+          cargo clippy --manifest-path src-tauri/Cargo.toml --profile lab --features lab --example lab --locked -- -D warnings
+          cargo build --manifest-path src-tauri/Cargo.toml --profile lab --features lab --example lab --locked
+      - name: Refuse the lab feature in a release build
+        run: |
+          if cargo check --manifest-path src-tauri/Cargo.toml --profile lab --features lab --locked 2> lab-guard.log; then
+            echo "A release build with the lab feature compiled; the guard in src-tauri/src/lib.rs is broken."
+            exit 1
+          fi
+          grep -q "the lab feature is for the accuracy lab only" lab-guard.log
+      - name: Check, test and build the lab server
+        working-directory: lab/server
+        run: |
+          cargo clippy --all-targets --locked -- -D warnings
+          cargo test --locked
+          cargo build --release --locked
+      - name: Build the twin page
+        run: pnpm lab:twin
+      - name: Collect lab binaries
+        run: |
+          mkdir -p lab-bin
+          cp src-tauri/target/lab/examples/lab lab-bin/lab
+          cp lab/server/target/release/weir-lab-server lab-bin/weir-lab-server
+          cp -r lab-out/twin lab-bin/twin
+          echo "Weir runner shared libraries:"
+          ldd lab-bin/lab | tee lab-bin/ldd.txt
+          if grep -Eq 'webkit|gtk|ayatana' lab-bin/ldd.txt; then
+            echo "::notice title=Accuracy lab::The Weir runner links GUI libraries; shard jobs install their runtime packages."
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: lab-bin
+          path: lab-bin/
+          if-no-files-found: error
+          retention-days: 7
+
+  shard:
+    name: Lab shard ${{ matrix.shard }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: lab-bin
+          path: lab-bin/
+      - name: Install network tools
+        timeout-minutes: 10
+        run: |
+          chmod +x lab-bin/lab lab-bin/weir-lab-server
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 iperf3 ethtool
+          if grep -Eq 'webkit|gtk|ayatana' lab-bin/ldd.txt; then
+            sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-0 libayatana-appindicator3-1 librsvg2-2 libxdo3
+          fi
+          if ldd lab-bin/lab | grep -q "not found"; then
+            ldd lab-bin/lab
+            exit 1
+          fi
+      - name: Load shaping modules
+        run: |
+          if ! sudo modprobe -a sch_netem sch_tbf veth; then
+            timeout 300 sudo apt-get install -y "linux-modules-extra-$(uname -r)"
+            sudo modprobe -a sch_netem sch_tbf veth
+          fi
+          sudo sysctl -w net.core.netdev_max_backlog=10000
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+        with:
+          cache: true
+      - name: Install Chromium
+        timeout-minutes: 15
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps --only-shell chromium
+      - name: Run the shard
+        env:
+          LAB_SHARD: ${{ matrix.shard }}
+          LAB_REPEATS: ${{ inputs.repeats }}
+          LAB_PROFILES: ${{ inputs.profiles }}
+        run: node lab/run.ts --shard "$LAB_SHARD/5" --weir lab-bin/lab --server lab-bin/weir-lab-server --twin lab-bin/twin --out "lab-out/shards/shard-$LAB_SHARD.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: lab-shard-${{ matrix.shard }}
+          path: lab-out/shards/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  report:
+    name: Judge and report
+    needs: [build, shard]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: lab-shard-*
+          path: lab-out/shards/
+          merge-multiple: true
+      - name: Merge, judge and render
+        env:
+          LAB_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          LAB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          LAB_REPEATS: ${{ inputs.repeats }}
+          LAB_PROFILES: ${{ inputs.profiles }}
+        run: node lab/report.ts --in lab-out/shards --out lab-out/report
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: accuracy-lab
+          path: lab-out/report/
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Gate
+        env:
+          LAB_REPEATS: ${{ inputs.repeats }}
+          LAB_PROFILES: ${{ inputs.profiles }}
+        run: node lab/report.ts --out lab-out/report --gate

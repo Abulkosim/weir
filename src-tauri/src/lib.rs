@@ -1,3 +1,8 @@
+#[cfg(all(feature = "lab", not(debug_assertions), not(weir_lab)))]
+compile_error!(
+    "the lab feature is for the accuracy lab only (WEIR_LAB=1 cargo build --profile lab)"
+);
+
 mod activity;
 mod cli;
 mod commands;

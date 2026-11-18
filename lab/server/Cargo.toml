@@ -1,0 +1,23 @@
+[package]
+name = "weir-lab-server"
+version = "0.0.0"
+description = "Local stand-in for the subset of Cloudflare's speed test protocol Weir uses. Accuracy lab only; never shipped."
+edition = "2021"
+license = "MIT"
+publish = false
+
+[workspace]
+
+[dependencies]
+bytes = "1"
+http-body-util = "0.1"
+hyper = { version = "1", features = ["server", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "macros", "fs", "sync"] }
+
+[profile.release]
+opt-level = 3
+codegen-units = 4
+
+[dev-dependencies]
+tokio = { version = "1", features = ["io-util"] }

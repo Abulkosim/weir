@@ -1,0 +1,28 @@
+// @cloudflare/speedtest 1.16.0's default measurement list, copied so an upgrade
+// cannot add packet loss (TURN) or RPKI checks that leave the lab.
+export const PINNED_MEASUREMENTS = [
+  { type: 'latency', numPackets: 2 },
+  { type: 'download', bytes: 1e5, count: 1, bypassMinDuration: true },
+  { type: 'latency', numPackets: 20 },
+  { type: 'download', bytes: 1e5, count: 9 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'download', bytes: 1e6, count: 8 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'upload', bytes: 1e5, count: 8 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'upload', bytes: 1e6, count: 6 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'download', bytes: 1e7, count: 6 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'upload', bytes: 1e7, count: 4 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'download', bytes: 25e6, count: 4 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'upload', bytes: 25e6, count: 4 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'download', bytes: 1e8, count: 3 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'upload', bytes: 5e7, count: 3 },
+  { type: 'latency', numPackets: 2 },
+  { type: 'download', bytes: 25e7, count: 2 },
+];

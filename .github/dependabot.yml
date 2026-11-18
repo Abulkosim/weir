@@ -28,3 +28,11 @@ updates:
       rust:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+  # Every bump costs a full accuracy lab run, so monthly.
+  - package-ecosystem: cargo
+    directory: /lab/server
+    schedule:
+      interval: monthly
+    groups:
+      lab:
+        patterns: ["*"]
