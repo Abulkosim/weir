@@ -67,7 +67,7 @@
   {
     "id": "F-2",
     "title": "Slow uploads are reported as stalled",
-    "status": "open",
+    "status": "fixed",
     "where": "src-tauri/src/core/stats.rs:303, src-tauri/src/core/stats.rs:8, src-tauri/src/core/speedtest.rs:65",
     "cause": "On slow-5 every upload ends as {slow-5.errors}, and on geo-250 as {geo-250.errors}. Each stream's first request is min_request bytes; the whole request goes into the socket send buffer at once, so the socket counter stops growing while the link drains it. At these upload rates that takes longer than STALL_MS, and Tracker::decide fails the upload as stalled although bytes are still arriving at the server. Fix in its own pull request: count stalls from bytes acknowledged or from completed requests, or size the first request from the download rate.",
     "expect": [

@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44265126705) on commit `3fd94e97dc60` (Weir 0.7.3), started 2026-11-18 08:37 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **passing**. 186 pass, 25 expected fail, 5 unexpected pass, 115 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 186 pass, 12 fail, 13 expected fail, 5 unexpected pass, 115 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -64,7 +64,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 
 | Link | Download vs iperf3 | Upload vs iperf3 | Idle latency | Loaded latency | Data | Status |
 |---|---|---|---|---|---|---|
-| [slow-5](#slow-5) | +0.2 % (−0.3 to +0.6) | – | +0.5 ms (+0.4 to +0.5) | −0.9 ms (−11.9 to +1.7) / – | 4 MB (4–4) | expected fail (validity) |
+| [slow-5](#slow-5) | +0.2 % (−0.3 to +0.6) | – | +0.5 ms (+0.4 to +0.5) | −0.9 ms (−11.9 to +1.7) / – | 4 MB (4–4) | **fail** (validity) |
 | [gig-5](#gig-5) | −0.0 % (−0.0 to +0.0) | – | +0.5 ms (+0.3 to +0.5) | +0.3 ms (+0.3 to +1.1) / – | 610 MB (604–614) | expected fail (validity) |
 | [gig-60](#gig-60) | −13.8 % (−16.6 to −7.3) | −29.9 % (−30.2 to −23.4) | +0.5 ms (+0.5 to +0.5) | +0.3 ms (+0.1 to +0.6) / +0.2 ms (+0.2 to +0.2) | 618 MB (611–620) | expected fail (download.capacity) |
 | [fiber-300](#fiber-300) | −0.0 % (−0.1 to −0.0) | +0.0 % (−0.1 to +0.1) | +0.5 ms (+0.5 to +0.6) | +0.5 ms (+0.3 to +0.8) / +1.1 ms (+0.1 to +1.1) | 388 MB (387–388) | pass |
@@ -73,7 +73,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | [cable-100-10](#cable-100-10) | −0.0 % (−0.1 to −0.0) | −0.3 % (−0.5 to −0.1) | +0.3 ms (+0.3 to +0.4) | −2.6 ms (−5.9 to −1.8) / +1.1 ms (+0.3 to +1.1) | 75 MB (74–76) | pass |
 | [cable-100-10-cf](#cable-100-10-cf) | −0.0 % (−0.1 to −0.0) | +0.1 % (−0.1 to +1.1) | +0.4 ms (+0.4 to +0.5) | −0.1 ms (−0.6 to +1.0) / −0.1 ms (−1.4 to +1.4) | 75 MB (74–75) | pass |
 | [qreal-up](#qreal-up) | – | – | +0.5 ms (+0.4 to +0.5) | −0.8 ms (−2.1 to +1.9) / −1.9 ms (−7.4 to +0.9) | 75 MB (74–75) | pass |
-| [geo-250](#geo-250) | −13.1 % (−14.5 to −11.6) | – | +0.5 ms (+0.5 to +0.5) | +6.2 ms (−49.2 to +11.7) / – | 20 MB (19–28) | expected fail (validity) |
+| [geo-250](#geo-250) | −13.1 % (−14.5 to −11.6) | – | +0.5 ms (+0.5 to +0.5) | +6.2 ms (−49.2 to +11.7) / – | 20 MB (19–28) | **fail** (validity) |
 | [fiber-300-far](#fiber-300-far) | −3.7 % (−4.2 to −3.1) | −12.7 % (−15.0 to −11.4) | +0.5 ms (+0.5 to +0.5) | −1.0 ms (−3.2 to −0.6) / −3.1 ms (−4.0 to +1.1) | 273 MB (255–274) | unexpected pass (download.capacity) |
 | [mobile](#mobile) | −1.7 % (−18.1 to +26.5) | −1.2 % (−3.0 to −0.5) | +0.6 ms (−1.3 to +0.8) | −2.8 ms (−6.1 to +3.9) / +4.7 ms (−8.3 to +8.2) | 24 MB (21–27) | pass |
 | [lossy-0.1](#lossy-01) | +12.5 % (−0.0 to +19.4) | −0.3 % (−0.4 to +0.0) | +0.4 ms (+0.4 to +0.5) | +0.3 ms (+0.2 to +0.3) / +0.2 ms (−2.1 to +1.9) | 188 MB (146–217) | pass |
@@ -94,20 +94,20 @@ Slow DSL, 5/1 Mbps. 5/1 Mbps · 40 ms RTT · 200 ms buffer.
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.7–4.8) | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.7–4.7) | −0.2 % (−0.4 to +0.0) wire, +0.2 % (−0.3 to +0.6) iperf3 | unexpected pass ([F-9](#f-9)) |
-| Upload | – | 0.9 Mbps (0.9–1.0) | – | 1.0 Mbps | – wire, – iperf3 | expected fail ([F-2](#f-2)) |
+| Upload | – | 0.9 Mbps (0.9–1.0) | – | 1.0 Mbps | – wire, – iperf3 | **fail** |
 | Idle latency | – | 40.1 ms ping | 40.6 ms (40.5–40.6) | 40.2 ms (40.2–40.3) | +0.5 ms (+0.4 to +0.5) | pass |
 | Loaded latency, download | 221 ms (217–225) ping | – | 219 ms (213–220) | – | −0.9 ms (−11.9 to +1.7) | pass |
-| Loaded latency, upload | 223 ms (220–227) ping | – | – | – | – | expected fail ([F-2](#f-2)) |
+| Loaded latency, upload | 223 ms (220–227) ping | – | – | – | – | **fail** |
 | Jitter | – | 0.04 ms (0.03–0.12) ping | 0.11 ms (0.11–0.16) | – | – | report only |
 | Data used | 4 MB (4–4) on the wire | – | counts 101 % of the payload | – | – | pass |
 
-- Validity: Weir did not finish every run: upload stalled ×3 in 3 runs. expected fail ([F-2](#f-2)).
+- Validity: Weir did not finish every run: upload stalled ×3 in 3 runs. **fail**.
 - download.wire: worst 0.4 % against the wire in Weir's own steady window (limit 3 %). unexpected pass ([F-9](#f-9)).
-- upload.wire: no Weir result to compare with the wire. Suspect: weir-math. expected fail ([F-2](#f-2)).
-- upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. expected fail ([F-2](#f-2)).
-- upload.physics: no Weir result. Suspect: weir-math. expected fail ([F-2](#f-2)).
-- loaded.upload: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
-- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
+- upload.wire: no Weir result to compare with the wire. Suspect: weir-math. **fail**.
+- upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. **fail**.
+- upload.physics: no Weir result. Suspect: weir-math. **fail**.
+- loaded.upload: no loaded latency to compare. Suspect: weir-math. **fail**.
+- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. **fail**.
 
 ### gig-5
 
@@ -274,23 +274,23 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 21.4 Mbps (21.3–23.4) | 23.9 Mbps (23.9–23.9) | 21.1 Mbps (20.5–23.4) | 22.2 Mbps (22.2–22.2) | −1.2 % (−4.2 to −0.1) wire, −13.1 % (−14.5 to −11.6) iperf3 | expected fail ([F-7](#f-7)) |
-| Upload | – | 2.9 Mbps (2.9–2.9) | – | 2.6 Mbps | – wire, – iperf3 | expected fail ([F-2](#f-2)) |
+| Upload | – | 2.9 Mbps (2.9–2.9) | – | 2.6 Mbps | – wire, – iperf3 | **fail** |
 | Idle latency | – | 250.0 ms ping | 250.5 ms (250.5–250.5) | 250.3 ms | +0.5 ms (+0.5 to +0.5) | pass |
 | Loaded latency, download | 429 ms (427–457) ping | – | 435 ms (408–439) | – | +6.2 ms (−49.2 to +11.7) | unexpected pass ([F-8](#f-8)) |
-| Loaded latency, upload | 541 ms ping | – | – | – | – | expected fail ([F-2](#f-2)) |
+| Loaded latency, upload | 541 ms ping | – | – | – | – | **fail** |
 | Jitter | – | 0.00 ms ping | 0.06 ms (0.06–0.07) | – | – | report only |
 | Data used | 20 MB (19–28) on the wire | – | counts 91 % of the payload | – | – | pass |
 
-- Validity: Weir did not finish every run: upload stalled ×3 in 3 runs. expected fail ([F-2](#f-2)).
+- Validity: Weir did not finish every run: upload stalled ×3 in 3 runs. **fail**.
 - download.wire: worst 4.2 % against the wire in Weir's own steady window (limit 3 %). Suspect: weir-math. expected fail ([F-7](#f-7)).
 - download.capacity: median -13.1 %, worst 14.5 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.2 %. Suspect: weir-math. expected fail ([F-6](#f-6)).
-- upload.wire: no Weir result to compare with the wire. Suspect: weir-math. expected fail ([F-2](#f-2)).
-- upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. expected fail ([F-2](#f-2)).
-- upload.physics: no Weir result. Suspect: weir-math. expected fail ([F-2](#f-2)).
+- upload.wire: no Weir result to compare with the wire. Suspect: weir-math. **fail**.
+- upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. **fail**.
+- upload.physics: no Weir result. Suspect: weir-math. **fail**.
 - loaded.download: worst 49.2 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
 - loaded.download.bias: median signed error 6.2 ms over 3 runs against a 429 ms ping (limit ±32.2 ms). unexpected pass ([F-8](#f-8)).
-- loaded.upload: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
-- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
+- loaded.upload: no loaded latency to compare. Suspect: weir-math. **fail**.
+- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. **fail**.
 
 ### fiber-300-far
 
@@ -441,7 +441,7 @@ Expected to fail until fixed, and only like this:
 
 ### F-2
 
-**Slow uploads are reported as stalled** (open). Where: `src-tauri/src/core/stats.rs:303, src-tauri/src/core/stats.rs:8, src-tauri/src/core/speedtest.rs:65`.
+**Slow uploads are reported as stalled** (fixed). Where: `src-tauri/src/core/stats.rs:303, src-tauri/src/core/stats.rs:8, src-tauri/src/core/speedtest.rs:65`.
 
 On slow-5 every upload ends as upload stalled ×3, and on geo-250 as upload stalled ×3. Each stream's first request is min_request bytes; the whole request goes into the socket send buffer at once, so the socket counter stops growing while the link drains it. At these upload rates that takes longer than STALL_MS, and Tracker::decide fails the upload as stalled although bytes are still arriving at the server. Fix in its own pull request: count stalls from bytes acknowledged or from completed requests, or size the first request from the download rate.
 
@@ -449,18 +449,18 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| slow-5 | validity | only upload stalled | 7 of 7 runs | expected fail |
-| slow-5 | upload.wire | only for want of any Weir result | 7 of 7 runs | expected fail |
-| slow-5 | upload.capacity | only for want of any Weir result | 7 of 7 runs | expected fail |
-| slow-5 | upload.physics | only for want of any Weir result | 7 of 7 runs | expected fail |
-| slow-5 | loaded.upload | only for want of any Weir result | 7 of 7 runs | expected fail |
-| slow-5 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | expected fail |
-| geo-250 | validity | only upload stalled | 7 of 7 runs | expected fail |
-| geo-250 | upload.wire | only for want of any Weir result | 7 of 7 runs | expected fail |
-| geo-250 | upload.capacity | only for want of any Weir result | 7 of 7 runs | expected fail |
-| geo-250 | upload.physics | only for want of any Weir result | 7 of 7 runs | expected fail |
-| geo-250 | loaded.upload | only for want of any Weir result | 7 of 7 runs | expected fail |
-| geo-250 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | expected fail |
+| slow-5 | validity | only upload stalled | 7 of 7 runs | **fail** |
+| slow-5 | upload.wire | only for want of any Weir result | 7 of 7 runs | **fail** |
+| slow-5 | upload.capacity | only for want of any Weir result | 7 of 7 runs | **fail** |
+| slow-5 | upload.physics | only for want of any Weir result | 7 of 7 runs | **fail** |
+| slow-5 | loaded.upload | only for want of any Weir result | 7 of 7 runs | **fail** |
+| slow-5 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | **fail** |
+| geo-250 | validity | only upload stalled | 7 of 7 runs | **fail** |
+| geo-250 | upload.wire | only for want of any Weir result | 7 of 7 runs | **fail** |
+| geo-250 | upload.capacity | only for want of any Weir result | 7 of 7 runs | **fail** |
+| geo-250 | upload.physics | only for want of any Weir result | 7 of 7 runs | **fail** |
+| geo-250 | loaded.upload | only for want of any Weir result | 7 of 7 runs | **fail** |
+| geo-250 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | **fail** |
 
 ### F-3
 

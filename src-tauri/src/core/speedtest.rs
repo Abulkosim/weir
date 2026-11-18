@@ -36,6 +36,7 @@ pub struct Plan {
     pub upload_streams: usize,
     pub far_latency_ms: f64,
     pub min_request: u64,
+    pub min_upload_request: u64,
     pub max_request: u64,
     pub download_request: Duration,
     pub upload_request: Duration,
@@ -63,6 +64,7 @@ impl Default for Plan {
             upload_streams: 4,
             far_latency_ms: 100.0,
             min_request: 256_000,
+            min_upload_request: 32_000,
             max_request: 25 * MB,
             download_request: Duration::from_secs(1),
             upload_request: Duration::from_millis(500),
@@ -276,9 +278,9 @@ impl Drop for Streams {
 }
 
 /// Size the next request so it takes about `target` at this stream's rate.
-fn next_size(plan: &Plan, bytes: u64, elapsed: Duration, target: Duration) -> u64 {
+fn next_size(bytes: u64, elapsed: Duration, target: Duration, (min, max): (u64, u64)) -> u64 {
     let rate = bytes as f64 / elapsed.as_secs_f64().max(0.001);
-    ((rate * target.as_secs_f64()) as u64).clamp(plan.min_request, plan.max_request)
+    ((rate * target.as_secs_f64()) as u64).clamp(min, max)
 }
 
 fn spawn_streams<C: Connection + 'static>(
@@ -301,7 +303,15 @@ fn spawn_streams<C: Connection + 'static>(
             );
             let (plan, upload) = (plan.clone(), upload.clone());
             tokio::spawn(async move {
-                let mut size = plan.min_request;
+                // A whole upload request lands in the socket send buffer at
+                // once, so the byte counter only moves when one completes. Small
+                // upload requests keep it moving on a 1 Mbps link.
+                let min = if upload.is_some() {
+                    plan.min_upload_request
+                } else {
+                    plan.min_request
+                };
+                let mut size = min;
                 let mut restarts = 0;
                 loop {
                     let started = Instant::now();
@@ -335,7 +345,12 @@ fn spawn_streams<C: Connection + 'static>(
                             } else {
                                 plan.download_request
                             };
-                            size = next_size(&plan, bytes, started.elapsed(), target);
+                            size = next_size(
+                                bytes,
+                                started.elapsed(),
+                                target,
+                                (min, plan.max_request),
+                            );
                         }
                         Err(failure) => {
                             let fatal = matches!(
