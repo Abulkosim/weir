@@ -12,16 +12,20 @@ import {
   reorderDelta, shape, teardown, topologyUp, unshape, type JitterMode,
 } from './net.ts';
 import {
-  cpuMax, iperfBlock, ipBytes, jitter, median, parseIperf, PROBE_TIMEOUT_MS, parsePidStat, parsePing, parseProcStat, payloadBytes, within,
+  cpuMax, cpuPeak, iperfBlock, ipBytes, jitter, median, parseIperf, PROBE_TIMEOUT_MS, parsePidStat, parsePing, parseProcStat, payloadBytes, within,
   wireMbps, type CpuTimes, type PingSample, type WireSample,
 } from './parse.ts';
-import { expectedFar, forShard, order, streams, type Profile, type Step } from './profiles.ts';
+import { expectedFar, order, selection, SHARDS, streams, type Profile, type Step } from './profiles.ts';
 import type {
   Baseline, Failed, ProfileResult, Repeat, Runner, ShardFile, Truth, Twin, Weir, WeirReport, Window,
 } from './schema.ts';
 import { validity } from './analyze.ts';
 
 const SATURATED = 0.95;
+const CPU_SAMPLE_MS = 250;
+/** Four samples: the busiest second. */
+const CPU_SPAN = 4;
+const PING_INTERVAL_S = 0.05;
 
 const flags = new Map<string, string>();
 for (let index = 2; index < process.argv.length; index += 2) flags.set(process.argv[index]!.replace(/^--/, ''), process.argv[index + 1] ?? '');
@@ -31,8 +35,6 @@ const weirBin = flags.get('weir') ?? 'lab-bin/lab';
 const serverBin = flags.get('server') ?? 'lab-bin/weir-lab-server';
 const twinDir = flags.get('twin') ?? 'lab-bin/twin';
 const out = flags.get('out') ?? `lab-out/shard-${SHARD}.json`;
-const onlyProfiles = (flags.get('profiles') || process.env.LAB_PROFILES || '').split(',').map((id) => id.trim()).filter(Boolean);
-const repeatOverride = Number(flags.get('repeats') || process.env.LAB_REPEATS || 0);
 const jitterMode = (flags.get('jitter') || 'pareto') as JitterMode;
 const BASE = `http://${ADDR.server}:${PORT}`;
 
@@ -42,6 +44,19 @@ const log = (line: string) => console.log(`[lab ${new Date().toISOString().slice
 
 function cpu(): CpuTimes[] {
   return parseProcStat(readFileSync('/proc/stat', 'utf8'));
+}
+
+/** Samples /proc/stat through a step; `stop` returns the whole-step busiest CPU and the busiest second. */
+function cpuSampler(): { stop: () => { whole: number; peak: number } } {
+  const samples: CpuTimes[][] = [cpu()];
+  const timer = setInterval(() => samples.push(cpu()), CPU_SAMPLE_MS);
+  return {
+    stop: () => {
+      clearInterval(timer);
+      samples.push(cpu());
+      return { whole: cpuMax(samples[0]!, samples[samples.length - 1]!), peak: cpuPeak(samples, CPU_SPAN) };
+    },
+  };
 }
 
 function softnetDropped(): number {
@@ -85,9 +100,47 @@ async function idlePing(count: number): Promise<number[]> {
   return parsePing(done.stdout, 50).slice(1).map((sample) => sample.rttMs);
 }
 
+/** The lab server inside the server netns, never a stale one elsewhere on the host. */
 async function serverPid(): Promise<number | null> {
-  const pid = Number((await run(['pgrep', '-x', 'weir-lab-server'])).stdout.trim().split('\n')[0]);
-  return Number.isFinite(pid) && pid > 0 ? pid : null;
+  const pids = (await run(asRoot(['ip', 'netns', 'pids', NS.server]))).stdout.trim().split('\n').map(Number).filter((pid) => pid > 0);
+  for (const pid of pids) {
+    try {
+      if (readFileSync(`/proc/${pid}/comm`, 'utf8').trim() === 'weir-lab-server') return pid;
+    } catch {
+      // gone
+    }
+  }
+  return null;
+}
+
+type Counters = NonNullable<TraceRow['wire']>;
+
+async function clientCounters(): Promise<Counters | null> {
+  const names = ['rx_bytes', 'rx_packets', 'tx_bytes', 'tx_packets'];
+  const done = await run(asRoot(inNs(NS.client, 'cat', ...names.map((name) => `/sys/class/net/${IFACE.client}/statistics/${name}`))));
+  const values = done.stdout.trim().split('\n').map(Number);
+  if (done.code !== 0 || values.length !== 4 || values.some((value) => !Number.isFinite(value))) return null;
+  const [rxBytes, rxPackets, txBytes, txPackets] = values as [number, number, number, number];
+  return { rxBytes, rxPackets, txBytes, txPackets };
+}
+
+/**
+ * Client counters once they stop moving after Weir exits: upload bytes still in the socket send buffers
+ * cross the interface after the engine returns, and they are data the test used.
+ */
+async function settledCounters(): Promise<Counters | null> {
+  const deadline = Date.now() + 5000;
+  let last = await clientCounters();
+  let stableSince = Date.now();
+  while (last && Date.now() < deadline) {
+    await sleep(100);
+    const now = await clientCounters();
+    if (!now) return last;
+    if (now.rxBytes !== last.rxBytes || now.txBytes !== last.txBytes) stableSince = Date.now();
+    else if (Date.now() - stableSince >= 500) return now;
+    last = now;
+  }
+  return last;
 }
 
 function pidTicks(pid: number | null): number {
@@ -100,14 +153,14 @@ function pidTicks(pid: number | null): number {
 }
 
 async function iperf(dir: 'down' | 'up', parallel: number, seconds: number, mbps = 10_000): Promise<{ mbps: number; mismatch: number; loadedMs: number | null } | Failed> {
-  const ping = pinger(0.1);
+  const ping = pinger(PING_INTERVAL_S);
   const begin = Date.now();
   const argv = [
     'iperf3', '-c', ADDR.server, '-P', String(parallel), '-t', String(seconds), '-O', '2', '-l', String(iperfBlock(mbps)), '-J',
     dir === 'down' ? '-R' : '--get-server-output',
   ];
   const done = await run(clientUser(argv), (seconds + 20) * 1000);
-  const pings = parsePing((await ping.stop()).stdout, 100);
+  const pings = parsePing((await ping.stop()).stdout, PING_INTERVAL_S * 1000);
   if (done.code !== 0) return { error: done.timedOut ? 'timeout' : `iperf3 exit ${done.code}` };
   try {
     const parsed = parseIperf(done.stdout);
@@ -123,15 +176,18 @@ function truthSeconds(mbps: number): number {
 }
 
 async function truthStep(entry: Profile): Promise<Truth | Failed> {
-  const before = cpu();
+  const sampler = cpuSampler();
   const idle = await idlePing(21);
   const count = streams(expectedFar(entry));
   const down = await iperf('down', count.down, truthSeconds(entry.down), entry.down);
-  if ('error' in down) return down;
+  if ('error' in down) {
+    sampler.stop();
+    return down;
+  }
   await drain();
   const up = await iperf('up', count.up, truthSeconds(entry.up), entry.up);
+  const load = sampler.stop();
   if ('error' in up) return up;
-  const busiest = cpuMax(before, cpu());
   return {
     downMbps: round(down.mbps)!,
     upMbps: round(up.mbps)!,
@@ -141,8 +197,9 @@ async function truthStep(entry: Profile): Promise<Truth | Failed> {
     loadedUpMs: round(up.loadedMs),
     streams: count,
     mismatch: { down: round(down.mismatch, 5)!, up: round(up.mismatch, 5)! },
-    cpuMax: round(busiest)!,
-    saturated: busiest > SATURATED,
+    cpuMax: round(load.whole)!,
+    cpuPeak: round(load.peak)!,
+    saturated: load.peak > SATURATED,
   };
 }
 
@@ -188,12 +245,13 @@ async function dsackSent(ns: string): Promise<number> {
 
 async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
   const dupBefore = { down: await dsackSent(NS.client), up: await dsackSent(NS.server) };
-  const before = cpu();
-  const ping = pinger(0.05);
+  const sampler = cpuSampler();
+  const ping = pinger(PING_INTERVAL_S);
   await sleep(300);
   const done = await run(clientUser([weirBin, '--base', BASE, '--wire-iface', IFACE.client, ...extra]), 60_000);
   const pingDone = await ping.stop();
-  const busiest = cpuMax(before, cpu());
+  const load = sampler.stop();
+  const settled = await settledCounters();
   if (done.code !== 0) return { error: done.timedOut ? 'timeout' : `exit ${done.code}` };
   let output: WeirOutput;
   try {
@@ -201,7 +259,7 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
   } catch {
     return { error: 'unreadable output' };
   }
-  const pings = parsePing(pingDone.stdout, 50);
+  const pings = parsePing(pingDone.stdout, PING_INTERVAL_S * 1000);
   const duplicates = { down: (await dsackSent(NS.client)) - dupBefore.down, up: (await dsackSent(NS.server)) - dupBefore.up };
   await sleep(200);
   const client: WireSample[] = output.trace.filter((row) => row.wire).map((row) => ({ atMs: row.unixMs, ...row.wire! }));
@@ -216,7 +274,12 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
     ? median(within(pings, latencyRows[0]!.unixMs - 1000, latencyRows[latencyRows.length - 1]!.unixMs))
     : null;
   const startWire = output.wireStart;
-  const endWire = output.wireEnd;
+  const returned = output.wireEnd;
+  const endWire = settled ?? returned;
+  const tail = returned && endWire
+    ? ipBytes(endWire.rxBytes - returned.rxBytes, endWire.rxPackets - returned.rxPackets)
+      + ipBytes(endWire.txBytes - returned.txBytes, endWire.txPackets - returned.txPackets)
+    : null;
   const span = startWire && endWire
     ? {
         ip: ipBytes(endWire.rxBytes - startWire.rxBytes, endWire.rxPackets - startWire.rxPackets)
@@ -241,6 +304,7 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
       loadedUpMs: windowPing(pings, upWindow),
       ipBytes: span ? span.ip : null,
       payloadBytes: span ? span.payload : null,
+      tailIpBytes: tail,
       pingSent: pings.length,
       serverSpan: server.length && upWindow?.startUnixMs
         ? [round(upWindow.startUnixMs - server[0]!.atMs, 0)!, round(server[server.length - 1]!.atMs - upWindow.endUnixMs, 0)!, server.length]
@@ -249,8 +313,9 @@ async function weirStep(extra: string[] = []): Promise<Weir | Failed> {
     serverBytes: { down: stats.down_bytes, up: stats.up_bytes, unknown: stats.unknown },
     far: typeof latency === 'number' ? latency > 100 : null,
     duplicates,
-    cpuMax: round(busiest)!,
-    saturated: busiest > SATURATED,
+    cpuMax: round(load.whole)!,
+    cpuPeak: round(load.peak)!,
+    saturated: load.peak > SATURATED,
     uploadRequests: requests,
     trace: output.trace,
   };
@@ -323,10 +388,10 @@ async function runProfile(entry: Profile): Promise<ProfileResult> {
   await drain();
   const delaySamples = (await idlePing(81)).filter((rtt) => rtt < PROBE_TIMEOUT_MS);
   const repeats: Repeat[] = [];
-  const count = repeatOverride > 0 ? repeatOverride : entry.repeats;
+  const count = entry.repeats;
   for (let index = 0; index < count; index++) {
     const begin = Date.now();
-    const steps = order({ ...entry, twinRepeats: Math.min(entry.twinRepeats, count) }, index);
+    const steps = order(entry, index);
     const repeat: Repeat = { order: steps, wallMs: 0, truth: null, weir: { error: 'not run' }, twin: null };
     for (const name of steps) {
       if (name === 'truth') repeat.truth = await step('truth', () => truthStep(entry));
@@ -432,7 +497,15 @@ async function runnerInfo(): Promise<Runner> {
 async function main() {
   mkdirSync(dirname(out), { recursive: true });
   const shardStart = Date.now();
-  const profiles = onlyProfiles.length ? forShard(SHARD).filter((entry) => onlyProfiles.includes(entry.id)) : forShard(SHARD);
+  if (!Number.isInteger(SHARD) || SHARD < 1 || SHARD > SHARDS || totalText !== String(SHARDS)) throw new Error(`--shard must be N/${SHARDS} with N from 1 to ${SHARDS}`);
+  const profiles = selection({
+    profiles: flags.get('profiles') || process.env.LAB_PROFILES,
+    repeats: flags.get('repeats') || process.env.LAB_REPEATS,
+  }).filter((entry) => entry.shard === SHARD);
+  if (!profiles.length) {
+    log(`shard ${SHARD}: no selected links; nothing to run`);
+    return;
+  }
   log(`shard ${SHARD}/${totalText}: ${profiles.map((entry) => entry.id).join(', ')}`);
   await runAll(teardown(), true);
   await runAll(topologyUp());
@@ -462,6 +535,7 @@ async function main() {
   };
   file.result.cpuModel = file.runner.cpuModel;
   file.result.kernel = file.runner.kernel;
+  file.result.runner = file.runner;
   const save = () => {
     file.result.wallMs = Date.now() - shardStart;
     writeFileSync(out, `${JSON.stringify(file)}\n`);

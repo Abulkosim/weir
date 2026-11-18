@@ -73,8 +73,13 @@ export function topologyUp(): Argv[] {
   ];
 }
 
+/** Kills whatever still runs in the lab namespaces (deleting a netns does not), then deletes them. */
 export function teardown(): Argv[] {
-  return [NS.client, NS.router, NS.server].map((ns) => ['ip', 'netns', 'del', ns]);
+  const all = [NS.client, NS.router, NS.server];
+  return [
+    ...all.map((ns) => ['sh', '-c', `ip netns pids ${ns} 2>/dev/null | xargs -r kill -9`]),
+    ...all.map((ns) => ['ip', 'netns', 'del', ns]),
+  ];
 }
 
 export function offloads(on: boolean): Argv[] {

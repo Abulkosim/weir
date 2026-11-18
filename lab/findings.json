@@ -8,23 +8,41 @@
     "expect": [
       {
         "profile": "gig-5",
-        "metric": "validity"
+        "metric": "validity",
+        "errors": [
+          "upload tooShort"
+        ],
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "gig-5",
-        "metric": "upload.wire"
+        "metric": "upload.wire",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "gig-5",
-        "metric": "upload.capacity"
+        "metric": "upload.capacity",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "gig-5",
-        "metric": "upload.physics"
+        "metric": "upload.physics",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "gig-5",
-        "metric": "loaded.upload"
+        "metric": "loaded.upload",
+        "missing": true,
+        "seen": "4 of 4 runs"
+      },
+      {
+        "profile": "gig-5",
+        "metric": "loaded.upload.bias",
+        "missing": true,
+        "seen": "4 of 4 runs"
       }
     ]
   },
@@ -37,43 +55,79 @@
     "expect": [
       {
         "profile": "slow-5",
-        "metric": "validity"
+        "metric": "validity",
+        "errors": [
+          "upload stalled"
+        ],
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "slow-5",
-        "metric": "upload.wire"
+        "metric": "upload.wire",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "slow-5",
-        "metric": "upload.capacity"
+        "metric": "upload.capacity",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "slow-5",
-        "metric": "upload.physics"
+        "metric": "upload.physics",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "slow-5",
-        "metric": "loaded.upload"
+        "metric": "loaded.upload",
+        "missing": true,
+        "seen": "4 of 4 runs"
+      },
+      {
+        "profile": "slow-5",
+        "metric": "loaded.upload.bias",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "geo-250",
-        "metric": "validity"
+        "metric": "validity",
+        "errors": [
+          "upload stalled"
+        ],
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "geo-250",
-        "metric": "upload.wire"
+        "metric": "upload.wire",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "geo-250",
-        "metric": "upload.capacity"
+        "metric": "upload.capacity",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "geo-250",
-        "metric": "upload.physics"
+        "metric": "upload.physics",
+        "missing": true,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "geo-250",
-        "metric": "loaded.upload"
+        "metric": "loaded.upload",
+        "missing": true,
+        "seen": "4 of 4 runs"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "loaded.upload.bias",
+        "missing": true,
+        "seen": "4 of 4 runs"
       }
     ]
   },
@@ -82,15 +136,19 @@
     "title": "A gigabit test uses more data than the up-to estimate promises",
     "status": "open",
     "where": "src-tauri/src/core/stats.rs:306, src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441",
-    "cause": "Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to {gig-5.data.mb} MB and on gig-60 up to {gig-60.data.mb} MB of IP traffic. Weir's own count was {gig-60.bytesUsed.mb} MB on gig-60, already past the two caps together because they are checked once per tick and a fast link overshoots them before the next check; IP and TCP headers and ACKs then add more than WIRE_OVERHEAD allows. Weir's count itself is honest: it matched {gig-60.honesty.pct} % of the TCP payload on the wire. Fix in its own pull request: stop the streams at the cap rather than on the next tick, and raise the estimate or lower the caps.",
+    "cause": "Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to {gig-5.data.mb} MB and on gig-60 up to {gig-60.data.mb} MB of IP traffic, counted until the counters stopped moving after Weir exited (up to {gig-5.tail.mb} MB on gig-5 and {gig-60.tail.mb} MB on gig-60 crossed after the engine returned, as the socket send buffers drained). Weir's own count was {gig-60.bytesUsed.mb} MB on gig-60, already past the two caps together because they are checked once per tick and a fast link overshoots them before the next check; IP and TCP headers and ACKs then add more than WIRE_OVERHEAD allows. Weir counts {gig-60.honesty.pct} % of the TCP payload on the wire. Fix in its own pull request: stop the streams at the cap rather than on the next tick, and raise the estimate or lower the caps.",
     "expect": [
       {
         "profile": "gig-5",
-        "metric": "data.ceiling"
+        "metric": "data.ceiling",
+        "max": 4,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "gig-60",
-        "metric": "data.ceiling"
+        "metric": "data.ceiling",
+        "max": 6,
+        "seen": "4 of 4 runs"
       }
     ]
   },
@@ -103,100 +161,72 @@
     "expect": [
       {
         "profile": "gig-60",
-        "metric": "download.capacity"
+        "metric": "download.capacity",
+        "min": -35,
+        "max": 5,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "gig-60",
-        "metric": "upload.capacity"
+        "metric": "upload.capacity",
+        "min": -37,
+        "max": 5,
+        "seen": "4 of 4 runs"
       }
     ]
   },
   {
     "id": "F-5",
-    "title": "Upload can read above the link when requests leave gaps",
+    "title": "Upload can read off the wire when requests leave gaps",
     "status": "open",
     "where": "src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211",
-    "cause": "Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads {cable-100-10-cf.upload.weir} Mbps on a link whose payload ceiling is below that, against {cable-100-10.upload.weir} Mbps on the same link without server time; on mobile it reads {mobile.upload.weir} Mbps, on dsl-25-shallow {dsl-25-shallow.upload.weir} Mbps and on lossy-0.1 {lossy-0.1.upload.weir} Mbps, each at or past the physical ceiling of its link in some runs. On fiber-300-far, with long round trips, it sits {fiber-300-far.upload.wireErr} % above the wire in its own window, and on lossy-2 {lossy-2.upload.wireErr} %. Which link and which check trips varies from run to run (the seventh run read dsl-25-shallow above the wire past the uploadWire limit), so every link whose upload completes is expected to fail these two checks until the fix. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.",
+    "cause": "Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads {cable-100-10-cf.upload.weir} Mbps on a link whose payload ceiling is below that, against {cable-100-10.upload.weir} Mbps on the same link without server time, and on mobile {mobile.upload.weir} Mbps, past its ceiling in some runs. On fiber-300-far, with long round trips, it sits {fiber-300-far.upload.wireErr} % above the wire in its own window, and on lossy-2 {lossy-2.upload.wireErr} %. On dsl-25-shallow one run in three reads below the wire instead (median {dsl-25-shallow.upload.wireErr} %), which the gap explanation does not cover; the same per-request timing is the suspect there too, unproven. Only the links and checks that failed in the four runs before the bounds were set are expected to fail, each within its bound. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.",
     "expect": [
       {
-        "profile": "dsl-25-bloat",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "dsl-25-bloat",
-        "metric": "upload.physics"
+        "profile": "dsl-25-shallow",
+        "metric": "upload.wire",
+        "min": -12,
+        "max": 5,
+        "seen": "3 of 4 runs"
       },
       {
         "profile": "dsl-25-shallow",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "dsl-25-shallow",
-        "metric": "upload.physics"
-      },
-      {
-        "profile": "cable-100-10",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "cable-100-10",
-        "metric": "upload.physics"
+        "metric": "upload.physics",
+        "max": 4,
+        "seen": "1 of 4 runs"
       },
       {
         "profile": "cable-100-10-cf",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "cable-100-10-cf",
-        "metric": "upload.physics"
-      },
-      {
-        "profile": "mobile",
-        "metric": "upload.wire"
+        "metric": "upload.physics",
+        "max": 6,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "mobile",
-        "metric": "upload.physics"
+        "metric": "upload.wire",
+        "min": -5,
+        "max": 16,
+        "seen": "1 of 4 runs"
       },
       {
-        "profile": "lossy-0.1",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "lossy-0.1",
-        "metric": "upload.physics"
-      },
-      {
-        "profile": "lossy-1",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "lossy-1",
-        "metric": "upload.physics"
+        "profile": "mobile",
+        "metric": "upload.physics",
+        "max": 12,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "lossy-2",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "lossy-2",
-        "metric": "upload.physics"
-      },
-      {
-        "profile": "wifi-jitter",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "wifi-jitter",
-        "metric": "upload.physics"
+        "metric": "upload.wire",
+        "min": -9,
+        "max": 13,
+        "seen": "2 of 4 runs"
       },
       {
         "profile": "fiber-300-far",
-        "metric": "upload.wire"
-      },
-      {
-        "profile": "fiber-300-far",
-        "metric": "upload.physics"
+        "metric": "upload.wire",
+        "min": -5,
+        "max": 11,
+        "seen": "2 of 4 runs"
       }
     ]
   },
@@ -209,15 +239,24 @@
     "expect": [
       {
         "profile": "fiber-300-far",
-        "metric": "upload.capacity"
+        "metric": "upload.capacity",
+        "min": -29,
+        "max": 5,
+        "seen": "4 of 4 runs"
       },
       {
         "profile": "fiber-300-far",
-        "metric": "download.capacity"
+        "metric": "download.capacity",
+        "min": -21,
+        "max": 5,
+        "seen": "1 of 4 runs"
       },
       {
         "profile": "geo-250",
-        "metric": "download.capacity"
+        "metric": "download.capacity",
+        "min": -20,
+        "max": 5,
+        "seen": "2 of 4 runs"
       }
     ]
   },
@@ -230,7 +269,40 @@
     "expect": [
       {
         "profile": "geo-250",
-        "metric": "download.wire"
+        "metric": "download.wire",
+        "min": -7,
+        "max": 3,
+        "seen": "3 of 4 runs"
+      }
+    ]
+  },
+  {
+    "id": "F-8",
+    "title": "Loaded latency reads low on deep queues because Weir's probes are closed-loop",
+    "status": "open",
+    "where": "src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49",
+    "cause": "spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is {dsl-25-bloat.download.loaded.bias} ms for download and {dsl-25-bloat.upload.loaded.bias} ms for upload, on geo-250 {geo-250.download.loaded.bias} ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one run in the first of the four runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time.",
+    "expect": [
+      {
+        "profile": "dsl-25-bloat",
+        "metric": "loaded.download.bias",
+        "min": -43,
+        "max": 5,
+        "seen": "1 of 4 runs"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "loaded.download.bias",
+        "gaps": 1,
+        "min": -72,
+        "max": 5,
+        "seen": "2 of 4 runs"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "loaded.download",
+        "gaps": 1,
+        "seen": "1 of 4 runs"
       }
     ]
   },

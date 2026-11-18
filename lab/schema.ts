@@ -48,7 +48,10 @@ export interface Truth {
   streams: { down: number; up: number };
   /** |intervals − end sum| / end sum per direction; over 1 % the judge is invalid. */
   mismatch: { down: number; up: number };
+  /** Busiest CPU over the whole step. */
   cpuMax: number;
+  /** Busiest CPU over the busiest second of the step; saturated when over 0.95. */
+  cpuPeak?: number;
   saturated: boolean;
 }
 
@@ -62,6 +65,8 @@ export interface WeirWire {
   ipBytes: number | null;
   /** TCP payload both ways on the client interface over the whole run. */
   payloadBytes: number | null;
+  /** IP-layer bytes that crossed the client interface after the engine returned (send buffers draining). */
+  tailIpBytes?: number | null;
   pingSent: number;
   /** Server wire samples around the upload window: ms before its start, ms after its end, count. */
   serverSpan: [number, number, number] | null;
@@ -84,6 +89,7 @@ export interface Weir {
   /** Duplicate segments the receiver saw during the run (DSACKs sent), per direction. */
   duplicates?: { down: number; up: number };
   cpuMax: number;
+  cpuPeak?: number;
   saturated: boolean;
   uploadRequests?: UploadRequest[];
   trace?: unknown[];
@@ -156,6 +162,8 @@ export interface ShardResult {
   wallMs: number;
   cpuModel: string;
   kernel: string;
+  /** The machine this shard ran on; shards of one run can land on different CPU classes. */
+  runner?: Runner;
   baseline: Baseline;
 }
 
@@ -180,9 +188,12 @@ export interface Results {
   weirVersion: string;
   runUrl: string;
   startedAt: string;
+  /** Shard 1's runner; each shard's own is in shards[].runner. */
   runner: Runner;
   shards: ShardResult[];
   profiles: ProfileResult[];
+  /** The gate as report.ts judged it when the run finished, with the findings of that commit. */
+  gate?: { ok: boolean; counts: Record<string, number>; errors: string[] };
 }
 
 /** One shard's output before report.ts merges them. */

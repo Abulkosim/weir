@@ -8,7 +8,9 @@ import { THRESHOLDS } from './thresholds.ts';
 export type Status = 'pass' | 'fail' | 'xfail' | 'xpass' | 'inconclusive' | 'invalid-input' | 'report';
 export type Suspect = 'input' | 'judge' | 'weir-math' | 'weir-load' | 'unclear';
 
+/** Never fails the gate on its own. inconclusive and invalid-input warn up to THRESHOLDS.unjudged; fail always fails. */
 export const GATED_OK: ReadonlySet<Status> = new Set(['pass', 'xfail', 'xpass', 'report']);
+export const UNJUDGED: ReadonlySet<Status> = new Set(['inconclusive', 'invalid-input']);
 
 export const METRICS = [
   'validity',
@@ -21,6 +23,8 @@ export const METRICS = [
   'idle',
   'loaded.download',
   'loaded.upload',
+  'loaded.download.bias',
+  'loaded.upload.bias',
   'bloat',
   'data.ceiling',
   'data.honesty',
@@ -57,6 +61,29 @@ export interface Verdict {
   truth: Stat | null;
   /** Per-repeat error in percent (or ms for latency metrics). */
   error: Stat | null;
+  /** validity only: each distinct way a run failed, e.g. "upload stalled". */
+  kinds?: string[];
+  /** Finished runs in which Weir gave no value, and what the check said about the rest. */
+  gaps?: { count: number; status: Status };
+}
+
+/**
+ * One check a finding expects to fail, and how. A failure outside the bound is a new failure and fails
+ * the gate. One kind of bound: `errors` (validity: every way a run failed is one of these), `missing`
+ * (the check fails only for want of any Weir result), or `min`/`max` (every per-repeat error in range).
+ * `gaps` allows up to that many finished runs without Weir's value; the rest must pass, or stay in
+ * `min`/`max` when given.
+ */
+export interface Expectation {
+  profile: string;
+  metric: Metric;
+  errors?: string[];
+  missing?: boolean;
+  gaps?: number;
+  min?: number;
+  max?: number;
+  /** How often this check failed in the runs the bound was set from, e.g. "3 of 4 runs". */
+  seen: string;
 }
 
 export interface Finding {
@@ -65,12 +92,19 @@ export interface Finding {
   status: 'open' | 'fixed';
   where: string;
   cause: string;
-  expect: Array<{ profile: string; metric: Metric }>;
+  expect: Expectation[];
+}
+
+export interface Gate {
+  ok: boolean;
+  errors: string[];
+  warnings: string[];
 }
 
 export interface Analysis {
   verdicts: Verdict[];
   ok: boolean;
+  gate: Gate;
   counts: Record<Status, number>;
   facts: Record<string, Record<string, string>>;
 }
@@ -82,6 +116,8 @@ export function stat(values: Array<number | null | undefined>): Stat | null {
 }
 
 const weirOf = (repeat: Repeat): Weir | null => (failed(repeat.weir) ? null : repeat.weir);
+/** The ping taken during Weir's own latency phase; the truth step's ping, taken at another time, only when that is missing. */
+const idlePing = (repeat: Repeat, w: Weir): number | null | undefined => w.wire.idleMs ?? truthOf(repeat)?.idleMs;
 const truthOf = (repeat: Repeat): Truth | null => (repeat.truth && !failed(repeat.truth) ? repeat.truth : null);
 const twinOf = (repeat: Repeat): Twin | null => (repeat.twin && !failed(repeat.twin) ? repeat.twin : null);
 
@@ -144,6 +180,45 @@ function errors(values: Pairs, mode: 'pct' | 'ms'): number[] {
   return result;
 }
 
+interface Gaps {
+  /** Finished runs for this check. */
+  runs: number;
+  /** Finished runs in which Weir gave no value. */
+  weir: number;
+  /** Finished runs in which the reference had no value. */
+  other: number;
+}
+
+/** Counts finished runs that the paired judges would otherwise skip without a trace. */
+function gaps(repeats: Repeat[], done: (w: Weir) => boolean, weir: (w: Weir) => number | null | undefined, other: (r: Repeat, w: Weir) => number | null | undefined): Gaps {
+  const out: Gaps = { runs: 0, weir: 0, other: 0 };
+  for (const repeat of repeats) {
+    const w = weirOf(repeat);
+    if (!w || !done(w)) continue;
+    out.runs += 1;
+    if (typeof weir(w) !== 'number') out.weir += 1;
+    else if (typeof other(repeat, w) !== 'number') out.other += 1;
+  }
+  return out;
+}
+
+/** A finished run without Weir's value fails the check; more than one without a reference leaves it unjudged. */
+function covered(item: Verdict, found: Gaps, what: string): Verdict {
+  if (found.weir > 0) {
+    return {
+      ...item, status: 'fail', suspect: 'weir-math', gaps: { count: found.weir, status: item.status },
+      detail: `${item.detail}; Weir gave no ${what} in ${found.weir} of ${found.runs} finished runs`,
+    };
+  }
+  if (found.other > 1 && item.status === 'pass') {
+    return { ...item, status: 'inconclusive', suspect: 'judge', detail: `${item.detail}; no reference in ${found.other} of ${found.runs} finished runs` };
+  }
+  return item;
+}
+
+const finishedDown = (w: Weir) => !!w.report;
+const finishedUp = (w: Weir) => !!w.report?.upload;
+
 function verdict(profile: string, metric: Metric, status: Status, detail: string, extra: Partial<Verdict> = {}): Verdict {
   return { profile, metric, status, suspect: null, finding: null, detail, weir: null, truth: null, error: null, ...extra };
 }
@@ -177,6 +252,7 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
     failures.length
       ? verdict(id, 'validity', 'fail', `Weir did not finish every run: ${countWords(failures)} in ${repeats.length} runs`, {
           suspect: failures.some((message) => /tooShort|stalled/.test(message)) ? 'weir-math' : timeoutsOnly ? 'judge' : 'unclear',
+          kinds: [...new Set(failures)].sort(),
         })
       : verdict(id, 'validity', 'pass', `${repeats.length} of ${repeats.length} runs finished with a download and an upload`),
   );
@@ -185,7 +261,9 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
   for (const dir of ['download', 'upload'] as const) {
     const band = dir === 'download' ? THRESHOLDS.downloadWire.maxAbsPct : THRESHOLDS.uploadWire.maxAbsPct;
     const speed = (w: Weir) => (dir === 'download' ? w.report?.download.mbps : w.report?.upload?.mbps);
-    const wire = pairs(repeats, speed, (_r, w) => (dir === 'download' ? w.wire.downMbps : w.wire.upMbps));
+    const finished = dir === 'download' ? finishedDown : finishedUp;
+    const wireOf = (_r: Repeat, w: Weir) => (dir === 'download' ? w.wire.downMbps : w.wire.upMbps);
+    const wire = pairs(repeats, speed, wireOf);
     const wireErrors = errors(wire, 'pct');
     const metric: Metric = `${dir}.wire`;
     if (!wireErrors.length) {
@@ -193,11 +271,11 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
     } else {
       const worst = Math.max(...wireErrors.map(Math.abs));
       const ok = worst <= band;
-      out.push(verdict(id, metric, anySaturated && !ok ? 'inconclusive' : ok ? 'pass' : 'fail',
+      out.push(covered(verdict(id, metric, anySaturated && !ok ? 'inconclusive' : ok ? 'pass' : 'fail',
         `worst ${fmt(worst)} % against the wire in Weir's own steady window (limit ${band} %)`, {
           suspect: ok ? null : anySaturated ? 'judge' : 'weir-math',
           weir: stat(wire.weir), truth: stat(wire.other), error: stat(wireErrors),
-        }));
+        }), gaps(repeats, finished, speed, wireOf), `${dir} speed`));
     }
 
     const truthPairs = pairs(repeats, speed, (repeat) => {
@@ -255,36 +333,40 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
         { suspect: inconclusive && !ok ? 'judge' : suspect, weir: stat(truthPairs.weir), truth: stat(truthValues), error: summary }));
     }
 
-    const ceiling = ceilingMbps(dir === 'download' ? shape.down : shape.up) * THRESHOLDS.physics.factor;
+    const physical = ceilingMbps(dir === 'download' ? shape.down : shape.up);
+    const ceiling = physical * THRESHOLDS.physics.factor;
     const speeds = repeats.map((repeat) => weirOf(repeat)).map((w) => (w ? speed(w) : null)).filter((value): value is number => typeof value === 'number');
     const over = speeds.filter((value) => value > ceiling);
     out.push(verdict(id, `${dir}.physics`, speeds.length ? (over.length ? 'fail' : 'pass') : 'fail',
       speeds.length ? `highest ${fmt(Math.max(...speeds))} Mbps; the link can carry ${fmt(ceiling)} Mbps` : 'no Weir result',
-      { suspect: over.length ? 'weir-math' : speeds.length ? null : validitySuspect ?? 'unclear', weir: stat(speeds) }));
+      {
+        suspect: over.length ? 'weir-math' : speeds.length ? null : validitySuspect ?? 'unclear',
+        weir: stat(speeds), error: stat(speeds.map((value) => pct(value, physical))),
+      }));
   }
 
   const idleLimits = shape.jitter ? THRESHOLDS.idleJitter : THRESHOLDS.idle;
-  const idle = pairs(repeats, (w) => w.report?.latency?.medianMs, (repeat, w) => truthOf(repeat)?.idleMs ?? w.wire.idleMs);
+  const idleWeirOf = (w: Weir) => w.report?.latency?.medianMs;
+  const idle = pairs(repeats, idleWeirOf, idlePing);
   const idleErrors = errors(idle, 'ms');
   const within = (weir: number, truth: number) => Math.abs(weir - truth) <= Math.max(idleLimits.absMs, (truth * idleLimits.pct) / 100);
   const idleWeir = stat(idle.weir);
   const idleTruth = stat(idle.other);
-  const idleOk = idleErrors.length > 0 && (shape.jitter
-    ? !!idleWeir && !!idleTruth && within(idleWeir.median, idleTruth.median)
-    : idle.weir.every((weir, index) => {
-      const truth = idle.other[index];
-      return typeof weir !== 'number' || typeof truth !== 'number' || within(weir, truth);
-    }));
-  const idleRule = shape.jitter ? 'medians over repeats' : 'every repeat';
-  out.push(verdict(id, 'idle', idleErrors.length ? (idleOk ? 'pass' : 'fail') : 'fail',
+  const idleOk = idleErrors.length > 0 && idle.weir.every((weir, index) => {
+    const truth = idle.other[index];
+    return typeof weir !== 'number' || typeof truth !== 'number' || within(weir, truth);
+  });
+  out.push(covered(verdict(id, 'idle', idleErrors.length ? (idleOk ? 'pass' : 'fail') : 'fail',
     idleErrors.length
-      ? `medians ${fmt(idleWeir?.median)} ms Weir, ${fmt(idleTruth?.median)} ms ping; worst repeat ${fmt(Math.max(...idleErrors.map(Math.abs)))} ms apart (limit max(${idleLimits.absMs} ms, ${idleLimits.pct} %), ${idleRule})`
+      ? `medians ${fmt(idleWeir?.median)} ms Weir, ${fmt(idleTruth?.median)} ms ping in Weir's latency phase; worst repeat ${fmt(Math.max(...idleErrors.map(Math.abs)))} ms apart (limit max(${idleLimits.absMs} ms, ${idleLimits.pct} %), every repeat)`
       : 'no idle latency to compare',
-    { suspect: idleOk ? null : idleErrors.length ? 'weir-math' : validitySuspect ?? 'unclear', weir: stat(idle.weir), truth: stat(idle.other), error: stat(idleErrors) }));
+    { suspect: idleOk ? null : idleErrors.length ? 'weir-math' : validitySuspect ?? 'unclear', weir: stat(idle.weir), truth: stat(idle.other), error: stat(idleErrors) }),
+  gaps(repeats, finishedDown, idleWeirOf, idlePing), 'idle latency'));
 
   for (const dir of ['download', 'upload'] as const) {
-    const loaded = pairs(repeats, (w) => (dir === 'download' ? w.report?.download.loadedMs : w.report?.upload?.loadedMs),
-      (_r, w) => (dir === 'download' ? w.wire.loadedDownMs : w.wire.loadedUpMs));
+    const loadedWeir = (w: Weir) => (dir === 'download' ? w.report?.download.loadedMs : w.report?.upload?.loadedMs);
+    const loadedRef = (_r: Repeat, w: Weir) => (dir === 'download' ? w.wire.loadedDownMs : w.wire.loadedUpMs);
+    const loaded = pairs(repeats, loadedWeir, loadedRef);
     const loadedErrors = errors(loaded, 'ms');
     const limits = THRESHOLDS.loaded;
     const ok = loadedErrors.length > 0 && loaded.weir.every((weir, index) => {
@@ -292,9 +374,24 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
       if (typeof weir !== 'number' || typeof truth !== 'number') return true;
       return Math.abs(weir - truth) <= Math.max(limits.absMs, (truth * limits.pct) / 100);
     });
-    out.push(verdict(id, `loaded.${dir}`, ok ? 'pass' : 'fail',
+    const found = gaps(repeats, dir === 'download' ? finishedDown : finishedUp, loadedWeir, loadedRef);
+    out.push(covered(verdict(id, `loaded.${dir}`, ok ? 'pass' : 'fail',
       loadedErrors.length ? `worst ${fmt(Math.max(...loadedErrors.map(Math.abs)))} ms from a concurrent ping in Weir's window (limit max(${limits.absMs} ms, ${limits.pct} %))` : 'no loaded latency to compare',
-      { suspect: ok ? null : loadedErrors.length ? 'weir-math' : validitySuspect ?? 'unclear', weir: stat(loaded.weir), truth: stat(loaded.other), error: stat(loadedErrors) }));
+      { suspect: ok ? null : loadedErrors.length ? 'weir-math' : validitySuspect ?? 'unclear', weir: stat(loaded.weir), truth: stat(loaded.other), error: stat(loadedErrors) }),
+    found, `${dir} loaded latency`));
+
+    const bias = stat(loadedErrors);
+    const reference = stat(loaded.other);
+    const biasLimit = reference ? Math.max(THRESHOLDS.loadedBias.absMs, (reference.median * THRESHOLDS.loadedBias.pct) / 100) : null;
+    const biasOk = !!bias && biasLimit !== null && Math.abs(bias.median) <= biasLimit;
+    out.push(covered(verdict(id, `loaded.${dir}.bias`, biasOk ? 'pass' : 'fail',
+      bias && reference
+        ? `median signed error ${fmt(bias.median)} ms over ${bias.n} runs against a ${fmt(reference.median, 0)} ms ping (limit ±${fmt(biasLimit)} ms)`
+        : 'no loaded latency to compare',
+      {
+        suspect: biasOk ? null : bias ? 'weir-math' : validitySuspect ?? 'unclear',
+        weir: stat(loaded.weir), truth: reference, error: bias ? { median: bias.median, min: bias.median, max: bias.median, n: bias.n } : null,
+      }), found, `${dir} loaded latency`));
   }
 
   const profileDef = PROFILES.find((item) => item.id === id);
@@ -304,7 +401,7 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
       const w = weirOf(repeat);
       const report = w?.report;
       if (!w || !report) return [];
-      const idleMs = source === 'weir' ? report.latency?.medianMs : truthOf(repeat)?.idleMs ?? w.wire.idleMs;
+      const idleMs = source === 'weir' ? report.latency?.medianMs : idlePing(repeat, w);
       const loadedValues = source === 'weir'
         ? [report.download.loadedMs, report.upload?.loadedMs ?? null]
         : [w.wire.loadedDownMs, w.wire.loadedUpMs];
@@ -327,7 +424,10 @@ function profileVerdicts(entry: ProfileResult, all: ProfileResult[], twinCeiling
   const overBytes = bytes.filter((value) => value > ceilingBytes);
   out.push(verdict(id, 'data.ceiling', bytes.length ? (overBytes.length ? 'fail' : 'pass') : 'fail',
     bytes.length ? `most ${fmt(Math.max(...bytes) / 1e6, 0)} MB on the wire (promise: up to ${THRESHOLDS.dataCeiling.mb} MB)` : 'no wire count',
-    { suspect: overBytes.length ? 'weir-math' : bytes.length ? null : 'judge', weir: stat(bytes.map((value) => value / 1e6)) }));
+    {
+      suspect: overBytes.length ? 'weir-math' : bytes.length ? null : 'judge',
+      weir: stat(bytes.map((value) => value / 1e6)), error: stat(bytes.map((value) => pct(value, ceilingBytes))),
+    }));
 
   const honesty = repeats.map((repeat) => {
     const w = weirOf(repeat);
@@ -408,15 +508,82 @@ function baselineVerdicts(shard: number, baseline: Baseline | null): Verdict[] {
     : verdict(`${id}.${name}`, 'baseline', ok ? 'pass' : 'fail', detail, { suspect: ok ? null : suspect }));
 }
 
+/** The expected failure in words, e.g. "every per-repeat error within −12 to +5". */
+export function describeBound(expectation: Expectation): string {
+  if (expectation.errors) return `only ${expectation.errors.join(', ')}`;
+  if (expectation.missing) return 'only for want of any Weir result';
+  const edge = (value: number | undefined) => (value === undefined ? 'any' : `${value > 0 ? '+' : ''}${value}`);
+  const { min, max } = expectation;
+  const range = min !== undefined && max !== undefined ? `every per-repeat error within ${edge(min)} to ${edge(max)}`
+    : max !== undefined ? `every per-repeat error at most ${edge(max)}`
+      : min !== undefined ? `every per-repeat error at least ${edge(min)}`
+        : 'otherwise passing';
+  return expectation.gaps ? `up to ${expectation.gaps} runs without Weir's value, ${range}` : range;
+}
+
+const inRange = (item: Verdict, expectation: Expectation) => !!item.error
+  && (expectation.min === undefined || item.error.min >= expectation.min)
+  && (expectation.max === undefined || item.error.max <= expectation.max);
+
+/** Whether a failing verdict fails the way its finding expects. */
+export function withinBound(item: Verdict, expectation: Expectation): boolean {
+  if (expectation.errors) return !!item.kinds?.length && item.kinds.every((kind) => expectation.errors!.includes(kind));
+  if (expectation.missing) return item.weir === null && item.error === null;
+  const ranged = expectation.min !== undefined || expectation.max !== undefined;
+  if (expectation.gaps) {
+    if (!item.gaps) return ranged && inRange(item, expectation);
+    if (item.gaps.count > expectation.gaps) return false;
+    return item.gaps.status === 'pass' || (ranged && inRange(item, expectation));
+  }
+  return !item.gaps && ranged && inRange(item, expectation);
+}
+
 export function applyFindings(verdicts: Verdict[], findings: Finding[]): Verdict[] {
   return verdicts.map((item) => {
-    const covering = findings.find((finding) => finding.status === 'open'
-      && finding.expect.some((pair) => pair.profile === item.profile && pair.metric === item.metric));
-    if (!covering) return item;
-    if (item.status === 'fail') return { ...item, status: 'xfail', finding: covering.id };
+    let expectation: Expectation | undefined;
+    const covering = findings.find((finding) => {
+      if (finding.status !== 'open') return false;
+      expectation = finding.expect.find((pair) => pair.profile === item.profile && pair.metric === item.metric);
+      return !!expectation;
+    });
+    if (!covering || !expectation) return item;
+    if (item.status === 'fail') {
+      return withinBound(item, expectation)
+        ? { ...item, status: 'xfail', finding: covering.id }
+        : { ...item, finding: covering.id, detail: `${item.detail}; outside ${covering.id}'s expected failure (${describeBound(expectation)})` };
+    }
     if (item.status === 'pass') return { ...item, status: 'xpass', finding: covering.id };
     return { ...item, finding: covering.id };
   });
+}
+
+/**
+ * The gate. Fails on any fail; on inconclusive or invalid-input over more than THRESHOLDS.unjudged.maxLinks
+ * links; and on an open finding whose every check passed both in this run and in `previous` (the run
+ * published in docs/accuracy.json): that finding is fixed or wrong and must be closed or narrowed.
+ */
+export function gate(verdicts: Verdict[], findings: Finding[], previous: Verdict[] | null = null): Gate {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  for (const item of verdicts.filter((verdict) => verdict.status === 'fail')) errors.push(`${item.profile} ${item.metric} fail: ${item.detail}`);
+  const unjudged = verdicts.filter((verdict) => UNJUDGED.has(verdict.status));
+  const links = [...new Set(unjudged.map((item) => item.profile))];
+  for (const item of unjudged) warnings.push(`${item.profile} ${item.metric} ${item.status}: ${item.detail}`);
+  if (links.length > THRESHOLDS.unjudged.maxLinks) {
+    errors.push(`the lab could not judge ${links.length} links (${links.join(', ')}); limit ${THRESHOLDS.unjudged.maxLinks}`);
+  }
+  const allPass = (list: Verdict[], finding: Finding) => finding.expect.length > 0 && finding.expect.every((pair) =>
+    list.some((item) => item.profile === pair.profile && item.metric === pair.metric && item.status === 'xpass'));
+  for (const finding of findings.filter((item) => item.status === 'open')) {
+    if (!allPass(verdicts, finding)) continue;
+    if (previous && allPass(previous, finding)) {
+      errors.push(`${finding.id}: every check it expects to fail passed in this run and in the published run; mark it fixed or narrow it`);
+    } else {
+      warnings.push(`${finding.id}: every check it expects to fail passed in this run`);
+    }
+  }
+  for (const item of verdicts.filter((verdict) => verdict.status === 'xpass')) warnings.push(`${item.profile} ${item.metric} passes but ${item.finding} expects it to fail`);
+  return { ok: errors.length === 0, errors, warnings };
 }
 
 function twinCeiling(results: Results): number | null {
@@ -477,9 +644,11 @@ export function analyze(input: Results, findings: Finding[], expected: Profile[]
   const final = applyFindings(verdicts, findings);
   const counts = { pass: 0, fail: 0, xfail: 0, xpass: 0, inconclusive: 0, 'invalid-input': 0, report: 0 } as Record<Status, number>;
   for (const item of final) counts[item.status] += 1;
+  const verdictGate = gate(final, findings);
   return {
     verdicts: final,
-    ok: final.every((item) => GATED_OK.has(item.status)),
+    ok: verdictGate.ok,
+    gate: verdictGate,
     counts,
     facts: facts(results, final),
   };
@@ -506,6 +675,7 @@ export function facts(results: Results, verdicts: Verdict[]): Record<string, Rec
       put(`${dir}.wireErr`, wire?.error?.median);
       put(`${dir}.loaded.weir`, stat(weirs.map((w) => (dir === 'download' ? w?.report?.download.loadedMs : w?.report?.upload?.loadedMs)))?.median, 0);
       put(`${dir}.loaded.ping`, stat(weirs.map((w) => (dir === 'download' ? w?.wire.loadedDownMs : w?.wire.loadedUpMs)))?.median, 0);
+      put(`${dir}.loaded.bias`, verdicts.find((item) => item.profile === entry.id && item.metric === `loaded.${dir}.bias`)?.error?.median);
       row[`${dir}.rough`] = String(weirs.filter((w) => (dir === 'download' ? w?.report?.download.rough : w?.report?.upload?.rough)).length);
       row[`${dir}.capped`] = String(weirs.filter((w) => (dir === 'download' ? w?.report?.download.capped : w?.report?.upload?.capped)).length);
     }
@@ -514,7 +684,8 @@ export function facts(results: Results, verdicts: Verdict[]): Record<string, Rec
     put('idle.weir', stat(weirs.map((w) => w?.report?.latency?.medianMs))?.median);
     put('idle.truth', stat(truths.map((t) => t?.idleMs))?.median);
     put('data.mb', stat(weirs.map((w) => (w?.wire.ipBytes ?? NaN) / 1e6))?.max, 0);
-    put('bytesUsed.mb', stat(weirs.map((w) => (w?.report?.bytesUsed ?? NaN) / 1e6))?.median, 0);
+    put('tail.mb', stat(weirs.map((w) => (typeof w?.wire.tailIpBytes === 'number' ? w.wire.tailIpBytes / 1e6 : null)))?.max);
+    put('bytesUsed.mb',stat(weirs.map((w) => (w?.report?.bytesUsed ?? NaN) / 1e6))?.median, 0);
     put('honesty.pct', (stat(weirs.map((w) => (w?.report && w.wire.payloadBytes ? w.report.bytesUsed / w.wire.payloadBytes : null)))?.median ?? NaN) * 100, 0);
     row.runs = String(entry.repeats.length);
     row.errors = countWords(weirFailures(entry)) || 'none';

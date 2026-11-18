@@ -174,6 +174,18 @@ export function cpuMax(before: CpuTimes[], after: CpuTimes[]): number {
   return max;
 }
 
+/**
+ * Busiest CPU over the busiest `span` consecutive sample intervals. A whole-step average hides a core
+ * pinned only while data moves; this does not.
+ */
+export function cpuPeak(samples: CpuTimes[][], span: number): number {
+  if (samples.length < 2) return 0;
+  const width = Math.max(1, Math.min(span, samples.length - 1));
+  let peak = 0;
+  for (let index = 0; index + width < samples.length; index++) peak = Math.max(peak, cpuMax(samples[index]!, samples[index + width]!));
+  return peak;
+}
+
 /** utime + stime in clock ticks from /proc/<pid>/stat. */
 export function parsePidStat(text: string): number {
   const close = text.lastIndexOf(')');

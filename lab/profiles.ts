@@ -89,6 +89,34 @@ export function forShard(shard: number): Profile[] {
   return PROFILES.filter((entry) => entry.shard === shard);
 }
 
+export interface SelectionInput {
+  /** Comma-separated link ids; empty means every link. */
+  profiles?: string;
+  /** Repeats per link; empty keeps each link's own. */
+  repeats?: string;
+  /** Comma-separated shard numbers; empty means every shard. */
+  shards?: string;
+}
+
+const list = (text: string | undefined) => (text ?? '').split(',').map((item) => item.trim()).filter(Boolean);
+
+/** The links a run covers, with any repeat override applied. Throws on an unknown id or a bad number. */
+export function selection(input: SelectionInput = {}): Profile[] {
+  const ids = list(input.profiles);
+  const unknown = ids.filter((id) => !PROFILES.some((entry) => entry.id === id));
+  if (unknown.length) throw new Error(`unknown link ${unknown.join(', ')}; known links: ${PROFILES.map((entry) => entry.id).join(', ')}`);
+  const shards = list(input.shards).map((text) => {
+    if (!/^\d+$/.test(text) || Number(text) < 1 || Number(text) > SHARDS) throw new Error(`shard must be 1 to ${SHARDS}, not "${text}"`);
+    return Number(text);
+  });
+  const repeatsText = (input.repeats ?? '').trim();
+  if (repeatsText && !/^[1-9]\d*$/.test(repeatsText)) throw new Error(`repeats must be a positive whole number, not "${repeatsText}"`);
+  const repeats = repeatsText ? Number(repeatsText) : null;
+  return PROFILES
+    .filter((entry) => (!ids.length || ids.includes(entry.id)) && (!shards.length || shards.includes(entry.shard)))
+    .map((entry) => (repeats === null ? entry : { ...entry, repeats, twinRepeats: Math.min(entry.twinRepeats, repeats) }));
+}
+
 /** What the lab does not cover, rendered into docs/accuracy.md. */
 export const LEFT_OUT = [
   'Bursty (Gilbert-Elliott) loss; reordering, duplication and corruption.',

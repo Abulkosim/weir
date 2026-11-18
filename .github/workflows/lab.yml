@@ -9,6 +9,11 @@ on:
       - src-tauri/src/core/stats.rs
       - src-tauri/src/core/stats/**
       - src-tauri/src/core/backends/**
+      - src-tauri/src/core/time.rs
+      - src-tauri/src/core/mod.rs
+      - src-tauri/src/lib.rs
+      - src-tauri/build.rs
+      - src-tauri/Cargo.toml
       - src-tauri/examples/lab.rs
       - .github/workflows/lab.yml
   schedule:
@@ -204,6 +209,8 @@ jobs:
         env:
           LAB_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
           LAB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          LAB_REPEATS: ${{ inputs.repeats }}
+          LAB_PROFILES: ${{ inputs.profiles }}
         run: node lab/report.ts --in lab-out/shards --out lab-out/report
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
@@ -213,4 +220,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
       - name: Gate
+        env:
+          LAB_REPEATS: ${{ inputs.repeats }}
+          LAB_PROFILES: ${{ inputs.profiles }}
         run: node lab/report.ts --out lab-out/report --gate

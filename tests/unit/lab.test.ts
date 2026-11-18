@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { analyze, applyFindings, fill, placeholders, validity, type Finding, type Verdict } from '../../lab/analyze.ts'
+import { analyze, applyFindings, fill, gate, placeholders, validity, withinBound, type Finding, type Verdict } from '../../lab/analyze.ts'
 import { netemArgs, offloads, parseNstat, parseQdiscStats, parseSoftnet, reorderDelta, shape, tbfLimit, teardown, topologyUp, unshape } from '../../lab/net.ts'
-import { cpuMax, iperfBlock, parseIperf, parsePing, parseProcStat, wireMbps, type WireSample } from '../../lab/parse.ts'
-import { ceilingMbps, expectedFar, FAR_MS, forShard, order, PROFILES, SHARDS, streams, type Profile } from '../../lab/profiles.ts'
+import { cpuMax, cpuPeak, iperfBlock, parseIperf, parsePing, parseProcStat, wireMbps, type WireSample } from '../../lab/parse.ts'
+import { ceilingMbps, expectedFar, FAR_MS, forShard, order, PROFILES, selection, SHARDS, streams, type Profile } from '../../lab/profiles.ts'
+import { merge } from '../../lab/report.ts'
 import { renderAll, renderMarkdown, renderSvg } from '../../lab/render.ts'
 import { slim, type ProfileResult, type Repeat, type Results, type Truth, type Validity, type Weir } from '../../lab/schema.ts'
 import { THRESHOLDS } from '../../lab/thresholds.ts'
@@ -21,7 +22,9 @@ test('the topology builds three namespaces and tears them down', () => {
   assert.ok(up.some(argv => argv.join(' ') === 'ip netns exec weir-r sysctl -q -w net.ipv4.ip_forward=1'))
   assert.ok(up.some(argv => argv.join(' ') === 'ip netns exec weir-c sysctl -q -w net.ipv6.conf.all.disable_ipv6=1'))
   assert.ok(up.some(argv => argv.join(' ') === 'ip netns exec weir-s sysctl -q -w net.ipv4.tcp_congestion_control=cubic'))
-  assert.equal(teardown().length, 3)
+  assert.equal(teardown().length, 6)
+  assert.deepEqual(teardown()[0], ['sh', '-c', 'ip netns pids weir-c 2>/dev/null | xargs -r kill -9'], 'stale lab processes die before the namespaces go')
+  assert.deepEqual(teardown()[3], ['ip', 'netns', 'del', 'weir-c'])
   assert.deepEqual(offloads(false)[0], ['ip', 'netns', 'exec', 'weir-c', 'ethtool', '-K', 'c0', 'tso', 'off', 'gso', 'off', 'gro', 'off'])
 })
 
@@ -290,15 +293,148 @@ test('Weir must show bufferbloat that is physically there', () => {
   assert.match(verdict.detail, /concurrent ping 490 ms/)
 })
 
-test('open findings turn failures into expected failures, and passes into warnings', () => {
-  const finding: Finding = { id: 'F-1', title: 't', status: 'open', where: 'x.rs:1', cause: 'c', expect: [{ profile: 'gig-5', metric: 'upload.wire' }, { profile: 'gig-5', metric: 'idle' }] }
+const bare = (profile: string, metric: Verdict['metric'], status: Verdict['status'], extra: Partial<Verdict> = {}): Verdict =>
+  ({ profile, metric, status, suspect: null, finding: null, detail: 'd', weir: null, truth: null, error: null, ...extra })
+const range = (min: number, max: number) => ({ median: (min + max) / 2, min, max, n: 3 })
+
+test('open findings turn failures into expected failures only within their bound', () => {
+  const finding: Finding = {
+    id: 'F-1', title: 't', status: 'open', where: 'x.rs:1', cause: 'c',
+    expect: [{ profile: 'gig-5', metric: 'upload.wire', min: -5, max: 10, seen: '2 of 4 runs' }, { profile: 'gig-5', metric: 'idle', min: -3, max: 3, seen: '1 of 4 runs' }],
+  }
   const verdicts = applyFindings([
-    { profile: 'gig-5', metric: 'upload.wire', status: 'fail', suspect: 'weir-math', finding: null, detail: '', weir: null, truth: null, error: null },
-    { profile: 'gig-5', metric: 'idle', status: 'pass', suspect: null, finding: null, detail: '', weir: null, truth: null, error: null },
-    { profile: 'gig-60', metric: 'idle', status: 'fail', suspect: null, finding: null, detail: '', weir: null, truth: null, error: null },
+    bare('gig-5', 'upload.wire', 'fail', { error: range(1, 8) }),
+    bare('gig-5', 'idle', 'pass', { error: range(-1, 1) }),
+    bare('gig-60', 'idle', 'fail', { error: range(-9, 9) }),
   ], [finding])
   assert.deepEqual(verdicts.map(item => item.status), ['xfail', 'xpass', 'fail'])
-  assert.equal(applyFindings(verdicts.slice(0, 1).map(item => ({ ...item, status: 'fail' as const })), [{ ...finding, status: 'fixed' }])[0]!.status, 'fail')
+  const worse = applyFindings([bare('gig-5', 'upload.wire', 'fail', { error: range(1, 40) })], [finding])[0]!
+  assert.equal(worse.status, 'fail', 'an upload 40 % over the wire is a new failure, not the finding')
+  assert.match(worse.detail, /outside F-1's expected failure \(every per-repeat error within -5 to \+10\)/)
+  assert.equal(applyFindings([bare('gig-5', 'upload.wire', 'fail', { error: range(1, 8) })], [{ ...finding, status: 'fixed' }])[0]!.status, 'fail')
+})
+
+test('a validity, missing or gap expectation covers only the failure it names', () => {
+  const kinds = { profile: 'gig-5', metric: 'validity' as const, errors: ['upload tooShort'], seen: '4 of 4 runs' }
+  assert.ok(withinBound(bare('gig-5', 'validity', 'fail', { kinds: ['upload tooShort'] }), kinds))
+  assert.ok(!withinBound(bare('gig-5', 'validity', 'fail', { kinds: ['download stalled', 'upload tooShort'] }), kinds), 'a new download crash is not F-1')
+  const missing = { profile: 'gig-5', metric: 'upload.wire' as const, missing: true, seen: '4 of 4 runs' }
+  assert.ok(withinBound(bare('gig-5', 'upload.wire', 'fail'), missing))
+  assert.ok(!withinBound(bare('gig-5', 'upload.wire', 'fail', { weir: range(900, 950), error: range(30, 40) }), missing), 'once uploads finish, their numbers are judged')
+  const gaps = { profile: 'geo-250', metric: 'loaded.download' as const, gaps: 1, seen: '1 of 4 runs' }
+  assert.ok(withinBound(bare('geo-250', 'loaded.download', 'fail', { gaps: { count: 1, status: 'pass' } }), gaps))
+  assert.ok(!withinBound(bare('geo-250', 'loaded.download', 'fail', { gaps: { count: 2, status: 'pass' } }), gaps))
+  assert.ok(!withinBound(bare('geo-250', 'loaded.download', 'fail', { gaps: { count: 1, status: 'fail' } }), gaps))
+  assert.ok(!withinBound(bare('geo-250', 'loaded.download', 'fail', { error: range(-90, 0) }), gaps))
+})
+
+test('committed findings are bounded, narrow and still catch the regressions they would hide', () => {
+  for (const finding of findings) {
+    for (const pair of finding.expect) {
+      const kinds = [pair.errors ? 1 : 0, pair.missing ? 1 : 0, pair.min !== undefined || pair.max !== undefined || pair.gaps ? 1 : 0].reduce((a, b) => a + b, 0)
+      assert.equal(kinds, 1, `${finding.id} ${pair.profile} ${pair.metric} has exactly one kind of bound`)
+      assert.match(pair.seen, /^\d of \d runs$/, `${finding.id} ${pair.profile} ${pair.metric} says how often it failed`)
+    }
+  }
+  const physics = findings.flatMap(finding => finding.expect.filter(pair => pair.metric === 'upload.physics' && !pair.missing))
+  assert.ok(physics.length <= 4, 'upload.physics stays gated on most links')
+  const profiles = allGood()
+  const cable = PROFILES.find(entry => entry.id === 'cable-100-10-cf')!
+  profiles[profiles.findIndex(entry => entry.id === cable.id)] = result(cable, goodRuns(cable).map(run => ({ ...run, up: run.up * 2, wireUp: run.up, truthUp: run.up })))
+  const doubled = analyze(results(profiles), findings).verdicts
+  assert.equal(pick(doubled, cable.id, 'upload.physics').status, 'fail', 'dropping the server-time subtraction fails the gate')
+  assert.equal(pick(doubled, cable.id, 'upload.wire').status, 'fail')
+})
+
+test('the gate warns on one unjudged link, fails on two, and closes findings that keep passing', () => {
+  const one = [bare('lossy-1', 'download.capacity', 'inconclusive'), bare('lossy-1', 'upload.capacity', 'invalid-input')]
+  assert.equal(gate(one, []).ok, true)
+  assert.equal(gate(one, []).warnings.length, 2)
+  const two = [...one, bare('mobile', 'idle', 'inconclusive')]
+  assert.equal(gate(two, []).ok, false)
+  assert.equal(gate([bare('gig-5', 'idle', 'fail')], []).ok, false)
+  const finding: Finding = { id: 'F-9', title: 't', status: 'open', where: 'x.rs:1', cause: 'c', expect: [{ profile: 'gig-5', metric: 'idle', min: -9, max: 9, seen: '1 of 4 runs' }] }
+  const passing = [bare('gig-5', 'idle', 'xpass', { finding: 'F-9' })]
+  assert.equal(gate(passing, [finding]).ok, true, 'one passing run warns')
+  assert.equal(gate(passing, [finding], [bare('gig-5', 'idle', 'xfail')]).ok, true)
+  const closed = gate(passing, [finding], passing)
+  assert.equal(closed.ok, false, 'two runs in a row: close or narrow it')
+  assert.match(closed.errors[0]!, /^F-9: /)
+})
+
+test('a finished run without a Weir number fails the check instead of being skipped', () => {
+  const profiles = allGood()
+  const deep = profiles.find(entry => entry.id === 'dsl-25-bloat')!
+  ;(deep.repeats[0]!.weir as Weir).report!.download.loadedMs = null
+  ;(deep.repeats[1]!.weir as Weir).report!.download.loadedMs = null
+  const verdicts = analyze(results(profiles), []).verdicts
+  const loaded = pick(verdicts, 'dsl-25-bloat', 'loaded.download')
+  assert.equal(loaded.status, 'fail')
+  assert.match(loaded.detail, /no download loaded latency in 2 of 3 finished runs/)
+  assert.deepEqual(loaded.gaps, { count: 2, status: 'pass' })
+  const lost = allGood()
+  for (const repeat of lost.find(entry => entry.id === 'gig-5')!.repeats.slice(0, 2)) (repeat.weir as Weir).wire.loadedDownMs = null
+  assert.equal(pick(analyze(results(lost), []).verdicts, 'gig-5', 'loaded.download').status, 'inconclusive', 'two runs without a ping is the lab, not Weir')
+})
+
+test('idle latency is judged against the ping of the same run, every repeat', () => {
+  const profiles = allGood()
+  const mobile = PROFILES.find(entry => entry.id === 'mobile')!
+  const runs = goodRuns(mobile).map(run => ({ ...run, idle: 48, truthIdle: 48 }))
+  const entry = result(mobile, runs)
+  for (const repeat of entry.repeats) (repeat.truth as Truth).idleMs = 53
+  profiles[profiles.findIndex(item => item.id === 'mobile')] = entry
+  let idle = pick(analyze(results(profiles), []).verdicts, 'mobile', 'idle')
+  assert.equal(idle.status, 'pass', 'a truth-step ping minutes away is not the reference')
+  assert.equal(idle.truth!.median, 48)
+  ;(entry.repeats[0]!.weir as Weir).report!.latency!.medianMs = 60
+  idle = pick(analyze(results(profiles), []).verdicts, 'mobile', 'idle')
+  assert.equal(idle.status, 'fail', 'one repeat off is a failure even on a jittery link')
+})
+
+test('loaded latency that is low in every run fails the bias check', () => {
+  const profiles = allGood()
+  const deep = profiles.find(entry => entry.id === 'dsl-25-bloat')!
+  for (const repeat of deep.repeats) (repeat.weir as Weir).report!.download.loadedMs = 520 - 50
+  const verdicts = analyze(results(profiles), []).verdicts
+  assert.equal(pick(verdicts, 'dsl-25-bloat', 'loaded.download').status, 'pass', 'inside the per-run band')
+  const bias = pick(verdicts, 'dsl-25-bloat', 'loaded.download.bias')
+  assert.equal(bias.status, 'fail')
+  assert.equal(bias.error!.median, -50)
+})
+
+test('the CPU guard sees a core pinned for one second inside a longer idle step', () => {
+  const at = (busy: number, total: number) => [{ busy, total }, { busy: 0, total }]
+  const samples = [at(0, 0), at(5, 25), at(30, 50), at(55, 75), at(80, 100), at(105, 125), at(105, 600)]
+  assert.ok(cpuMax(samples[0]!, samples[samples.length - 1]!) < 0.2, 'the step average hides it')
+  assert.equal(cpuPeak(samples, 4), 1)
+  assert.equal(cpuPeak(samples.slice(0, 1), 4), 0)
+})
+
+test('a filtered run is checked against what it planned, and bad inputs stop it', () => {
+  assert.equal(selection().length, PROFILES.length)
+  const two = selection({ profiles: 'gig-5, mobile', repeats: '2' })
+  assert.deepEqual(two.map(entry => [entry.id, entry.repeats, entry.twinRepeats]), [['gig-5', 2, 2], ['mobile', 2, 2]])
+  assert.deepEqual(selection({ shards: '1' }).map(entry => entry.id), forShard(1).map(entry => entry.id))
+  assert.throws(() => selection({ profiles: 'gig5' }), /unknown link gig5/)
+  assert.throws(() => selection({ repeats: 'three' }), /positive whole number/)
+  assert.throws(() => selection({ repeats: '0' }), /positive whole number/)
+  assert.throws(() => selection({ shards: '6' }), /shard must be 1 to 5/)
+  const all = results(allGood().filter(entry => entry.id === 'gig-5' || entry.id === 'mobile').map(entry => ({ ...entry, repeats: entry.repeats.slice(0, 2) })))
+  const verdicts = analyze(all, [], two).verdicts
+  assert.deepEqual(verdicts.filter(item => item.metric === 'coverage').map(item => item.profile), [], 'nothing outside the selection is missing')
+})
+
+test('each shard keeps its own runner', () => {
+  const base = results([])
+  const shard = (number: number, cpuModel: string) => ({
+    schema: 1 as const, shard: number, runner: { ...base.runner, cpuModel }, startedAt: `2026-11-17T20:0${number}:00.000Z`,
+    result: { ...base.shards[number - 1]!, cpuModel }, profiles: [],
+  })
+  const merged = merge([shard(2, 'AMD EPYC 7763'), shard(1, 'Intel Xeon')], { commit: 'c', weirVersion: '0', runUrl: '' })
+  assert.deepEqual(merged.shards.map(item => item.runner?.cpuModel), ['Intel Xeon', 'AMD EPYC 7763'])
+  const markdown = renderMarkdown(merged, [])
+  assert.match(markdown, /ran on 2 different CPU models/)
 })
 
 test('missing shards, links and repeats fail the gate', () => {
@@ -370,7 +506,8 @@ test('rendering is deterministic and covers every link', () => {
   const markdown = renderMarkdown(all, findings)
   assert.equal(markdown, renderMarkdown(all, findings))
   for (const entry of PROFILES) assert.ok(markdown.includes(`### ${entry.id}\n`), entry.id)
-  assert.ok(markdown.includes('Gate: **passing**'))
+  assert.ok(markdown.includes('Gate at run time: not recorded. Re-judged with the findings and rules in this commit: **passing**'))
+  assert.ok(renderMarkdown({ ...all, gate: { ok: false, counts: {}, errors: ['x'] } }, findings).includes('Gate at run time: **failing**. Re-judged with the findings and rules in this commit: **passing** (they differ: see Findings)'))
   assert.ok(!/\{\?/.test(markdown), 'every placeholder resolves')
   const analysis = analyze(all, findings)
   const light = renderSvg(all, analysis, 'light')

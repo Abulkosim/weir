@@ -39,12 +39,17 @@ export const THRESHOLDS = {
   idleJitter: {
     absMs: 3,
     pct: 15,
-    reason: 'On a jittery path a 19-sample median moves by a few ms between runs on its own, so jittery links are judged on the median over repeats. Changed from every repeat after the fourth run: one wifi-jitter repeat read 17.6 ms against a 13.9 ms concurrent ping while the five-repeat medians agreed within 1 ms.',
+    reason: "On a jittery path Weir's 19 probes and the concurrent ping sample different packets of the same delay distribution, so each median carries its own sampling noise. Judged every repeat against the ping taken during Weir's own latency phase: the widest gap in the four runs before this rule was 1.7 ms on wifi-jitter and 3.7 ms on mobile.",
   },
   loaded: {
     absMs: 10,
     pct: 15,
-    reason: "Weir's probes and a concurrent ping see the same queue at the same moment; a larger gap is Weir's probe method or its runtime scheduling.",
+    reason: "Per run. Weir's probes are closed-loop (each waits for the last, every 250 ms at most) and the ping is open-loop at 50 ms, so on a deep queue the two sample different moments of the same sawtooth; a larger gap is Weir's probe method or its runtime scheduling.",
+  },
+  loadedBias: {
+    absMs: 5,
+    pct: 7.5,
+    reason: 'The median of the signed per-run errors, against the median ping. Half the per-run band: sampling noise averages out over repeats, a sampling bias does not. Catches Weir under-reporting bufferbloat while every run stays inside its own band.',
   },
   bloat: {
     fraction: 0.8,
@@ -60,6 +65,10 @@ export const THRESHOLDS = {
     maxServerCoresPerGbps: 0.5,
     maxInflationMs: 1,
     reason: 'Unshaped, iperf3 and Weir must carry 1.5× the fastest shaped link and the lab server must need under half a core per Gbps (the spike measured about a quarter), or the 1 Gbps profiles would judge the lab instead of Weir.',
+  },
+  unjudged: {
+    maxLinks: 1,
+    reason: 'Inconclusive and invalid-input verdicts mean the lab could not judge a link, not that Weir is wrong, so they warn. One such link per run is lab noise (the eighth run: one fiber-300-far iperf3 run read 1.016 of the ceiling); two or more mean the lab itself is off, and the gate fails.',
   },
   noise: {
     fractionOfBand: 0.5,

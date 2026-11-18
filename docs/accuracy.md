@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44224149331) on commit `c87ed8aea4d2` (Weir 0.7.3), started 2026-11-18 02:58 UTC.
 
-Gate: **passing**. 143 pass, 26 expected fail, 17 unexpected pass, 113 report only.
+Gate at run time: not recorded. Re-judged with the findings and rules in this commit: **passing**. 180 pass, 29 expected fail, 7 unexpected pass, 115 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -30,7 +30,9 @@ Four layers of truth, each answering a different question:
 | Physics | The configured shape | Is anything impossible? |
 | Twin | Cloudflare's own `@cloudflare/speedtest` in headless Chromium | Does a different method agree? Report only. |
 
-Repeats are interleaved and rotate their order (iperf3, Weir, twin; then Weir, twin, iperf3; …). Every step waits for the queues to drain. A step with any CPU over 95 % busy is retried once.
+Repeats are interleaved and rotate their order (iperf3, Weir, twin; then Weir, twin, iperf3; …). Every step waits for the queues to drain. CPU is sampled every 250 ms; an iperf3 or Weir step whose busiest CPU was over 95 % busy for any one second is retried once, and if it saturates again its numbers are not judged. The twin step, report only, is judged on its whole-step average because Chromium start-up alone fills a core.
+
+An open finding turns a failing check into an expected failure only within a recorded bound: the ways a run may fail, or the range every per-repeat error must stay in (the worst seen when the bound was set, plus half the check's own limit). A failure outside the bound fails the gate. So does an inconclusive or invalid-input verdict on more than one link, and an open finding whose every check passed in this run and in the published one.
 
 ## Thresholds
 
@@ -44,11 +46,13 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | capacityNoisy | medianAbsPct 20, worstAbsPct 35 | Loss-limited TCP is high-variance, and HTTP requests recover from tail loss differently from one long bulk transfer. Five repeats, not a wider band, carry the noise. |
 | physics | factor 1.02 | No run may report more than the shaped rate can carry (payload per frame, 1448/1514), plus 2 % for tbf burst and window-edge effects. |
 | idle | absMs 2, pct 10 | An HTTP probe and an ICMP echo cross the same path; user-space scheduling adds well under 2 ms on an idle host. |
-| idleJitter | absMs 3, pct 15 | On a jittery path a 19-sample median moves by a few ms between runs on its own, so jittery links are judged on the median over repeats. Changed from every repeat after the fourth run: one wifi-jitter repeat read 17.6 ms against a 13.9 ms concurrent ping while the five-repeat medians agreed within 1 ms. |
-| loaded | absMs 10, pct 15 | Weir's probes and a concurrent ping see the same queue at the same moment; a larger gap is Weir's probe method or its runtime scheduling. |
+| idleJitter | absMs 3, pct 15 | On a jittery path Weir's 19 probes and the concurrent ping sample different packets of the same delay distribution, so each median carries its own sampling noise. Judged every repeat against the ping taken during Weir's own latency phase: the widest gap in the four runs before this rule was 1.7 ms on wifi-jitter and 3.7 ms on mobile. |
+| loaded | absMs 10, pct 15 | Per run. Weir's probes are closed-loop (each waits for the last, every 250 ms at most) and the ping is open-loop at 50 ms, so on a deep queue the two sample different moments of the same sawtooth; a larger gap is Weir's probe method or its runtime scheduling. |
+| loadedBias | absMs 5, pct 7.5 | The median of the signed per-run errors, against the median ping. Half the per-run band: sampling noise averages out over repeats, a sampling bias does not. Catches Weir under-reporting bufferbloat while every run stays inside its own band. |
 | bloat | fraction 0.8, marginMs 100 | Weir must show bufferbloat that is physically there: at least 80 % of the rise a concurrent ping sees on the deep buffer, and clearly more than on the shallow one. |
 | dataCeiling | mb 600 | Before a first result the app promises a test uses up to 600 MB (data_estimate UpTo). Counted as IP-layer bytes on the client interface over the whole run. |
 | baseline | minMbps 1500, maxServerCoresPerGbps 0.5, maxInflationMs 1 | Unshaped, iperf3 and Weir must carry 1.5× the fastest shaped link and the lab server must need under half a core per Gbps (the spike measured about a quarter), or the 1 Gbps profiles would judge the lab instead of Weir. |
+| unjudged | maxLinks 1 | Inconclusive and invalid-input verdicts mean the lab could not judge a link, not that Weir is wrong, so they warn. One such link per run is lab noise (the eighth run: one fiber-300-far iperf3 run read 1.016 of the ceiling); two or more mean the lab itself is off, and the gate fails. |
 | noise | fractionOfBand 0.5 | When the truth itself moves by more than half the band between repeats, a pass or fail would be luck. The result is inconclusive and the fix is in the lab. |
 | rate | min 0.93, max 1.015 | Loss-free iperf3 goodput over the shaped payload ceiling. Below 0.93 the shaper or host is not delivering the configured rate; above 1.015 the shaper leaks. Raised from 1.005 after the first three runs: iperf3 read up to 1.1 % over the ceiling on 5–25 Mbps links whose tbf rate is exact, which is iperf3 interval timing, not a leak. The upper bound applies to the median run per direction since the eighth run (fiber-300-far read 1.016 once and 0.999 twice: a leaking shaper leaks every run). The lower bound applies to the best iperf3 run per direction since the seventh run: one gig-60 upload run reached 0.81 while the others reached 0.99, which is TCP on a shallow buffer, not the shaper; such an under-filling run is not used as capacity truth. |
 | iperfConsistency | maxPct 2 | iperf3's receiver intervals must agree with its own end total, or that run is not used as truth. Raised from 1 % after the first three runs: a 600 ms buffer upload disagreed by 1.06 %, the queue draining after the sender stops; the speed bands are ten times wider. |
@@ -60,22 +64,22 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 
 | Link | Download vs iperf3 | Upload vs iperf3 | Idle latency | Loaded latency | Data | Status |
 |---|---|---|---|---|---|---|
-| [slow-5](#slow-5) | −1.3 % (−2.5 to −0.6) | – | +0.6 ms (+0.5 to +0.7) | +0.2 ms (−9.8 to +0.9) / – | 4 MB (4–4) | expected fail (validity) |
+| [slow-5](#slow-5) | −1.3 % (−2.5 to −0.6) | – | +0.6 ms (+0.5 to +0.8) | +0.2 ms (−9.8 to +0.9) / – | 4 MB (4–4) | expected fail (validity) |
 | [gig-5](#gig-5) | +0.0 % (−0.0 to +0.0) | – | +0.5 ms (+0.5 to +0.8) | +0.5 ms (+0.3 to +0.6) / – | 606 MB (593–606) | expected fail (validity) |
-| [gig-60](#gig-60) | −14.6 % (−29.5 to −11.7) | −16.1 % (−16.7 to −11.1) | +0.6 ms (+0.6 to +0.8) | +0.6 ms (+0.4 to +0.9) / +0.2 ms (+0.2 to +7.9) | 610 MB (603–614) | expected fail (download.capacity) |
-| [fiber-300](#fiber-300) | −0.0 % (−0.0 to +0.0) | +0.1 % (−0.0 to +0.3) | +0.5 ms (+0.4 to +0.5) | −0.2 ms (−0.4 to +0.3) / +0.7 ms (−1.5 to +1.3) | 382 MB (382–390) | pass |
-| [dsl-25-bloat](#dsl-25-bloat) | −0.2 % (−0.3 to −0.2) | −1.6 % (−1.7 to −0.3) | +0.3 ms (+0.2 to +0.5) | −15.1 ms (−32.6 to −15.1) / −18.9 ms (−23.9 to −3.9) | 22 MB (22–22) | unexpected pass (upload.wire) |
+| [gig-60](#gig-60) | −14.6 % (−29.5 to −11.7) | −16.1 % (−16.7 to −11.1) | +0.6 ms (+0.6 to +0.9) | +0.6 ms (+0.4 to +0.9) / +0.2 ms (+0.2 to +7.9) | 610 MB (603–614) | expected fail (download.capacity) |
+| [fiber-300](#fiber-300) | −0.0 % (−0.0 to +0.0) | +0.1 % (−0.0 to +0.3) | +0.5 ms (+0.5 to +0.5) | −0.2 ms (−0.4 to +0.3) / +0.7 ms (−1.5 to +1.3) | 382 MB (382–390) | pass |
+| [dsl-25-bloat](#dsl-25-bloat) | −0.2 % (−0.3 to −0.2) | −1.6 % (−1.7 to −0.3) | +0.3 ms (+0.2 to +0.5) | −15.1 ms (−32.6 to −15.1) / −18.9 ms (−23.9 to −3.9) | 22 MB (22–22) | unexpected pass (loaded.download.bias) |
 | [dsl-25-shallow](#dsl-25-shallow) | −0.4 % (−0.6 to +0.0) | −3.3 % (−9.3 to −3.2) | +0.4 ms (+0.4 to +0.4) | +0.4 ms (−1.0 to +2.2) / +0.8 ms (+0.4 to +1.7) | 21 MB (21–21) | expected fail (upload.wire) |
-| [cable-100-10](#cable-100-10) | −0.1 % (−0.1 to −0.1) | −0.5 % (−0.8 to −0.3) | +0.5 ms (+0.3 to +0.6) | −3.7 ms (−10.2 to −3.0) / +0.0 ms (−0.7 to +1.3) | 75 MB (75–75) | unexpected pass (upload.wire) |
-| [cable-100-10-cf](#cable-100-10-cf) | −0.0 % (−0.1 to +0.3) | +3.9 % (+3.8 to +4.1) | +0.3 ms (+0.2 to +0.3) | +3.6 ms (+0.6 to +4.9) / −0.1 ms (−2.1 to +1.7) | 74 MB (74–74) | unexpected pass (upload.wire) |
+| [cable-100-10](#cable-100-10) | −0.1 % (−0.1 to −0.1) | −0.5 % (−0.8 to −0.3) | +0.5 ms (+0.3 to +0.6) | −3.7 ms (−10.2 to −3.0) / +0.0 ms (−0.7 to +1.3) | 75 MB (75–75) | pass |
+| [cable-100-10-cf](#cable-100-10-cf) | −0.0 % (−0.1 to +0.3) | +3.9 % (+3.8 to +4.1) | +0.3 ms (+0.2 to +0.3) | +3.6 ms (+0.6 to +4.9) / −0.1 ms (−2.1 to +1.7) | 74 MB (74–74) | expected fail (upload.physics) |
 | [qreal-up](#qreal-up) | – | – | +0.3 ms (+0.3 to +0.4) | +2.9 ms (−1.9 to +5.3) / −2.1 ms (−3.1 to +5.9) | 74 MB (74–75) | pass |
 | [geo-250](#geo-250) | −11.7 % (−13.6 to −6.3) | – | +0.7 ms (+0.4 to +1.0) | +2.5 ms (−6.8 to +9.8) / – | 22 MB (19–25) | expected fail (validity) |
 | [fiber-300-far](#fiber-300-far) | −6.5 % (−7.4 to −2.8) | −17.2 % (−23.1 to −14.2) | +0.5 ms (+0.4 to +0.6) | −0.5 ms (−2.1 to +5.7) / −1.2 ms (−2.6 to +5.4) | 242 MB (241–246) | unexpected pass (download.capacity) |
-| [mobile](#mobile) | −5.3 % (−19.7 to +21.8) | +2.2 % (+0.0 to +11.4) | −2.7 ms (−4.0 to −1.2) | +0.1 ms (−7.7 to +5.3) / −2.4 ms (−7.8 to +11.4) | 28 MB (18–31) | expected fail (upload.wire) |
-| [lossy-0.1](#lossy-01) | +1.9 % (−2.2 to +7.0) | +0.4 % (+0.2 to +1.0) | +0.5 ms (+0.4 to +0.5) | +0.2 ms (+0.2 to +0.3) / +0.3 ms (−0.9 to +0.4) | 151 MB (138–161) | unexpected pass (upload.wire) |
-| [lossy-1](#lossy-1) | +5.2 % (−6.3 to +20.9) | +0.3 % (−0.7 to +20.0) | +0.4 ms (+0.3 to +0.4) | +0.3 ms (+0.2 to +0.3) / +0.2 ms (+0.2 to +0.3) | 33 MB (30–38) | unexpected pass (upload.wire) |
+| [mobile](#mobile) | −5.3 % (−19.7 to +21.8) | +2.2 % (+0.0 to +11.4) | −1.5 ms (−2.1 to +0.0) | +0.1 ms (−7.7 to +5.3) / −2.4 ms (−7.8 to +11.4) | 28 MB (18–31) | expected fail (upload.wire) |
+| [lossy-0.1](#lossy-01) | +1.9 % (−2.2 to +7.0) | +0.4 % (+0.2 to +1.0) | +0.5 ms (+0.4 to +0.5) | +0.2 ms (+0.2 to +0.3) / +0.3 ms (−0.9 to +0.4) | 151 MB (138–161) | pass |
+| [lossy-1](#lossy-1) | +5.2 % (−6.3 to +20.9) | +0.3 % (−0.7 to +20.0) | +0.4 ms (+0.3 to +0.4) | +0.3 ms (+0.2 to +0.3) / +0.2 ms (+0.2 to +0.3) | 33 MB (30–38) | pass |
 | [lossy-2](#lossy-2) | +7.9 % (−5.9 to +13.5) | −0.1 % (−4.4 to +10.0) | +0.4 ms (+0.3 to +0.4) | +0.2 ms (+0.2 to +0.3) / +1.4 ms (+0.3 to +4.1) | 13 MB (11–14) | expected fail (upload.wire) |
-| [wifi-jitter](#wifi-jitter) | +1.0 % (−7.7 to +17.8) | −1.6 % (−8.4 to +17.3) | −0.1 ms (−0.7 to +2.1) | +1.0 ms (−0.3 to +2.3) / +1.0 ms (−1.8 to +1.9) | 89 MB (85–109) | unexpected pass (upload.wire) |
+| [wifi-jitter](#wifi-jitter) | +1.0 % (−7.7 to +17.8) | −1.6 % (−8.4 to +17.3) | +0.7 ms (−1.5 to +1.7) | +1.0 ms (−0.3 to +2.3) / +1.0 ms (−1.8 to +1.9) | 89 MB (85–109) | pass |
 
 Errors are Weir minus the truth: percent of iperf3 for speeds, ms against a ping for latency.
 
@@ -85,13 +89,13 @@ Errors are Weir minus the truth: percent of iperf3 for speeds, ms against a ping
 
 Slow DSL, 5/1 Mbps. 5/1 Mbps · 40 ms RTT · 200 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 1 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 4.8 Mbps (4.8–4.8) | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.6–4.7) | 4.7 Mbps | −1.4 % (−2.9 to −0.6) wire, −1.3 % (−2.5 to −0.6) iperf3 | pass |
 | Upload | – | 0.9 Mbps (0.9–0.9) | – | 1.0 Mbps | – wire, – iperf3 | expected fail ([F-2](#f-2)) |
-| Idle latency | – | 40.1 ms (40.1–40.2) ping | 40.7 ms (40.6–40.9) | 40.5 ms (40.4–40.5) | +0.6 ms (+0.5 to +0.7) | pass |
+| Idle latency | – | 40.1 ms ping | 40.7 ms (40.6–40.9) | 40.5 ms (40.4–40.5) | +0.6 ms (+0.5 to +0.8) | pass |
 | Loaded latency, download | 220 ms (211–221) ping | – | 220 ms (201–222) | – | +0.2 ms (−9.8 to +0.9) | pass |
 | Loaded latency, upload | 229 ms (228–229) ping | – | – | – | – | expected fail ([F-2](#f-2)) |
 | Jitter | – | 0.04 ms (0.03–0.07) ping | 0.14 ms (0.14–0.15) | – | – | report only |
@@ -102,18 +106,19 @@ Slow DSL, 5/1 Mbps. 5/1 Mbps · 40 ms RTT · 200 ms buffer.
 - upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. expected fail ([F-2](#f-2)).
 - upload.physics: no Weir result. Suspect: weir-math. expected fail ([F-2](#f-2)).
 - loaded.upload: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
+- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
 
 ### gig-5
 
 Gigabit fibre, near. 1000/1000 Mbps · 5 ms RTT · 10 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 1 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 956.4 Mbps (956.3–956.4) | 956.3 Mbps (956.2–956.5) | 956.3 Mbps (956.3–956.4) | 936.4 Mbps (935.2–936.6) | −0.0 % (−0.0 to +0.0) wire, +0.0 % (−0.0 to +0.0) iperf3 | pass |
 | Upload | – | 956.4 Mbps (956.3–956.4) | – | 914.9 Mbps (914.9–915.7) | – wire, – iperf3 | expected fail ([F-1](#f-1)) |
-| Idle latency | – | 5.1 ms ping | 5.6 ms (5.6–5.9) | 5.2 ms | +0.5 ms (+0.5 to +0.8) | pass |
+| Idle latency | – | 5.1 ms (5.1–5.1) ping | 5.6 ms (5.6–5.9) | 5.2 ms | +0.5 ms (+0.5 to +0.8) | pass |
 | Loaded latency, download | 14 ms (14–14) ping | – | 14 ms (14–15) | – | +0.5 ms (+0.3 to +0.6) | pass |
 | Loaded latency, upload | 14 ms (14–14) ping | – | – | – | – | expected fail ([F-1](#f-1)) |
 | Jitter | – | 0.04 ms (0.03–0.05) ping | 0.18 ms (0.09–0.26) | – | – | report only |
@@ -124,19 +129,20 @@ Gigabit fibre, near. 1000/1000 Mbps · 5 ms RTT · 10 ms buffer.
 - upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. expected fail ([F-1](#f-1)).
 - upload.physics: no Weir result. Suspect: weir-math. expected fail ([F-1](#f-1)).
 - loaded.upload: no loaded latency to compare. Suspect: weir-math. expected fail ([F-1](#f-1)).
+- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. expected fail ([F-1](#f-1)).
 - data.ceiling: most 606 MB on the wire (promise: up to 600 MB). Suspect: weir-math. expected fail ([F-3](#f-3)).
 
 ### gig-60
 
 Gigabit, 60 ms away. 1000/500 Mbps · 60 ms RTT · 20 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 1 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 814.1 Mbps (669.0–837.8) | 952.6 Mbps (948.7–955.1) | 815.9 Mbps (672.0–837.7) | 318.4 Mbps (273.1–318.4) | +0.2 % (−0.0 to +0.5) wire, −14.6 % (−29.5 to −11.7) iperf3 | expected fail ([F-4](#f-4)) |
 | Upload | 403.0 Mbps (399.2–426.1) | 477.1 Mbps (471.6–478.1) | 401.1 Mbps (397.2–419.5) | 180.2 Mbps (174.8–191.2) | −0.5 % (−1.6 to −0.5) wire, −16.1 % (−16.7 to −11.1) iperf3 | expected fail ([F-4](#f-4)) |
-| Idle latency | – | 60.1 ms (60.1–60.2) ping | 60.7 ms (60.7–61.0) | 60.3 ms (60.3–60.4) | +0.6 ms (+0.6 to +0.8) | pass |
+| Idle latency | – | 60.1 ms ping | 60.7 ms (60.7–61.0) | 60.3 ms (60.3–60.4) | +0.6 ms (+0.6 to +0.9) | pass |
 | Loaded latency, download | 60 ms (60–62) ping | – | 61 ms (61–62) | – | +0.6 ms (+0.4 to +0.9) | pass |
 | Loaded latency, upload | 60 ms (60–60) ping | – | 60 ms (60–68) | – | +0.2 ms (+0.2 to +7.9) | pass |
 | Jitter | – | 0.05 ms (0.02–0.07) ping | 0.10 ms (0.09–0.17) | – | – | report only |
@@ -151,13 +157,13 @@ Gigabit, 60 ms away. 1000/500 Mbps · 60 ms RTT · 20 ms buffer.
 
 Fibre 300/300. 300/300 Mbps · 10 ms RTT · 30 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 1 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 286.9 Mbps (286.9–286.9) | 286.9 Mbps (286.8–287.0) | 286.9 Mbps (286.9–286.9) | 282.0 Mbps (282.0–283.1) | −0.0 % (−0.0 to −0.0) wire, −0.0 % (−0.0 to +0.0) iperf3 | pass |
 | Upload | 286.9 Mbps (286.9–286.9) | 287.0 Mbps (286.9–287.1) | 287.2 Mbps (287.0–287.8) | 278.8 Mbps (278.8–278.9) | +0.1 % (+0.0 to +0.3) wire, +0.1 % (−0.0 to +0.3) iperf3 | pass |
-| Idle latency | – | 10.1 ms (10.1–10.2) ping | 10.6 ms (10.6–10.6) | 10.2 ms (10.2–10.3) | +0.5 ms (+0.4 to +0.5) | pass |
+| Idle latency | – | 10.1 ms ping | 10.6 ms (10.6–10.6) | 10.2 ms (10.2–10.3) | +0.5 ms (+0.5 to +0.5) | pass |
 | Loaded latency, download | 37 ms (37–38) ping | – | 37 ms (36–38) | – | −0.2 ms (−0.4 to +0.3) | pass |
 | Loaded latency, upload | 35 ms (34–36) ping | – | 35 ms (33–36) | – | +0.7 ms (−1.5 to +1.3) | pass |
 | Jitter | – | 0.05 ms (0.03–0.05) ping | 0.13 ms (0.11–0.14) | – | – | report only |
@@ -169,12 +175,12 @@ Fibre 300/300. 300/300 Mbps · 10 ms RTT · 30 ms buffer.
 
 DSL 25/5, deep buffer. 25/5 Mbps · 30 ms RTT · 600 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 2 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 23.9 Mbps (23.9–23.9) | 23.9 Mbps (23.9–23.9) | 23.9 Mbps (23.9–23.9) | 23.6 Mbps (23.6–23.6) | −0.1 % (−0.1 to −0.1) wire, −0.2 % (−0.3 to −0.2) iperf3 | pass |
-| Upload | 4.8 Mbps (4.8–4.8) | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.7–4.8) | 4.7 Mbps | −1.5 % (−1.5 to −0.2) wire, −1.6 % (−1.7 to −0.3) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 4.8 Mbps (4.8–4.8) | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.7–4.8) | 4.7 Mbps | −1.5 % (−1.5 to −0.2) wire, −1.6 % (−1.7 to −0.3) iperf3 | pass |
 | Idle latency | – | 30.1 ms ping | 30.4 ms (30.3–30.6) | 30.3 ms (30.2–30.3) | +0.3 ms (+0.2 to +0.5) | pass |
 | Loaded latency, download | 218 ms (209–237) ping | – | 194 ms (185–222) | – | −15.1 ms (−32.6 to −15.1) | pass |
 | Loaded latency, upload | 402 ms (394–407) ping | – | 383 ms (383–390) | – | −18.9 ms (−23.9 to −3.9) | pass |
@@ -183,14 +189,13 @@ DSL 25/5, deep buffer. 25/5 Mbps · 30 ms RTT · 600 ms buffer.
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
 - Bloat: Weir's latency rises 353 ms under load (concurrent ping 372 ms; shallow buffer 16 ms). pass.
-- upload.wire: worst 1.5 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
-- upload.physics: highest 4.8 Mbps; the link can carry 4.9 Mbps. unexpected pass ([F-5](#f-5)).
+- loaded.download.bias: median signed error -15.1 ms over 3 runs against a 218 ms ping (limit ±16.4 ms). unexpected pass ([F-8](#f-8)).
 
 ### dsl-25-shallow
 
 DSL 25/5, shallow buffer. 25/5 Mbps · 30 ms RTT · 20 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 2 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
@@ -210,12 +215,12 @@ DSL 25/5, shallow buffer. 25/5 Mbps · 30 ms RTT · 20 ms buffer.
 
 Cable 100/10. 100/10 Mbps · 20 ms RTT · 100 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 2 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 95.6 Mbps (95.6–95.6) | 95.7 Mbps (95.7–95.7) | 95.6 Mbps (95.6–95.6) | 93.5 Mbps (93.5–93.5) | −0.0 % (−0.0 to −0.0) wire, −0.1 % (−0.1 to −0.1) iperf3 | pass |
-| Upload | 9.6 Mbps | 9.6 Mbps (9.6–9.6) | 9.5 Mbps (9.5–9.5) | 9.6 Mbps (9.6–9.6) | −0.5 % (−0.7 to −0.2) wire, −0.5 % (−0.8 to −0.3) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 9.6 Mbps | 9.6 Mbps (9.6–9.6) | 9.5 Mbps (9.5–9.5) | 9.6 Mbps (9.6–9.6) | −0.5 % (−0.7 to −0.2) wire, −0.5 % (−0.8 to −0.3) iperf3 | pass |
 | Idle latency | – | 20.1 ms ping | 20.6 ms (20.4–20.7) | 20.3 ms (20.2–20.3) | +0.5 ms (+0.3 to +0.6) | pass |
 | Loaded latency, download | 102 ms (101–105) ping | – | 98 ms (94–98) | – | −3.7 ms (−10.2 to −3.0) | pass |
 | Loaded latency, upload | 109 ms (108–109) ping | – | 109 ms (107–110) | – | +0.0 ms (−0.7 to +1.3) | pass |
@@ -223,19 +228,17 @@ Cable 100/10. 100/10 Mbps · 20 ms RTT · 100 ms buffer.
 | Data used | 75 MB (75–75) on the wire | – | counts 99 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
-- upload.wire: worst 0.7 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
-- upload.physics: highest 9.5 Mbps; the link can carry 9.8 Mbps. unexpected pass ([F-5](#f-5)).
 
 ### cable-100-10-cf
 
 Cable 100/10, 30 ms server time. 100/10 Mbps · 20 ms RTT · 100 ms buffer · 30 ms server time.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 2 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 95.6 Mbps (95.6–95.6) | 95.6 Mbps (95.3–95.7) | 95.6 Mbps (95.6–95.6) | 93.9 Mbps (93.5–93.9) | −0.0 % (−0.0 to −0.0) wire, −0.0 % (−0.1 to +0.3) iperf3 | pass |
-| Upload | 9.6 Mbps (9.6–9.6) | 9.6 Mbps (9.5–9.6) | 9.9 Mbps (9.9–9.9) | 9.5 Mbps | +3.8 % (+3.7 to +4.1) wire, +3.9 % (+3.8 to +4.1) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 9.6 Mbps (9.6–9.6) | 9.6 Mbps (9.5–9.6) | 9.9 Mbps (9.9–9.9) | 9.5 Mbps | +3.8 % (+3.7 to +4.1) wire, +3.9 % (+3.8 to +4.1) iperf3 | expected fail ([F-5](#f-5)) |
 | Idle latency | – | 20.1 ms ping | 20.4 ms (20.3–20.4) | 20.3 ms (20.3–20.3) | +0.3 ms (+0.2 to +0.3) | pass |
 | Loaded latency, download | 101 ms (99–104) ping | – | 103 ms (102–109) | – | +3.6 ms (+0.6 to +4.9) | pass |
 | Loaded latency, upload | 101 ms (100–103) ping | – | 101 ms (101–102) | – | −0.1 ms (−2.1 to +1.7) | pass |
@@ -243,14 +246,13 @@ Cable 100/10, 30 ms server time. 100/10 Mbps · 20 ms RTT · 100 ms buffer · 30
 | Data used | 74 MB (74–74) on the wire | – | counts 98 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
-- upload.wire: worst 4.1 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
 - upload.physics: highest 9.9 Mbps; the link can carry 9.8 Mbps. Suspect: weir-math. expected fail ([F-5](#f-5)).
 
 ### qreal-up
 
 Cable 100/10, upload server time includes the body. 100/10 Mbps · 20 ms RTT · 100 ms buffer · 30 ms server time · upload Server-Timing includes the body.
 
-3 runs of Weir. Cells show the median and (range).
+3 runs of Weir, on shard 2 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
@@ -269,14 +271,14 @@ Cable 100/10, upload server time includes the body. 100/10 Mbps · 20 ms RTT · 
 
 Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 3 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 21.2 Mbps (21.1–22.4) | 23.9 Mbps (23.9–24.1) | 21.1 Mbps (20.8–22.4) | 22.2 Mbps (22.2–22.2) | −0.4 % (−2.1 to −0.1) wire, −11.7 % (−13.6 to −6.3) iperf3 | unexpected pass ([F-7](#f-7)) |
 | Upload | – | 2.9 Mbps (2.9–2.9) | – | 2.6 Mbps | – wire, – iperf3 | expected fail ([F-2](#f-2)) |
 | Idle latency | – | 250.0 ms ping | 250.7 ms (250.4–251.0) | 250.4 ms | +0.7 ms (+0.4 to +1.0) | pass |
-| Loaded latency, download | 414 ms (403–428) ping | – | 417 ms (412–421) | – | +2.5 ms (−6.8 to +9.8) | pass |
+| Loaded latency, download | 414 ms (403–428) ping | – | 417 ms (412–421) | – | +2.5 ms (−6.8 to +9.8) | unexpected pass ([F-8](#f-8)) |
 | Loaded latency, upload | 541 ms (541–542) ping | – | – | – | – | expected fail ([F-2](#f-2)) |
 | Jitter | – | 0.00 ms ping | 0.13 ms (0.10–0.23) | – | – | report only |
 | Data used | 22 MB (19–25) on the wire | – | counts 95 % of the payload | – | – | pass |
@@ -287,13 +289,16 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 - upload.wire: no Weir result to compare with the wire. Suspect: weir-math. expected fail ([F-2](#f-2)).
 - upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. expected fail ([F-2](#f-2)).
 - upload.physics: no Weir result. Suspect: weir-math. expected fail ([F-2](#f-2)).
+- loaded.download: worst 9.8 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
+- loaded.download.bias: median signed error 2.5 ms over 3 runs against a 414 ms ping (limit ±31.1 ms). unexpected pass ([F-8](#f-8)).
 - loaded.upload: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
+- loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. expected fail ([F-2](#f-2)).
 
 ### fiber-300-far
 
 Fibre 300/100, 120 ms away. 300/100 Mbps · 120 ms RTT · 50 ms buffer.
 
-3 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+3 runs of Weir and iperf3, 3 of the twin, on shard 3 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
@@ -309,19 +314,18 @@ Fibre 300/100, 120 ms away. 300/100 Mbps · 120 ms RTT · 50 ms buffer.
 - download.capacity: median -6.5 %, worst 7.4 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.3 %. unexpected pass ([F-6](#f-6)).
 - upload.wire: worst 3.1 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
 - upload.capacity: median -17.2 %, worst 23.1 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.1 %. Suspect: weir-load. expected fail ([F-6](#f-6)).
-- upload.physics: highest 82.1 Mbps; the link can carry 97.6 Mbps. unexpected pass ([F-5](#f-5)).
 
 ### mobile
 
 Mobile 30/8, jittery, 0.5% loss. 30/8 Mbps · 50 ms RTT · 0.5 % loss each way · 300 ms buffer · jitter 6 ms each way · 25 ms server time.
 
-5 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+5 runs of Weir and iperf3, 3 of the twin, on shard 3 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 16.4 Mbps (15.6–18.1) | 17.4 Mbps (14.9–19.4) | 16.4 Mbps (15.6–18.1) | 6.1 Mbps (4.5–7.3) | +0.0 % (−0.2 to +0.1) wire, −5.3 % (−19.7 to +21.8) iperf3 | pass |
 | Upload | 7.6 Mbps (7.5–7.6) | 7.6 Mbps (7.6–7.6) | 7.8 Mbps (7.6–8.5) | 4.1 Mbps (3.2–4.6) | +3.3 % (+0.9 to +12.8) wire, +2.2 % (+0.0 to +11.4) iperf3 | expected fail ([F-5](#f-5)) |
-| Idle latency | – | 49.4 ms (48.0–51.8) ping | 47.6 ms (46.5–48.7) | 49.5 ms (40.0–51.7) | −2.7 ms (−4.0 to −1.2) | pass |
+| Idle latency | – | 48.8 ms (47.8–49.1) ping | 47.6 ms (46.5–48.7) | 49.5 ms (40.0–51.7) | −1.5 ms (−2.1 to +0.0) | pass |
 | Loaded latency, download | 69 ms (68–71) ping | – | 69 ms (61–76) | – | +0.1 ms (−7.7 to +5.3) | pass |
 | Loaded latency, upload | 147 ms (111–157) ping | – | 149 ms (106–158) | – | −2.4 ms (−7.8 to +11.4) | pass |
 | Jitter | – | 7.48 ms (4.78–9.80) ping | 7.32 ms (5.66–10.21) | – | – | report only |
@@ -335,12 +339,12 @@ Mobile 30/8, jittery, 0.5% loss. 30/8 Mbps · 50 ms RTT · 0.5 % loss each way �
 
 Fibre 300/50, 0.1% loss. 300/50 Mbps · 20 ms RTT · 0.1 % loss each way · 30 ms buffer.
 
-5 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+5 runs of Weir and iperf3, 3 of the twin, on shard 4 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 134.4 Mbps (122.8–144.7) | 128.3 Mbps (124.2–135.2) | 134.4 Mbps (122.7–144.7) | 105.9 Mbps (58.7–118.0) | −0.0 % (−0.1 to +0.0) wire, +1.9 % (−2.2 to +7.0) iperf3 | pass |
-| Upload | 47.8 Mbps (47.7–47.8) | 47.8 Mbps (47.7–47.8) | 48.0 Mbps (47.8–48.2) | 30.6 Mbps (26.6–43.1) | +0.5 % (+0.3 to +0.9) wire, +0.4 % (+0.2 to +1.0) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 47.8 Mbps (47.7–47.8) | 47.8 Mbps (47.7–47.8) | 48.0 Mbps (47.8–48.2) | 30.6 Mbps (26.6–43.1) | +0.5 % (+0.3 to +0.9) wire, +0.4 % (+0.2 to +1.0) iperf3 | pass |
 | Idle latency | – | 20.1 ms ping | 20.6 ms (20.5–20.6) | 20.3 ms (20.3–20.4) | +0.5 ms (+0.4 to +0.5) | pass |
 | Loaded latency, download | 20 ms (20–20) ping | – | 20 ms (20–20) | – | +0.2 ms (+0.2 to +0.3) | pass |
 | Loaded latency, upload | 34 ms (32–39) ping | – | 35 ms (32–40) | – | +0.3 ms (−0.9 to +0.4) | pass |
@@ -348,19 +352,17 @@ Fibre 300/50, 0.1% loss. 300/50 Mbps · 20 ms RTT · 0.1 % loss each way · 30 m
 | Data used | 151 MB (138–161) on the wire | – | counts 101 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
-- upload.wire: worst 0.9 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
-- upload.physics: highest 48.2 Mbps; the link can carry 48.8 Mbps. unexpected pass ([F-5](#f-5)).
 
 ### lossy-1
 
 Cable 100/20, 1% loss. 100/20 Mbps · 40 ms RTT · 1 % loss each way · 50 ms buffer.
 
-5 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+5 runs of Weir and iperf3, 3 of the twin, on shard 4 (Intel(R) Xeon(R) 6975P-C). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 20.2 Mbps (19.1–21.2) | 19.6 Mbps (17.4–20.6) | 20.3 Mbps (19.1–21.2) | 9.5 Mbps (4.0–16.8) | −0.1 % (−0.2 to +0.3) wire, +5.2 % (−6.3 to +20.9) iperf3 | pass |
-| Upload | 12.7 Mbps (11.1–13.7) | 11.8 Mbps (11.2–13.0) | 12.3 Mbps (11.4–13.5) | 4.8 Mbps (4.2–8.1) | −1.2 % (−3.5 to +1.9) wire, +0.3 % (−0.7 to +20.0) iperf3 | unexpected pass ([F-5](#f-5)) |
+| Upload | 12.7 Mbps (11.1–13.7) | 11.8 Mbps (11.2–13.0) | 12.3 Mbps (11.4–13.5) | 4.8 Mbps (4.2–8.1) | −1.2 % (−3.5 to +1.9) wire, +0.3 % (−0.7 to +20.0) iperf3 | pass |
 | Idle latency | – | 40.1 ms ping | 40.5 ms (40.4–40.5) | 40.3 ms | +0.4 ms (+0.3 to +0.4) | pass |
 | Loaded latency, download | 40 ms (40–40) ping | – | 40 ms (40–40) | – | +0.3 ms (+0.2 to +0.3) | pass |
 | Loaded latency, upload | 40 ms (40–40) ping | – | 40 ms (40–40) | – | +0.2 ms (+0.2 to +0.3) | pass |
@@ -368,14 +370,12 @@ Cable 100/20, 1% loss. 100/20 Mbps · 40 ms RTT · 1 % loss each way · 50 ms bu
 | Data used | 33 MB (30–38) on the wire | – | counts 100 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
-- upload.wire: worst 3.5 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
-- upload.physics: highest 13.5 Mbps; the link can carry 19.5 Mbps. unexpected pass ([F-5](#f-5)).
 
 ### lossy-2
 
 DSL 25/5, 2% loss, 80 ms. 25/5 Mbps · 80 ms RTT · 2 % loss each way · 100 ms buffer.
 
-5 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+5 runs of Weir and iperf3, 3 of the twin, on shard 5 (AMD EPYC 7763 64-Core Processor). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
@@ -389,27 +389,24 @@ DSL 25/5, 2% loss, 80 ms. 25/5 Mbps · 80 ms RTT · 2 % loss each way · 100 ms 
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
 - upload.wire: worst 10.2 % against the wire in Weir's own steady window (limit 5 %). Suspect: weir-math. expected fail ([F-5](#f-5)).
-- upload.physics: highest 4.3 Mbps; the link can carry 4.9 Mbps. unexpected pass ([F-5](#f-5)).
 
 ### wifi-jitter
 
 Busy Wi-Fi 200/50, jittery. 200/50 Mbps · 15 ms RTT · 0.2 % loss each way · 50 ms buffer · jitter 3 ms each way.
 
-5 runs of Weir and iperf3, 3 of the twin. Cells show the median and (range).
+5 runs of Weir and iperf3, 3 of the twin, on shard 5 (AMD EPYC 7763 64-Core Processor). Cells show the median and (range).
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 66.4 Mbps (61.5–81.1) | 68.8 Mbps (63.0–70.4) | 66.4 Mbps (61.5–81.1) | 28.6 Mbps (22.8–29.4) | −0.0 % (−0.1 to −0.0) wire, +1.0 % (−7.7 to +17.8) iperf3 | pass |
-| Upload | 42.4 Mbps (39.5–46.0) | 42.3 Mbps (39.1–43.7) | 42.4 Mbps (39.2–45.8) | 27.3 Mbps (18.0–30.5) | −0.9 % (−1.5 to +0.1) wire, −1.6 % (−8.4 to +17.3) iperf3 | unexpected pass ([F-5](#f-5)) |
-| Idle latency | – | 15.1 ms (14.3–15.3) ping | 15.0 ms (13.9–16.4) | 14.6 ms (14.4–15.5) | −0.1 ms (−0.7 to +2.1) | pass |
+| Upload | 42.4 Mbps (39.5–46.0) | 42.3 Mbps (39.1–43.7) | 42.4 Mbps (39.2–45.8) | 27.3 Mbps (18.0–30.5) | −0.9 % (−1.5 to +0.1) wire, −1.6 % (−8.4 to +17.3) iperf3 | pass |
+| Idle latency | – | 14.5 ms (13.9–15.4) ping | 15.0 ms (13.9–16.4) | 14.6 ms (14.4–15.5) | +0.7 ms (−1.5 to +1.7) | pass |
 | Loaded latency, download | 24 ms (24–26) ping | – | 25 ms (25–26) | – | +1.0 ms (−0.3 to +2.3) | pass |
 | Loaded latency, upload | 30 ms (28–35) ping | – | 31 ms (29–35) | – | +1.0 ms (−1.8 to +1.9) | pass |
 | Jitter | – | 4.03 ms (3.26–4.64) ping | 4.68 ms (2.46–27.40) | – | – | report only |
 | Data used | 89 MB (85–109) on the wire | – | counts 101 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
-- upload.wire: worst 1.5 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-5](#f-5)).
-- upload.physics: highest 45.8 Mbps; the link can carry 48.8 Mbps. unexpected pass ([F-5](#f-5)).
 
 ## Baseline
 
@@ -437,7 +434,16 @@ Each shard first runs unshaped, to prove the server, the client host and the rou
 
 On gig-5 every upload ends as upload tooShort ×3. The socket counter, which includes send-buffer fill, reaches UPLOAD_CAP_MB well under two seconds into the phase, so the steady window that starts at one second is shorter than the one second a capped result needs, and Tracker::result returns TooShort. The user sees a failed upload on a link that carries 956.3 Mbps down without trouble. Fix in its own pull request: let a capped upload keep going on time once the cap is near, or size the cap from the download result.
 
-Expected to fail until fixed: gig-5 validity, gig-5 upload.wire, gig-5 upload.capacity, gig-5 upload.physics, gig-5 loaded.upload.
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| gig-5 | validity | only upload tooShort | 4 of 4 runs | expected fail |
+| gig-5 | upload.wire | only for want of any Weir result | 4 of 4 runs | expected fail |
+| gig-5 | upload.capacity | only for want of any Weir result | 4 of 4 runs | expected fail |
+| gig-5 | upload.physics | only for want of any Weir result | 4 of 4 runs | expected fail |
+| gig-5 | loaded.upload | only for want of any Weir result | 4 of 4 runs | expected fail |
+| gig-5 | loaded.upload.bias | only for want of any Weir result | 4 of 4 runs | expected fail |
 
 ### F-2
 
@@ -445,15 +451,35 @@ Expected to fail until fixed: gig-5 validity, gig-5 upload.wire, gig-5 upload.ca
 
 On slow-5 every upload ends as upload stalled ×3, and on geo-250 as upload stalled ×3. Each stream's first request is min_request bytes; the whole request goes into the socket send buffer at once, so the socket counter stops growing while the link drains it. At these upload rates that takes longer than STALL_MS, and Tracker::decide fails the upload as stalled although bytes are still arriving at the server. Fix in its own pull request: count stalls from bytes acknowledged or from completed requests, or size the first request from the download rate.
 
-Expected to fail until fixed: slow-5 validity, slow-5 upload.wire, slow-5 upload.capacity, slow-5 upload.physics, slow-5 loaded.upload, geo-250 validity, geo-250 upload.wire, geo-250 upload.capacity, geo-250 upload.physics, geo-250 loaded.upload.
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| slow-5 | validity | only upload stalled | 4 of 4 runs | expected fail |
+| slow-5 | upload.wire | only for want of any Weir result | 4 of 4 runs | expected fail |
+| slow-5 | upload.capacity | only for want of any Weir result | 4 of 4 runs | expected fail |
+| slow-5 | upload.physics | only for want of any Weir result | 4 of 4 runs | expected fail |
+| slow-5 | loaded.upload | only for want of any Weir result | 4 of 4 runs | expected fail |
+| slow-5 | loaded.upload.bias | only for want of any Weir result | 4 of 4 runs | expected fail |
+| geo-250 | validity | only upload stalled | 4 of 4 runs | expected fail |
+| geo-250 | upload.wire | only for want of any Weir result | 4 of 4 runs | expected fail |
+| geo-250 | upload.capacity | only for want of any Weir result | 4 of 4 runs | expected fail |
+| geo-250 | upload.physics | only for want of any Weir result | 4 of 4 runs | expected fail |
+| geo-250 | loaded.upload | only for want of any Weir result | 4 of 4 runs | expected fail |
+| geo-250 | loaded.upload.bias | only for want of any Weir result | 4 of 4 runs | expected fail |
 
 ### F-3
 
 **A gigabit test uses more data than the up-to estimate promises** (open). Where: `src-tauri/src/core/stats.rs:306, src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441`.
 
-Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to 606 MB and on gig-60 up to 614 MB of IP traffic. Weir's own count was 577 MB on gig-60, already past the two caps together because they are checked once per tick and a fast link overshoots them before the next check; IP and TCP headers and ACKs then add more than WIRE_OVERHEAD allows. Weir's count itself is honest: it matched 99 % of the TCP payload on the wire. Fix in its own pull request: stop the streams at the cap rather than on the next tick, and raise the estimate or lower the caps.
+Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to 606 MB and on gig-60 up to 614 MB of IP traffic, counted until the counters stopped moving after Weir exited (up to n/a MB on gig-5 and n/a MB on gig-60 crossed after the engine returned, as the socket send buffers drained). Weir's own count was 577 MB on gig-60, already past the two caps together because they are checked once per tick and a fast link overshoots them before the next check; IP and TCP headers and ACKs then add more than WIRE_OVERHEAD allows. Weir counts 99 % of the TCP payload on the wire. Fix in its own pull request: stop the streams at the cap rather than on the next tick, and raise the estimate or lower the caps.
 
-Expected to fail until fixed: gig-5 data.ceiling, gig-60 data.ceiling.
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| gig-5 | data.ceiling | every per-repeat error at most +4 | 4 of 4 runs | expected fail |
+| gig-60 | data.ceiling | every per-repeat error at most +6 | 4 of 4 runs | expected fail |
 
 ### F-4
 
@@ -461,15 +487,30 @@ Expected to fail until fixed: gig-5 data.ceiling, gig-60 data.ceiling.
 
 On gig-60 Weir's upload reads 401.1 Mbps against iperf3's 477.1 Mbps (-16.1 %), while it agrees with the wire in its own window (-0.5 %). So the math is right and the load is short: the upload hits UPLOAD_CAP_MB a few seconds in, before cubic on four streams has reached the link rate at this round trip, and the capped result averages the ramp. Download on the same link reads -14.6 % against iperf3 for the same reason: its cap ends the phase a few seconds in, during the ramp. Fix in its own pull request together with F-1.
 
-Expected to fail until fixed: gig-60 download.capacity, gig-60 upload.capacity.
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| gig-60 | download.capacity | every per-repeat error within -35 to +5 | 4 of 4 runs | expected fail |
+| gig-60 | upload.capacity | every per-repeat error within -37 to +5 | 4 of 4 runs | expected fail |
 
 ### F-5
 
-**Upload can read above the link when requests leave gaps** (open). Where: `src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211`.
+**Upload can read off the wire when requests leave gaps** (open). Where: `src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211`.
 
-Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads 9.9 Mbps on a link whose payload ceiling is below that, against 9.5 Mbps on the same link without server time; on mobile it reads 7.8 Mbps, on dsl-25-shallow 4.6 Mbps and on lossy-0.1 48.0 Mbps, each at or past the physical ceiling of its link in some runs. On fiber-300-far, with long round trips, it sits 2.3 % above the wire in its own window, and on lossy-2 -1.4 %. Which link and which check trips varies from run to run (the seventh run read dsl-25-shallow above the wire past the uploadWire limit), so every link whose upload completes is expected to fail these two checks until the fix. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.
+Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads 9.9 Mbps on a link whose payload ceiling is below that, against 9.5 Mbps on the same link without server time, and on mobile 7.8 Mbps, past its ceiling in some runs. On fiber-300-far, with long round trips, it sits 2.3 % above the wire in its own window, and on lossy-2 -1.4 %. On dsl-25-shallow one run in three reads below the wire instead (median -2.8 %), which the gap explanation does not cover; the same per-request timing is the suspect there too, unproven. Only the links and checks that failed in the four runs before the bounds were set are expected to fail, each within its bound. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.
 
-Expected to fail until fixed: dsl-25-bloat upload.wire, dsl-25-bloat upload.physics, dsl-25-shallow upload.wire, dsl-25-shallow upload.physics, cable-100-10 upload.wire, cable-100-10 upload.physics, cable-100-10-cf upload.wire, cable-100-10-cf upload.physics, mobile upload.wire, mobile upload.physics, lossy-0.1 upload.wire, lossy-0.1 upload.physics, lossy-1 upload.wire, lossy-1 upload.physics, lossy-2 upload.wire, lossy-2 upload.physics, wifi-jitter upload.wire, wifi-jitter upload.physics, fiber-300-far upload.wire, fiber-300-far upload.physics.
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| dsl-25-shallow | upload.wire | every per-repeat error within -12 to +5 | 3 of 4 runs | expected fail |
+| dsl-25-shallow | upload.physics | every per-repeat error at most +4 | 1 of 4 runs | unexpected pass |
+| cable-100-10-cf | upload.physics | every per-repeat error at most +6 | 4 of 4 runs | expected fail |
+| mobile | upload.wire | every per-repeat error within -5 to +16 | 1 of 4 runs | expected fail |
+| mobile | upload.physics | every per-repeat error at most +12 | 4 of 4 runs | expected fail |
+| lossy-2 | upload.wire | every per-repeat error within -9 to +13 | 2 of 4 runs | expected fail |
+| fiber-300-far | upload.wire | every per-repeat error within -5 to +11 | 2 of 4 runs | unexpected pass |
 
 ### F-6
 
@@ -477,7 +518,13 @@ Expected to fail until fixed: dsl-25-bloat upload.wire, dsl-25-bloat upload.phys
 
 On fiber-300-far Weir's upload reads 79.2 Mbps against iperf3's 95.7 Mbps (-17.2 %) and its download -6.5 %, and on geo-250 the download reads -11.7 %; in each case the wire in Weir's own window agrees with Weir (upload 2.3 %, download 0.7 %). So the numbers are honest about what Weir moved, but its load does not fill a far link. Upload: each stream waits a full round trip for the response before it starts its next half-second request, and at this round trip that idle time is a large share of each request. Download: the steady window starts once the one-second average stops rising, while cubic on a long round trip is still growing, so the result averages part of the ramp. The download sits near the edge of the band and fails in some runs only. Fix in its own pull request: size requests by round trip as well as rate, or pipeline the next request, and give far links a later steady start.
 
-Expected to fail until fixed: fiber-300-far upload.capacity, fiber-300-far download.capacity, geo-250 download.capacity.
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| fiber-300-far | upload.capacity | every per-repeat error within -29 to +5 | 4 of 4 runs | expected fail |
+| fiber-300-far | download.capacity | every per-repeat error within -21 to +5 | 1 of 4 runs | unexpected pass |
+| geo-250 | download.capacity | every per-repeat error within -20 to +5 | 2 of 4 runs | expected fail |
 
 ### F-7
 
@@ -485,7 +532,25 @@ Expected to fail until fixed: fiber-300-far upload.capacity, fiber-300-far downl
 
 On geo-250 one run in the third lab run read below the client interface's payload rate over Weir's own steady window, past the downloadWire limit; the other runs agree within it (median -0.4 %). Not settled: the wire counts every arriving segment, so spurious retransmissions after a long queue delay would put duplicates on the wire that the app never sees. The lab now records duplicate segments per run (median 1 on geo-250) to tell the two apart. Until then the suspect is the judge or Weir's byte counter, unclear which.
 
-Expected to fail until fixed: geo-250 download.wire.
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| geo-250 | download.wire | every per-repeat error within -7 to +3 | 3 of 4 runs | unexpected pass |
+
+### F-8
+
+**Loaded latency reads low on deep queues because Weir's probes are closed-loop** (open). Where: `src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49`.
+
+spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is -15.1 ms for download and -18.9 ms for upload, on geo-250 2.5 ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one run in the first of the four runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time.
+
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| dsl-25-bloat | loaded.download.bias | every per-repeat error within -43 to +5 | 1 of 4 runs | unexpected pass |
+| geo-250 | loaded.download.bias | up to 1 runs without Weir's value, every per-repeat error within -72 to +5 | 2 of 4 runs | unexpected pass |
+| geo-250 | loaded.download | up to 1 runs without Weir's value, otherwise passing | 1 of 4 runs | unexpected pass |
 
 ### F-doc-1
 
@@ -540,8 +605,23 @@ Linux with sudo, iperf3 ≥ 3.16, ethtool, the `sch_netem` and `sch_tbf` modules
 pnpm install --frozen-lockfile && pnpm build && pnpm exec playwright install --only-shell chromium
 WEIR_LAB=1 cargo build --manifest-path src-tauri/Cargo.toml --profile lab --features lab --example lab --locked
 cargo build --manifest-path lab/server/Cargo.toml --release --locked && pnpm lab:twin
+sudo modprobe -a sch_netem sch_tbf veth && sudo sysctl -w net.core.netdev_max_backlog=10000
 node lab/run.ts --shard 1/5 --weir src-tauri/target/lab/examples/lab --server lab/server/target/release/weir-lab-server --twin lab-out/twin --out lab-out/shards/shard-1.json
-node lab/report.ts --in lab-out/shards --out lab-out/report
+node lab/report.ts --in lab-out/shards --out lab-out/report --shards 1
 ```
 
-Runner for this run: 4 CPUs (Intel(R) Xeon(R) 6975P-C), kernel 7.0.0-1014-aws, iperf3 3.16, cubic, netdev backlog 10000, tso, gso and gro off on every lab interface. Weir built with the lab (opt-level s, panic abort, no LTO, 16 codegen units) profile; shipped builds also use LTO and one codegen unit.
+The backlog matters: at the default 1000 the unshaped baseline drops packets before the shaper and fails its softnet check. `--shards`, `--profiles` and `--repeats` on report.ts judge only what a filtered run planned.
+
+Runners for this run:
+
+| Shard | CPU | CPUs | Kernel | iperf3 | Chromium |
+|---|---|---|---|---|---|
+| 1 | Intel(R) Xeon(R) 6975P-C | – | 7.0.0-1014-aws | – | – |
+| 2 | Intel(R) Xeon(R) 6975P-C | – | 7.0.0-1014-aws | – | – |
+| 3 | Intel(R) Xeon(R) 6975P-C | – | 7.0.0-1014-aws | – | – |
+| 4 | Intel(R) Xeon(R) 6975P-C | – | 7.0.0-1014-aws | – | – |
+| 5 | AMD EPYC 7763 64-Core Processor | – | 7.0.0-1017-azure | – | – |
+
+The shards ran on 2 different CPU models, so a difference between links on different shards can be the machine, not the engine.
+
+Every shard: cubic, netdev backlog 10000, tso, gso and gro off on every lab interface. Weir built with the lab (opt-level s, panic abort, no LTO, 16 codegen units) profile; shipped builds also use LTO and one codegen unit.

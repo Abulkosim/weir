@@ -1,9 +1,9 @@
 // Pure rendering: docs/accuracy.md and its chart from lab results. Deterministic:
 // fixed formatting, profile order from profiles.ts, dates only from the JSON.
 
-import { analyze, fill, revalidate, type Analysis, type Finding, type Status, type Verdict } from './analyze.ts';
+import { analyze, describeBound, fill, revalidate, type Analysis, type Finding, type Gate, type Status, type Verdict } from './analyze.ts';
 import { netemArgs, tbfBurst, tbfLimit } from './net.ts';
-import { ceilingMbps, LEFT_OUT, PROFILES } from './profiles.ts';
+import { ceilingMbps, LEFT_OUT, PROFILES, type Profile } from './profiles.ts';
 import { failed, type Results } from './schema.ts';
 import { THRESHOLDS } from './thresholds.ts';
 
@@ -67,7 +67,8 @@ function profileSection(id: string, results: Results, analysis: Analysis): strin
   if (!entry) return [...lines, 'Not in this run.', ''].join('\n');
   const runs = entry.repeats.length;
   const twinRuns = entry.repeats.filter((repeat) => repeat.twin && !failed(repeat.twin)).length;
-  lines.push(`${runs} runs of Weir${definition.truth ? ' and iperf3' : ''}${twinRuns ? `, ${twinRuns} of the twin` : ''}. Cells show the median and (range).`, '');
+  const machine = results.shards.find((shard) => shard.shard === entry.shard);
+  lines.push(`${runs} runs of Weir${definition.truth ? ' and iperf3' : ''}${twinRuns ? `, ${twinRuns} of the twin` : ''}, on shard ${entry.shard}${machine ? ` (${machine.cpuModel})` : ''}. Cells show the median and (range).`, '');
   if (!entry.validity.ok) lines.push(`Lab input check failed: ${entry.validity.reasons.join('; ')}.`, '');
   lines.push('| | Wire | iperf3 | Weir | Twin | Weir error | Status |', '|---|---|---|---|---|---|---|');
   for (const dir of ['download', 'upload'] as const) {
@@ -101,6 +102,40 @@ function profileSection(id: string, results: Results, analysis: Analysis): strin
   return [...lines, ''].join('\n');
 }
 
+const verdictWord = (ok: boolean) => (ok ? 'passing' : 'failing');
+
+/** The gate the run itself got, and the gate the same numbers get with this commit's findings and rules. */
+function gateLine(results: Results, analysis: Analysis): string {
+  const counts = Object.entries(analysis.counts).filter(([, count]) => count > 0)
+    .map(([name, count]) => `${count} ${STATUS_LABEL[name as Status].replace(/\*/g, '')}`).join(', ');
+  const atRun = results.gate ? `Gate at run time: **${verdictWord(results.gate.ok)}**` : 'Gate at run time: not recorded';
+  const differ = !!results.gate && results.gate.ok !== analysis.ok;
+  return `${atRun}. Re-judged with the findings and rules in this commit: **${verdictWord(analysis.ok)}**${differ ? ' (they differ: see Findings)' : ''}. ${counts}.`;
+}
+
+/** Distinct machines the shards ran on, as "CPU model (shards)". */
+function machines(results: Results): string[] {
+  const byModel = new Map<string, number[]>();
+  for (const shard of results.shards) byModel.set(shard.cpuModel, [...(byModel.get(shard.cpuModel) ?? []), shard.shard]);
+  return [...byModel].map(([model, shards]) => `${model} (shard ${shards.join(', ')})`);
+}
+
+function runnerLines(results: Results): string[] {
+  const lines = ['| Shard | CPU | CPUs | Kernel | iperf3 | Chromium |', '|---|---|---|---|---|---|'];
+  for (const shard of results.shards) {
+    const runner = shard.runner;
+    lines.push(`| ${shard.shard} | ${shard.cpuModel} | ${runner?.cpus ?? '–'} | ${shard.kernel} | ${runner?.iperf3 ?? '–'} | ${runner?.chromium ?? '–'} |`);
+  }
+  const mixed = machines(results);
+  const runner = results.runner;
+  return [
+    'Runners for this run:', '', ...lines, '',
+    mixed.length > 1 ? `The shards ran on ${mixed.length} different CPU models, so a difference between links on different shards can be the machine, not the engine.` : 'Every shard ran on the same CPU model.',
+    '',
+    `Every shard: ${runner.tcpCc}, netdev backlog ${runner.netdevMaxBacklog}, ${runner.offloads}. Weir built with the ${runner.weirProfile} profile; shipped builds also use LTO and one codegen unit.`,
+  ];
+}
+
 export function renderMarkdown(results: Results, findings: Finding[], analysis = analyze(results, findings)): string {
   const run = results.runUrl ? `[run](${results.runUrl})` : 'a local run';
   const ids = PROFILES.map((item) => item.id);
@@ -111,7 +146,7 @@ export function renderMarkdown(results: Results, findings: Finding[], analysis =
     '',
     `Generated from ${run} on commit \`${results.commit.slice(0, 12)}\` (Weir ${results.weirVersion}), started ${results.startedAt.slice(0, 16).replace('T', ' ')} UTC.`,
     '',
-    `Gate: **${analysis.ok ? 'passing' : 'failing'}**. ${Object.entries(analysis.counts).filter(([, count]) => count > 0).map(([name, count]) => `${count} ${STATUS_LABEL[name as Status].replace(/\*/g, '')}`).join(', ')}.`,
+    gateLine(results, analysis),
     '',
     '<picture>',
     '  <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">',
@@ -137,7 +172,9 @@ export function renderMarkdown(results: Results, findings: Finding[], analysis =
     '| Physics | The configured shape | Is anything impossible? |',
     '| Twin | Cloudflare\'s own `@cloudflare/speedtest` in headless Chromium | Does a different method agree? Report only. |',
     '',
-    'Repeats are interleaved and rotate their order (iperf3, Weir, twin; then Weir, twin, iperf3; …). Every step waits for the queues to drain. A step with any CPU over 95 % busy is retried once.',
+    'Repeats are interleaved and rotate their order (iperf3, Weir, twin; then Weir, twin, iperf3; …). Every step waits for the queues to drain. CPU is sampled every 250 ms; an iperf3 or Weir step whose busiest CPU was over 95 % busy for any one second is retried once, and if it saturates again its numbers are not judged. The twin step, report only, is judged on its whole-step average because Chromium start-up alone fills a core.',
+    '',
+    'An open finding turns a failing check into an expected failure only within a recorded bound: the ways a run may fail, or the range every per-repeat error must stay in (the worst seen when the bound was set, plus half the check\'s own limit). A failure outside the bound fails the gate. So does an inconclusive or invalid-input verdict on more than one link, and an open finding whose every check passed in this run and in the published one.',
     '',
     '## Thresholds',
     '',
@@ -181,9 +218,12 @@ export function renderMarkdown(results: Results, findings: Finding[], analysis =
   out.push('## Findings', '');
   if (!findings.length) out.push('None open.', '');
   for (const finding of findings) {
-    const covered = finding.expect.map((pair) => `${pair.profile} ${pair.metric}`).join(', ');
     out.push(`### ${finding.id}`, '', `**${finding.title}** (${finding.status}). Where: \`${finding.where}\`.`, '', fill(finding.cause, analysis.facts), '');
-    if (covered) out.push(`Expected to fail until fixed: ${covered}.`, '');
+    if (finding.expect.length) {
+      out.push('Expected to fail until fixed, and only like this:', '', '| Link | Check | Bound | Failed when set | This run |', '|---|---|---|---|---|');
+      for (const pair of finding.expect) out.push(`| ${pair.profile} | ${pair.metric} | ${describeBound(pair)} | ${pair.seen} | ${status(find(analysis, pair.profile, pair.metric)).replace(/ \(\[.*\)$/, '')} |`);
+      out.push('');
+    }
   }
 
   out.push('## Claim check: Cloudflare\'s own test', '', 'docs/method.md says Weir and Cloudflare\'s test agree within about 10 % on links up to about 300 Mbps. The twin runs `@cloudflare/speedtest` ' + results.runner.speedtestLib + ' with its default measurements against the same server; it is never gated. The twin reports the 90th percentile of single requests, so it differs from Weir by design.', '', '| Link | Download, Weir vs twin | Upload, Weir vs twin | Within 10 % |', '|---|---|---|---|');
@@ -210,15 +250,20 @@ export function renderMarkdown(results: Results, findings: Finding[], analysis =
     'pnpm install --frozen-lockfile && pnpm build && pnpm exec playwright install --only-shell chromium',
     'WEIR_LAB=1 cargo build --manifest-path src-tauri/Cargo.toml --profile lab --features lab --example lab --locked',
     'cargo build --manifest-path lab/server/Cargo.toml --release --locked && pnpm lab:twin',
+    'sudo modprobe -a sch_netem sch_tbf veth && sudo sysctl -w net.core.netdev_max_backlog=10000',
     'node lab/run.ts --shard 1/5 --weir src-tauri/target/lab/examples/lab --server lab/server/target/release/weir-lab-server --twin lab-out/twin --out lab-out/shards/shard-1.json',
-    'node lab/report.ts --in lab-out/shards --out lab-out/report',
+    'node lab/report.ts --in lab-out/shards --out lab-out/report --shards 1',
     '```', '',
-    `Runner for this run: ${results.runner.cpus} CPUs (${results.runner.cpuModel}), kernel ${results.runner.kernel}, iperf3 ${results.runner.iperf3}, ${results.runner.tcpCc}, netdev backlog ${results.runner.netdevMaxBacklog}, ${results.runner.offloads}. Weir built with the ${results.runner.weirProfile} profile; shipped builds also use LTO and one codegen unit.`, '');
+    'The backlog matters: at the default 1000 the unshaped baseline drops packets before the shaper and fails its softnet check. `--shards`, `--profiles` and `--repeats` on report.ts judge only what a filtered run planned.', '',
+    ...runnerLines(results), '');
   return `${out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd()}\n`;
 }
 
-export function renderSummary(results: Results, analysis: Analysis): string {
-  const lines = [`## Accuracy lab: ${analysis.ok ? 'passing' : 'failing'}`, '', Object.entries(analysis.counts).map(([name, count]) => `${name} ${count}`).join(' · '), ''];
+export function renderSummary(results: Results, analysis: Analysis, verdict: Gate = analysis.gate): string {
+  const lines = [`## Accuracy lab: ${verdict.ok ? 'passing' : 'failing'}`, '', Object.entries(analysis.counts).map(([name, count]) => `${name} ${count}`).join(' · '), ''];
+  if (verdict.errors.length) lines.push('Gate errors:', '', ...verdict.errors.map((line) => `- ${line}`), '');
+  const mixed = machines(results);
+  if (mixed.length > 1) lines.push(`Shards ran on ${mixed.length} CPU models: ${mixed.join('; ')}.`, '');
   const invalid = [...new Set(analysis.verdicts.filter((item) => item.status === 'invalid-input').map((item) => item.profile))];
   for (const id of invalid) {
     const entry = results.profiles.find((item) => item.id === id);
@@ -342,9 +387,9 @@ export function renderSvg(results: Results, analysis: Analysis, mode: 'light' | 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escape(`Weir accuracy per shaped link, ${ceilingNote}`)}"><style>${style}</style>${parts.join('')}</svg>\n`;
 }
 
-export function renderAll(input: Results, findings: Finding[]): Record<string, string> {
+export function renderAll(input: Results, findings: Finding[], expected: Profile[] = PROFILES): Record<string, string> {
   const results = revalidate(input);
-  const analysis = analyze(results, findings);
+  const analysis = analyze(results, findings, expected);
   return {
     'accuracy.md': renderMarkdown(results, findings, analysis),
     'accuracy.json': `${JSON.stringify(results, null, 1)}\n`,
