@@ -214,6 +214,10 @@
       {
         "profile": "fiber-300-far",
         "metric": "download.capacity"
+      },
+      {
+        "profile": "geo-250",
+        "metric": "download.capacity"
       }
     ]
   },
