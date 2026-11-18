@@ -82,8 +82,8 @@ export interface Expectation {
   gaps?: number;
   min?: number;
   max?: number;
-  /** How often this check failed in the runs the bound was set from, e.g. "3 of 4 runs". */
-  seen: string;
+  /** How often this check failed in the runs the bound was set from. */
+  seen: { failed: number; runs: number };
 }
 
 export interface Finding {
@@ -559,8 +559,9 @@ export function applyFindings(verdicts: Verdict[], findings: Finding[]): Verdict
 
 /**
  * The gate. Fails on any fail; on inconclusive or invalid-input over more than THRESHOLDS.unjudged.maxLinks
- * links; and on an open finding whose every check passed both in this run and in `previous` (the run
- * published in docs/accuracy.json): that finding is fixed or wrong and must be closed or narrowed.
+ * links; and on a check that failed in every run when its bound was set but passed both in this run and
+ * in `previous` (the run published in docs/accuracy.json): its finding is fixed or wrong and must be
+ * closed or narrowed. A check that failed only in some runs may pass; that warns.
  */
 export function gate(verdicts: Verdict[], findings: Finding[], previous: Verdict[] | null = null): Gate {
   const errors: string[] = [];
@@ -572,17 +573,19 @@ export function gate(verdicts: Verdict[], findings: Finding[], previous: Verdict
   if (links.length > THRESHOLDS.unjudged.maxLinks) {
     errors.push(`the lab could not judge ${links.length} links (${links.join(', ')}); limit ${THRESHOLDS.unjudged.maxLinks}`);
   }
-  const allPass = (list: Verdict[], finding: Finding) => finding.expect.length > 0 && finding.expect.every((pair) =>
-    list.some((item) => item.profile === pair.profile && item.metric === pair.metric && item.status === 'xpass'));
+  const passed = (list: Verdict[], pair: Expectation) =>
+    list.some((item) => item.profile === pair.profile && item.metric === pair.metric && item.status === 'xpass');
   for (const finding of findings.filter((item) => item.status === 'open')) {
-    if (!allPass(verdicts, finding)) continue;
-    if (previous && allPass(previous, finding)) {
-      errors.push(`${finding.id}: every check it expects to fail passed in this run and in the published run; mark it fixed or narrow it`);
-    } else {
-      warnings.push(`${finding.id}: every check it expects to fail passed in this run`);
+    for (const pair of finding.expect) {
+      if (!passed(verdicts, pair)) continue;
+      const steady = pair.seen.failed === pair.seen.runs;
+      if (steady && previous && passed(previous, pair)) {
+        errors.push(`${finding.id} ${pair.profile} ${pair.metric}: failed in ${pair.seen.failed} of ${pair.seen.runs} runs when its bound was set, but passed in this run and in the published run; close or narrow ${finding.id}`);
+      } else {
+        warnings.push(`${pair.profile} ${pair.metric} passes but ${finding.id} expects it to fail (it failed in ${pair.seen.failed} of ${pair.seen.runs} runs when set)`);
+      }
     }
   }
-  for (const item of verdicts.filter((verdict) => verdict.status === 'xpass')) warnings.push(`${item.profile} ${item.metric} passes but ${item.finding} expects it to fail`);
   return { ok: errors.length === 0, errors, warnings };
 }
 

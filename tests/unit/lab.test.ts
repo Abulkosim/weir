@@ -300,7 +300,7 @@ const range = (min: number, max: number) => ({ median: (min + max) / 2, min, max
 test('open findings turn failures into expected failures only within their bound', () => {
   const finding: Finding = {
     id: 'F-1', title: 't', status: 'open', where: 'x.rs:1', cause: 'c',
-    expect: [{ profile: 'gig-5', metric: 'upload.wire', min: -5, max: 10, seen: '2 of 4 runs' }, { profile: 'gig-5', metric: 'idle', min: -3, max: 3, seen: '1 of 4 runs' }],
+    expect: [{ profile: 'gig-5', metric: 'upload.wire', min: -5, max: 10, seen: { failed: 2, runs: 4 } }, { profile: 'gig-5', metric: 'idle', min: -3, max: 3, seen: { failed: 1, runs: 4 } }],
   }
   const verdicts = applyFindings([
     bare('gig-5', 'upload.wire', 'fail', { error: range(1, 8) }),
@@ -315,13 +315,13 @@ test('open findings turn failures into expected failures only within their bound
 })
 
 test('a validity, missing or gap expectation covers only the failure it names', () => {
-  const kinds = { profile: 'gig-5', metric: 'validity' as const, errors: ['upload tooShort'], seen: '4 of 4 runs' }
+  const kinds = { profile: 'gig-5', metric: 'validity' as const, errors: ['upload tooShort'], seen: { failed: 4, runs: 4 } }
   assert.ok(withinBound(bare('gig-5', 'validity', 'fail', { kinds: ['upload tooShort'] }), kinds))
   assert.ok(!withinBound(bare('gig-5', 'validity', 'fail', { kinds: ['download stalled', 'upload tooShort'] }), kinds), 'a new download crash is not F-1')
-  const missing = { profile: 'gig-5', metric: 'upload.wire' as const, missing: true, seen: '4 of 4 runs' }
+  const missing = { profile: 'gig-5', metric: 'upload.wire' as const, missing: true, seen: { failed: 4, runs: 4 } }
   assert.ok(withinBound(bare('gig-5', 'upload.wire', 'fail'), missing))
   assert.ok(!withinBound(bare('gig-5', 'upload.wire', 'fail', { weir: range(900, 950), error: range(30, 40) }), missing), 'once uploads finish, their numbers are judged')
-  const gaps = { profile: 'geo-250', metric: 'loaded.download' as const, gaps: 1, seen: '1 of 4 runs' }
+  const gaps = { profile: 'geo-250', metric: 'loaded.download' as const, gaps: 1, seen: { failed: 1, runs: 4 } }
   assert.ok(withinBound(bare('geo-250', 'loaded.download', 'fail', { gaps: { count: 1, status: 'pass' } }), gaps))
   assert.ok(!withinBound(bare('geo-250', 'loaded.download', 'fail', { gaps: { count: 2, status: 'pass' } }), gaps))
   assert.ok(!withinBound(bare('geo-250', 'loaded.download', 'fail', { gaps: { count: 1, status: 'fail' } }), gaps))
@@ -333,7 +333,7 @@ test('committed findings are bounded, narrow and still catch the regressions the
     for (const pair of finding.expect) {
       const kinds = [pair.errors ? 1 : 0, pair.missing ? 1 : 0, pair.min !== undefined || pair.max !== undefined || pair.gaps ? 1 : 0].reduce((a, b) => a + b, 0)
       assert.equal(kinds, 1, `${finding.id} ${pair.profile} ${pair.metric} has exactly one kind of bound`)
-      assert.match(pair.seen, /^\d of \d runs$/, `${finding.id} ${pair.profile} ${pair.metric} says how often it failed`)
+      assert.ok(pair.seen.failed >= 1 && pair.seen.failed <= pair.seen.runs, `${finding.id} ${pair.profile} ${pair.metric} failed when it was added`)
     }
   }
   const physics = findings.flatMap(finding => finding.expect.filter(pair => pair.metric === 'upload.physics' && !pair.missing))
@@ -353,13 +353,15 @@ test('the gate warns on one unjudged link, fails on two, and closes findings tha
   const two = [...one, bare('mobile', 'idle', 'inconclusive')]
   assert.equal(gate(two, []).ok, false)
   assert.equal(gate([bare('gig-5', 'idle', 'fail')], []).ok, false)
-  const finding: Finding = { id: 'F-9', title: 't', status: 'open', where: 'x.rs:1', cause: 'c', expect: [{ profile: 'gig-5', metric: 'idle', min: -9, max: 9, seen: '1 of 4 runs' }] }
+  const steady: Finding = { id: 'F-9', title: 't', status: 'open', where: 'x.rs:1', cause: 'c', expect: [{ profile: 'gig-5', metric: 'idle', min: -9, max: 9, seen: { failed: 4, runs: 4 } }] }
   const passing = [bare('gig-5', 'idle', 'xpass', { finding: 'F-9' })]
-  assert.equal(gate(passing, [finding]).ok, true, 'one passing run warns')
-  assert.equal(gate(passing, [finding], [bare('gig-5', 'idle', 'xfail')]).ok, true)
-  const closed = gate(passing, [finding], passing)
-  assert.equal(closed.ok, false, 'two runs in a row: close or narrow it')
-  assert.match(closed.errors[0]!, /^F-9: /)
+  assert.equal(gate(passing, [steady]).ok, true, 'one passing run warns')
+  assert.equal(gate(passing, [steady], [bare('gig-5', 'idle', 'xfail')]).ok, true)
+  const closed = gate(passing, [steady], passing)
+  assert.equal(closed.ok, false, 'a check that always failed passes twice in a row: close or narrow it')
+  assert.match(closed.errors[0]!, /^F-9 gig-5 idle: /)
+  const sometimes: Finding = { ...steady, expect: [{ ...steady.expect[0]!, seen: { failed: 2, runs: 4 } }] }
+  assert.equal(gate(passing, [sometimes], passing).ok, true, 'a check that failed in some runs may pass')
 })
 
 test('a finished run without a Weir number fails the check instead of being skipped', () => {

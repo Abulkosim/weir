@@ -32,7 +32,7 @@ Four layers of truth, each answering a different question:
 
 Repeats are interleaved and rotate their order (iperf3, Weir, twin; then Weir, twin, iperf3; …). Every step waits for the queues to drain. CPU is sampled every 250 ms; an iperf3 or Weir step whose busiest CPU was over 95 % busy for any one second is retried once, and if it saturates again its numbers are not judged. The twin step, report only, is judged on its whole-step average because Chromium start-up alone fills a core.
 
-An open finding turns a failing check into an expected failure only within a recorded bound: the ways a run may fail, or the range every per-repeat error must stay in (the worst seen when the bound was set, plus half the check's own limit). A failure outside the bound fails the gate. So does an inconclusive or invalid-input verdict on more than one link, and an open finding whose every check passed in this run and in the published one.
+An open finding turns a failing check into an expected failure only within a recorded bound: the ways a run may fail, or the range every per-repeat error must stay in (the worst seen when the bound was set, plus half the check's own limit). A failure outside the bound fails the gate. So does an inconclusive or invalid-input verdict on more than one link, and a check that failed in every run when its bound was set but passes in this run and in the published one: its finding is fixed or wrong.
 
 ## Thresholds
 

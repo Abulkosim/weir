@@ -12,37 +12,55 @@
         "errors": [
           "upload tooShort"
         ],
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "gig-5",
         "metric": "upload.wire",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "gig-5",
         "metric": "upload.capacity",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "gig-5",
         "metric": "upload.physics",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "gig-5",
         "metric": "loaded.upload",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "gig-5",
         "metric": "loaded.upload.bias",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       }
     ]
   },
@@ -59,37 +77,55 @@
         "errors": [
           "upload stalled"
         ],
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "slow-5",
         "metric": "upload.wire",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "slow-5",
         "metric": "upload.capacity",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "slow-5",
         "metric": "upload.physics",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "slow-5",
         "metric": "loaded.upload",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "slow-5",
         "metric": "loaded.upload.bias",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
@@ -97,37 +133,55 @@
         "errors": [
           "upload stalled"
         ],
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
         "metric": "upload.wire",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
         "metric": "upload.capacity",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
         "metric": "upload.physics",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
         "metric": "loaded.upload",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
         "metric": "loaded.upload.bias",
         "missing": true,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       }
     ]
   },
@@ -142,13 +196,19 @@
         "profile": "gig-5",
         "metric": "data.ceiling",
         "max": 4,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "gig-60",
         "metric": "data.ceiling",
         "max": 6,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       }
     ]
   },
@@ -164,14 +224,20 @@
         "metric": "download.capacity",
         "min": -35,
         "max": 5,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "gig-60",
         "metric": "upload.capacity",
         "min": -37,
         "max": 5,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       }
     ]
   },
@@ -187,46 +253,67 @@
         "metric": "upload.wire",
         "min": -12,
         "max": 5,
-        "seen": "3 of 4 runs"
+        "seen": {
+          "failed": 3,
+          "runs": 4
+        }
       },
       {
         "profile": "dsl-25-shallow",
         "metric": "upload.physics",
         "max": 4,
-        "seen": "1 of 4 runs"
+        "seen": {
+          "failed": 1,
+          "runs": 4
+        }
       },
       {
         "profile": "cable-100-10-cf",
         "metric": "upload.physics",
         "max": 6,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "mobile",
         "metric": "upload.wire",
         "min": -5,
         "max": 16,
-        "seen": "1 of 4 runs"
+        "seen": {
+          "failed": 1,
+          "runs": 4
+        }
       },
       {
         "profile": "mobile",
         "metric": "upload.physics",
         "max": 12,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "lossy-2",
         "metric": "upload.wire",
         "min": -9,
         "max": 13,
-        "seen": "2 of 4 runs"
+        "seen": {
+          "failed": 2,
+          "runs": 4
+        }
       },
       {
         "profile": "fiber-300-far",
         "metric": "upload.wire",
         "min": -5,
         "max": 11,
-        "seen": "2 of 4 runs"
+        "seen": {
+          "failed": 2,
+          "runs": 4
+        }
       }
     ]
   },
@@ -242,21 +329,30 @@
         "metric": "upload.capacity",
         "min": -29,
         "max": 5,
-        "seen": "4 of 4 runs"
+        "seen": {
+          "failed": 4,
+          "runs": 4
+        }
       },
       {
         "profile": "fiber-300-far",
         "metric": "download.capacity",
         "min": -21,
         "max": 5,
-        "seen": "1 of 4 runs"
+        "seen": {
+          "failed": 1,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
         "metric": "download.capacity",
         "min": -20,
         "max": 5,
-        "seen": "2 of 4 runs"
+        "seen": {
+          "failed": 2,
+          "runs": 4
+        }
       }
     ]
   },
@@ -272,7 +368,10 @@
         "metric": "download.wire",
         "min": -7,
         "max": 3,
-        "seen": "3 of 4 runs"
+        "seen": {
+          "failed": 3,
+          "runs": 4
+        }
       }
     ]
   },
@@ -288,7 +387,10 @@
         "metric": "loaded.download.bias",
         "min": -43,
         "max": 5,
-        "seen": "1 of 4 runs"
+        "seen": {
+          "failed": 1,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
@@ -296,13 +398,19 @@
         "gaps": 1,
         "min": -72,
         "max": 5,
-        "seen": "2 of 4 runs"
+        "seen": {
+          "failed": 2,
+          "runs": 4
+        }
       },
       {
         "profile": "geo-250",
         "metric": "loaded.download",
         "gaps": 1,
-        "seen": "1 of 4 runs"
+        "seen": {
+          "failed": 1,
+          "runs": 4
+        }
       }
     ]
   },
