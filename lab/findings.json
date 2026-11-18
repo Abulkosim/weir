@@ -341,7 +341,7 @@
     "title": "Weir's own load under-fills far links",
     "status": "open",
     "where": "src-tauri/src/core/speedtest.rs:68, src-tauri/src/core/speedtest.rs:310, src-tauri/src/core/stats.rs:272",
-    "cause": "On fiber-300-far Weir's upload reads {fiber-300-far.upload.weir} Mbps against iperf3's {fiber-300-far.upload.truth} Mbps ({fiber-300-far.upload.err} %) and its download {fiber-300-far.download.err} %, and on geo-250 the download reads {geo-250.download.err} %; in each case the wire in Weir's own window agrees with Weir (upload {fiber-300-far.upload.wireErr} %, download {fiber-300-far.download.wireErr} %). So the numbers are honest about what Weir moved, but its load does not fill a far link. Upload: each stream waits a full round trip for the response before it starts its next half-second request, and at this round trip that idle time is a large share of each request. Download: the steady window starts once the one-second average stops rising, while cubic on a long round trip is still growing, so the result averages part of the ramp. The download sits near the edge of the band and fails in some runs only. Fix in its own pull request: size requests by round trip as well as rate, or pipeline the next request, and give far links a later steady start.",
+    "cause": "On fiber-300-far Weir's upload reads {fiber-300-far.upload.weir} Mbps against iperf3's {fiber-300-far.upload.truth} Mbps ({fiber-300-far.upload.err} %) and its download {fiber-300-far.download.err} %, and on geo-250 the download reads {geo-250.download.err} %; in each case the wire in Weir's own window agrees with Weir (upload {fiber-300-far.upload.wireErr} %, download {fiber-300-far.download.wireErr} %). So the numbers are honest about what Weir moved, but its load does not fill a far link. Upload: each stream waits a full round trip for the response before it starts its next half-second request, and at this round trip that idle time is a large share of each request. Download: the steady window starts once the one-second average stops rising, while cubic on a long round trip is still growing, so the result averages part of the ramp. The download sits near the edge of the band and fails in some runs only. Fix in its own pull request: size requests by round trip as well as rate, or pipeline the next request, and give far links a later steady start. Since F-2's fix, geo-250's upload finishes and shows the same under-fill: Weir agrees with the wire in its own window and reads {geo-250.upload.err} % against iperf3.",
     "expect": [
       {
         "profile": "fiber-300-far",
@@ -372,6 +372,16 @@
           "failed": 3,
           "runs": 7
         }
+      },
+      {
+        "profile": "geo-250",
+        "metric": "upload.capacity",
+        "min": -34,
+        "max": 5,
+        "seen": {
+          "failed": 1,
+          "runs": 1
+        }
       }
     ]
   },
@@ -399,7 +409,7 @@
     "title": "Loaded latency reads low on deep queues because Weir's probes are closed-loop",
     "status": "open",
     "where": "src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49",
-    "cause": "spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is {dsl-25-bloat.download.loaded.bias} ms for download and {dsl-25-bloat.upload.loaded.bias} ms for upload, on geo-250 {geo-250.download.loaded.bias} ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time.",
+    "cause": "spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is {dsl-25-bloat.download.loaded.bias} ms for download and {dsl-25-bloat.upload.loaded.bias} ms for upload, on geo-250 {geo-250.download.loaded.bias} ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time. The bias follows the load's rhythm, not one sign: since uploads start with 32 kB requests (F-2), each upload holds less in flight, the deep buffer fills less, and on dsl-25-bloat the upload median sits above the ping instead ({dsl-25-bloat.upload.loaded.bias} ms). Open-loop probes fix both directions.",
     "expect": [
       {
         "profile": "dsl-25-bloat",
@@ -429,6 +439,26 @@
         "seen": {
           "failed": 1,
           "runs": 7
+        }
+      },
+      {
+        "profile": "dsl-25-bloat",
+        "metric": "loaded.upload",
+        "min": -10,
+        "max": 78,
+        "seen": {
+          "failed": 1,
+          "runs": 1
+        }
+      },
+      {
+        "profile": "dsl-25-bloat",
+        "metric": "loaded.upload.bias",
+        "min": -5,
+        "max": 43,
+        "seen": {
+          "failed": 1,
+          "runs": 1
         }
       }
     ]
