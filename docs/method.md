@@ -56,8 +56,9 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 
 ### 3. Loaded latency (during download and upload)
 
-- The probe connection from step 1, separate from the load (IETF "foreign" probe).
-- One probe every 250 ms. Only probes **sent inside the steady window** count.
+- Three probe connections, separate from the load (IETF "foreign" probe): the one from step 1 and two warmed beside it.
+- One probe every 250 ms on a fixed schedule, on whichever probe connection is idle. When all three are still waiting, that slot is skipped. A probe never goes out just because the last one returned: that moment is also when upload responses release the next burst, so it would read the queue high (docs/accuracy.md, F-8).
+- Only probes **sent inside the steady window** count.
 - A probe that times out (2 s) counts as 2000 ms. Dropping it would hide bufferbloat.
 - Median per direction, ≥ 5 counted probes, else "Not measured".
 - **Under load = max(download median, upload median).** "Latency 14 ms · 62 ms under load".

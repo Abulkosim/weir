@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44265126705) on commit `3fd94e97dc60` (Weir 0.7.3), started 2026-11-18 08:37 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 184 pass, 12 fail, 13 expected fail, 7 unexpected pass, 115 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 189 pass, 12 fail, 13 expected fail, 2 unexpected pass, 115 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -47,7 +47,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | physics | factor 1.02 | No run may report more than the shaped rate can carry (payload per frame, 1448/1514), plus 2 % for tbf burst and window-edge effects. |
 | idle | absMs 2, pct 10 | An HTTP probe and an ICMP echo cross the same path; user-space scheduling adds well under 2 ms on an idle host. |
 | idleJitter | absMs 3, pct 15 | On a jittery path Weir's 19 probes and the concurrent ping sample different packets of the same delay distribution, so each median carries its own sampling noise. Judged every repeat against the ping taken during Weir's own latency phase: the widest gap in the four runs before this rule was 1.7 ms on wifi-jitter and 3.7 ms on mobile. |
-| loaded | absMs 10, pct 15 | Per run. Weir's probes are closed-loop (each waits for the last, every 250 ms at most) and the ping is open-loop at 50 ms, so on a deep queue the two sample different moments of the same sawtooth; a larger gap is Weir's probe method or its runtime scheduling. |
+| loaded | absMs 10, pct 15 | Per run. Weir's probes go out on a fixed 250 ms schedule and the ping every 50 ms, so the two sample the same queue at different instants; on a deep queue that alone moves a median by several ms. A larger gap is Weir's probe method or its runtime scheduling. |
 | loadedBias | absMs 5, pct 7.5 | The median of the signed per-run errors, against the median ping. Half the per-run band: sampling noise averages out over repeats, a sampling bias does not. Catches Weir under-reporting bufferbloat while every run stays inside its own band. |
 | bloat | fraction 0.8, marginMs 100 | Weir must show bufferbloat that is physically there: at least 80 % of the rise a concurrent ping sees on the deep buffer, and clearly more than on the shallow one. |
 | dataCeiling | mb 600 | Before a first result the app promises a test uses up to 600 MB (data_estimate UpTo). Counted as IP-layer bytes on the client interface over the whole run. |
@@ -68,7 +68,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | [gig-5](#gig-5) | −0.0 % (−0.0 to +0.0) | – | +0.5 ms (+0.3 to +0.5) | +0.3 ms (+0.3 to +1.1) / – | 610 MB (604–614) | expected fail (validity) |
 | [gig-60](#gig-60) | −13.8 % (−16.6 to −7.3) | −29.9 % (−30.2 to −23.4) | +0.5 ms (+0.5 to +0.5) | +0.3 ms (+0.1 to +0.6) / +0.2 ms (+0.2 to +0.2) | 618 MB (611–620) | expected fail (download.capacity) |
 | [fiber-300](#fiber-300) | −0.0 % (−0.1 to −0.0) | +0.0 % (−0.1 to +0.1) | +0.5 ms (+0.5 to +0.6) | +0.5 ms (+0.3 to +0.8) / +1.1 ms (+0.1 to +1.1) | 388 MB (387–388) | pass |
-| [dsl-25-bloat](#dsl-25-bloat) | −0.2 % (−0.2 to −0.2) | −1.0 % (−1.0 to −0.8) | +0.3 ms (+0.3 to +0.3) | −9.0 ms (−14.5 to −6.7) / −11.8 ms (−20.5 to −3.0) | 22 MB (22–22) | unexpected pass (loaded.download.bias) |
+| [dsl-25-bloat](#dsl-25-bloat) | −0.2 % (−0.2 to −0.2) | −1.0 % (−1.0 to −0.8) | +0.3 ms (+0.3 to +0.3) | −9.0 ms (−14.5 to −6.7) / −11.8 ms (−20.5 to −3.0) | 22 MB (22–22) | pass |
 | [dsl-25-shallow](#dsl-25-shallow) | −0.1 % (−0.4 to +0.0) | −2.0 % (−3.1 to +0.3) | +0.3 ms (+0.3 to +0.3) | +0.5 ms (−0.3 to +1.2) / +1.1 ms (−1.3 to +1.1) | 22 MB (22–22) | pass |
 | [cable-100-10](#cable-100-10) | −0.0 % (−0.1 to −0.0) | −0.3 % (−0.5 to −0.1) | +0.3 ms (+0.3 to +0.4) | −2.6 ms (−5.9 to −1.8) / +1.1 ms (+0.3 to +1.1) | 75 MB (74–76) | pass |
 | [cable-100-10-cf](#cable-100-10-cf) | −0.0 % (−0.1 to −0.0) | +0.1 % (−0.1 to +1.1) | +0.4 ms (+0.4 to +0.5) | −0.1 ms (−0.6 to +1.0) / −0.1 ms (−1.4 to +1.4) | 75 MB (74–75) | pass |
@@ -184,15 +184,12 @@ DSL 25/5, deep buffer. 25/5 Mbps · 30 ms RTT · 600 ms buffer.
 | Upload | 4.8 Mbps (4.8–4.8) | 4.8 Mbps (4.8–4.8) | 4.7 Mbps (4.7–4.7) | 4.7 Mbps | −1.0 % (−1.0 to −0.9) wire, −1.0 % (−1.0 to −0.8) iperf3 | pass |
 | Idle latency | – | 30.1 ms ping | 30.4 ms (30.4–30.4) | 30.2 ms | +0.3 ms (+0.3 to +0.3) | pass |
 | Loaded latency, download | 213 ms (210–218) ping | – | 203 ms (203–204) | – | −9.0 ms (−14.5 to −6.7) | pass |
-| Loaded latency, upload | 400 ms (396–402) ping | – | 390 ms (379–393) | – | −11.8 ms (−20.5 to −3.0) | unexpected pass ([F-8](#f-8)) |
+| Loaded latency, upload | 400 ms (396–402) ping | – | 390 ms (379–393) | – | −11.8 ms (−20.5 to −3.0) | pass |
 | Jitter | – | 0.01 ms (0.01–0.02) ping | 0.06 ms (0.05–0.06) | – | – | report only |
 | Data used | 22 MB (22–22) on the wire | – | counts 95 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
 - Bloat: Weir's latency rises 360 ms under load (concurrent ping 370 ms; shallow buffer 17 ms). pass.
-- loaded.download.bias: median signed error -9.0 ms over 3 runs against a 213 ms ping (limit ±16.0 ms). unexpected pass ([F-8](#f-8)).
-- loaded.upload: worst 20.5 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
-- loaded.upload.bias: median signed error -11.8 ms over 3 runs against a 400 ms ping (limit ±30.0 ms). unexpected pass ([F-8](#f-8)).
 
 ### dsl-25-shallow
 
@@ -278,7 +275,7 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 | Download | 21.4 Mbps (21.3–23.4) | 23.9 Mbps (23.9–23.9) | 21.1 Mbps (20.5–23.4) | 22.2 Mbps (22.2–22.2) | −1.2 % (−4.2 to −0.1) wire, −13.1 % (−14.5 to −11.6) iperf3 | expected fail ([F-7](#f-7)) |
 | Upload | – | 2.9 Mbps (2.9–2.9) | – | 2.6 Mbps | – wire, – iperf3 | **fail** |
 | Idle latency | – | 250.0 ms ping | 250.5 ms (250.5–250.5) | 250.3 ms | +0.5 ms (+0.5 to +0.5) | pass |
-| Loaded latency, download | 429 ms (427–457) ping | – | 435 ms (408–439) | – | +6.2 ms (−49.2 to +11.7) | unexpected pass ([F-8](#f-8)) |
+| Loaded latency, download | 429 ms (427–457) ping | – | 435 ms (408–439) | – | +6.2 ms (−49.2 to +11.7) | pass |
 | Loaded latency, upload | 541 ms ping | – | – | – | – | **fail** |
 | Jitter | – | 0.00 ms ping | 0.06 ms (0.06–0.07) | – | – | report only |
 | Data used | 20 MB (19–28) on the wire | – | counts 91 % of the payload | – | – | pass |
@@ -289,8 +286,6 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 - upload.wire: no Weir result to compare with the wire. Suspect: weir-math. **fail**.
 - upload.capacity: too few runs with both Weir and iperf3; outside F-6's expected failure (every per-repeat error within -34 to +5). Suspect: weir-math. **fail** ([F-6](#f-6)).
 - upload.physics: no Weir result. Suspect: weir-math. **fail**.
-- loaded.download: worst 49.2 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
-- loaded.download.bias: median signed error 6.2 ms over 3 runs against a 429 ms ping (limit ±32.2 ms). unexpected pass ([F-8](#f-8)).
 - loaded.upload: no loaded latency to compare. Suspect: weir-math. **fail**.
 - loaded.upload.bias: no loaded latency to compare. Suspect: weir-math. **fail**.
 
@@ -539,7 +534,7 @@ Expected to fail until fixed, and only like this:
 
 ### F-8
 
-**Loaded latency reads low on deep queues because Weir's probes are closed-loop** (open). Where: `src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49`.
+**Loaded latency reads low on deep queues because Weir's probes are closed-loop** (fixed). Where: `src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49`.
 
 spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is -9.0 ms for download and -11.8 ms for upload, on geo-250 6.2 ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time. The bias follows the load's rhythm, not one sign: since uploads start with 32 kB requests (F-2), each upload holds less in flight, the deep buffer fills less, and on dsl-25-bloat the upload median sits above the ping instead (-11.8 ms). Open-loop probes fix both directions.
 
@@ -547,11 +542,11 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| dsl-25-bloat | loaded.download.bias | every per-repeat error within -43 to +5 | 1 of 7 runs | unexpected pass |
-| geo-250 | loaded.download.bias | up to 1 runs without Weir's value, every per-repeat error within -72 to +5 | 2 of 7 runs | unexpected pass |
-| geo-250 | loaded.download | up to 1 runs without Weir's value, otherwise passing | 1 of 7 runs | unexpected pass |
-| dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 1 runs | unexpected pass |
-| dsl-25-bloat | loaded.upload.bias | every per-repeat error within -5 to +43 | 1 of 1 runs | unexpected pass |
+| dsl-25-bloat | loaded.download.bias | every per-repeat error within -43 to +5 | 1 of 7 runs | pass |
+| geo-250 | loaded.download.bias | up to 1 runs without Weir's value, every per-repeat error within -72 to +5 | 2 of 7 runs | pass |
+| geo-250 | loaded.download | up to 1 runs without Weir's value, otherwise passing | 1 of 7 runs | pass |
+| dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 1 runs | pass |
+| dsl-25-bloat | loaded.upload.bias | every per-repeat error within -5 to +43 | 1 of 1 runs | pass |
 
 ### F-9
 
