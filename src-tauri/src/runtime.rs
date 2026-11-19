@@ -548,7 +548,7 @@ mod tests {
         assert!(!view.estimate.up_to && view.estimate.mb < 100);
         view.network.metered = Some(Metered::Hotspot);
         view.derive();
-        assert!(view.estimate.up_to && view.estimate.mb == 600);
+        assert!(view.estimate.up_to && view.estimate.mb == 1_000);
     }
 
     /// Everything the popover reads, with every optional part filled in. The
