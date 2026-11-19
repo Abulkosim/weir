@@ -564,13 +564,13 @@ method.md says the cf-meta-upload-bytes header cross-checks the upload count, bu
 
 **Upload can sit just past the wire band when requests are long against the window** (open). Where: `src-tauri/src/core/stats.rs:389`.
 
-Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read 0.0 % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window.
+Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read 0.0 % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window. On geo-250 most uploads take the rough fallback instead: at its round trip each request takes most of a second, so streams rarely finish the three requests per stream the exact result needs, a rule from the per-stream method that the wall-time method no longer needs. Fix in its own pull request: require a window long enough instead of three requests per stream, and spread each request's bytes over its span minus the idle round trip.
 
 Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| geo-250 | upload.wire | every per-repeat error within -8 to +8 | 1 of 5 runs | unexpected pass |
+| geo-250 | upload.wire | every per-repeat error within -11 to +11 | 2 of 6 runs | unexpected pass |
 | gig-5 | upload.physics | every per-repeat error at most +4 | 1 of 1 runs | **fail** |
 
 ## Claim check: Cloudflare's own test
