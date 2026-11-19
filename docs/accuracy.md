@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44459307561) on commit `37d9a39249b6` (Weir 0.7.3), started 2026-11-19 04:46 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **passing**. 166 pass, 15 expected fail, 4 unexpected pass, 1 inconclusive, 145 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 168 pass, 5 fail, 8 expected fail, 4 unexpected pass, 1 inconclusive, 145 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -50,7 +50,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | loaded | absMs 10, pct 15 | Per run. Weir's probes are closed-loop (each waits for the last, every 250 ms at most) and the ping is open-loop at 50 ms, so on a deep queue the two sample different moments of the same sawtooth; a larger gap is Weir's probe method or its runtime scheduling. |
 | loadedBias | absMs 5, pct 7.5 | The median of the signed per-run errors, against the median ping. Half the per-run band: sampling noise averages out over repeats, a sampling bias does not. Catches Weir under-reporting bufferbloat while every run stays inside its own band. Report only since the run after the F-2 fix: across six runs the bias on deep-buffer links moved by more than its own limit between runs and changed sign, which points at the ping as much as at Weir, since a full tail-drop queue drops pings at its fullest moments. It gates again once the lab records ping losses. |
 | bloat | fraction 0.8, marginMs 100 | Weir must show bufferbloat that is physically there: at least 80 % of the rise a concurrent ping sees on the deep buffer, and clearly more than on the shallow one. |
-| dataCeiling | mb 600 | Before a first result the app promises a test uses up to 600 MB (data_estimate UpTo). Counted as IP-layer bytes on the client interface over the whole run. |
+| dataCeiling | mb 1000 | Before a first result the app promises a test uses up to 1 GB (data_estimate UpTo; 600 MB until F-1, F-3 and F-4 were fixed). Counted as IP-layer bytes on the client interface over the whole run. |
 | baseline | minMbps 1500, maxServerCoresPerGbps 0.5, maxInflationMs 1 | Unshaped, iperf3 and Weir must carry 1.5× the fastest shaped link and the lab server must need under half a core per Gbps (the spike measured about a quarter), or the 1 Gbps profiles would judge the lab instead of Weir. |
 | unjudged | maxLinks 1 | Inconclusive and invalid-input verdicts mean the lab could not judge a link, not that Weir is wrong, so they warn. One such link per run is lab noise (the eighth run: one fiber-300-far iperf3 run read 1.016 of the ceiling); two or more mean the lab itself is off, and the gate fails. |
 | noise | fractionOfBand 0.5 | When the truth itself moves by more than half the band between repeats, a pass or fail would be luck. The result is inconclusive and the fix is in the lab. |
@@ -65,7 +65,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | Link | Download vs iperf3 | Upload vs iperf3 | Idle latency | Loaded latency | Data | Status |
 |---|---|---|---|---|---|---|
 | [slow-5](#slow-5) | −1.4 % (−3.6 to +0.1) | −3.5 % (−4.4 to −0.3) | +0.3 ms (+0.3 to +0.4) | +0.6 ms (−0.5 to +1.5) / −4.1 ms (−4.5 to +6.7) | 5 MB (5–5) | expected fail (download.wire) |
-| [gig-5](#gig-5) | −0.0 % (−0.0 to +0.0) | – | +0.3 ms (+0.2 to +0.3) | +0.2 ms (+0.1 to +0.6) / – | 614 MB (613–616) | expected fail (validity) |
+| [gig-5](#gig-5) | −0.0 % (−0.0 to +0.0) | – | +0.3 ms (+0.2 to +0.3) | +0.2 ms (+0.1 to +0.6) / – | 614 MB (613–616) | **fail** (validity) |
 | [gig-60](#gig-60) | −19.3 % (−22.9 to −18.5) | −23.3 % (−29.5 to −22.3) | +0.3 ms (+0.3 to +0.3) | +0.7 ms (+0.5 to +1.2) / +0.3 ms (+0.2 to +0.4) | 618 MB (605–630) | expected fail (download.capacity) |
 | [fiber-300](#fiber-300) | −0.0 % (−0.0 to −0.0) | +0.0 % (−0.1 to +0.0) | +0.2 ms (+0.2 to +0.3) | +0.4 ms (+0.3 to +0.4) / +0.1 ms (−2.3 to +0.3) | 392 MB (392–396) | pass |
 | [dsl-25-bloat](#dsl-25-bloat) | −0.2 % (−0.2 to −0.1) | +0.6 % (−0.0 to +0.6) | +0.5 ms (+0.5 to +0.7) | −9.8 ms (−17.8 to −8.3) / +43.8 ms (+36.5 to +57.9) | 22 MB (22–22) | expected fail (loaded.upload) |
@@ -113,19 +113,18 @@ Gigabit fibre, near. 1000/1000 Mbps · 5 ms RTT · 10 ms buffer.
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 956.4 Mbps (956.4–956.4) | 956.4 Mbps (956.3–956.5) | 956.3 Mbps (956.1–956.4) | 928.3 Mbps (915.7–937.2) | −0.0 % (−0.0 to −0.0) wire, −0.0 % (−0.0 to +0.0) iperf3 | pass |
-| Upload | – | 956.5 Mbps (956.3–956.5) | – | 905.1 Mbps (904.7–914.7) | – wire, – iperf3 | expected fail ([F-1](#f-1)) |
+| Upload | – | 956.5 Mbps (956.3–956.5) | – | 905.1 Mbps (904.7–914.7) | – wire, – iperf3 | **fail** |
 | Idle latency | – | 5.1 ms (5.1–5.1) ping | 5.4 ms (5.3–5.4) | 5.2 ms (5.1–5.2) | +0.3 ms (+0.2 to +0.3) | pass |
 | Loaded latency, download | 14 ms (14–14) ping | – | 14 ms (14–14) | – | +0.2 ms (+0.1 to +0.6) | pass |
-| Loaded latency, upload | 12 ms (12–13) ping | – | – | – | – | expected fail ([F-1](#f-1)) |
+| Loaded latency, upload | 12 ms (12–13) ping | – | – | – | – | **fail** |
 | Jitter | – | 0.01 ms (0.01–0.02) ping | 0.03 ms (0.02–0.04) | – | – | report only |
-| Data used | 614 MB (613–616) on the wire | – | counts 100 % of the payload | – | – | expected fail ([F-3](#f-3)) |
+| Data used | 614 MB (613–616) on the wire | – | counts 100 % of the payload | – | – | pass |
 
-- Validity: Weir did not finish every run: upload tooShort ×3 in 3 runs. expected fail ([F-1](#f-1)).
-- upload.wire: no Weir result to compare with the wire. Suspect: weir-math. expected fail ([F-1](#f-1)).
-- upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. expected fail ([F-1](#f-1)).
-- upload.physics: no Weir result. Suspect: weir-math. expected fail ([F-1](#f-1)).
-- loaded.upload: no loaded latency to compare. Suspect: weir-math. expected fail ([F-1](#f-1)).
-- data.ceiling: most 616 MB on the wire (promise: up to 600 MB). Suspect: weir-math. expected fail ([F-3](#f-3)).
+- Validity: Weir did not finish every run: upload tooShort ×3 in 3 runs. **fail**.
+- upload.wire: no Weir result to compare with the wire. Suspect: weir-math. **fail**.
+- upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. **fail**.
+- upload.physics: no Weir result. Suspect: weir-math. **fail**.
+- loaded.upload: no loaded latency to compare. Suspect: weir-math. **fail**.
 
 ### gig-60
 
@@ -141,12 +140,11 @@ Gigabit, 60 ms away. 1000/500 Mbps · 60 ms RTT · 20 ms buffer.
 | Loaded latency, download | 60 ms (60–61) ping | – | 61 ms (61–61) | – | +0.7 ms (+0.5 to +1.2) | pass |
 | Loaded latency, upload | 60 ms ping | – | 60 ms (60–60) | – | +0.3 ms (+0.2 to +0.4) | pass |
 | Jitter | – | 0.00 ms (0.00–0.01) ping | 0.04 ms (0.03–0.04) | – | – | report only |
-| Data used | 618 MB (605–630) on the wire | – | counts 99 % of the payload | – | – | expected fail ([F-3](#f-3)) |
+| Data used | 618 MB (605–630) on the wire | – | counts 99 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
 - download.capacity: median -19.3 %, worst 22.9 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 1.8 %. Suspect: weir-load. expected fail ([F-4](#f-4)).
 - upload.capacity: median -23.3 %, worst 29.5 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.3 %. Suspect: weir-load. expected fail ([F-4](#f-4)).
-- data.ceiling: most 630 MB on the wire (promise: up to 600 MB). Suspect: weir-math. expected fail ([F-3](#f-3)).
 
 ### fiber-300
 
@@ -416,7 +414,7 @@ Each shard first runs unshaped, to prove the server, the client host and the rou
 
 ### F-1
 
-**A gigabit upload hits the data cap before the steady window is long enough** (open). Where: `src-tauri/src/core/stats.rs:354, src-tauri/src/core/stats.rs:306, src-tauri/src/core/speedtest.rs:60`.
+**A gigabit upload hits the data cap before the steady window is long enough** (fixed). Where: `src-tauri/src/core/stats.rs:354, src-tauri/src/core/stats.rs:306, src-tauri/src/core/speedtest.rs:60`.
 
 On gig-5 every upload ends as upload tooShort ×3. The socket counter, which includes send-buffer fill, reaches UPLOAD_CAP_MB well under two seconds into the phase, so the steady window that starts at one second is shorter than the one second a capped result needs, and Tracker::result returns TooShort. The user sees a failed upload on a link that carries 956.3 Mbps down without trouble. Fix in its own pull request: let a capped upload keep going on time once the cap is near, or size the cap from the download result.
 
@@ -424,11 +422,11 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| gig-5 | validity | only upload tooShort | 7 of 7 runs | expected fail |
-| gig-5 | upload.wire | only for want of any Weir result | 7 of 7 runs | expected fail |
-| gig-5 | upload.capacity | only for want of any Weir result | 7 of 7 runs | expected fail |
-| gig-5 | upload.physics | only for want of any Weir result | 7 of 7 runs | expected fail |
-| gig-5 | loaded.upload | only for want of any Weir result | 7 of 7 runs | expected fail |
+| gig-5 | validity | only upload tooShort | 7 of 7 runs | **fail** |
+| gig-5 | upload.wire | only for want of any Weir result | 7 of 7 runs | **fail** |
+| gig-5 | upload.capacity | only for want of any Weir result | 7 of 7 runs | **fail** |
+| gig-5 | upload.physics | only for want of any Weir result | 7 of 7 runs | **fail** |
+| gig-5 | loaded.upload | only for want of any Weir result | 7 of 7 runs | **fail** |
 | gig-5 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | report only |
 
 ### F-2
@@ -456,7 +454,7 @@ Expected to fail until fixed, and only like this:
 
 ### F-3
 
-**A gigabit test uses more data than the up-to estimate promises** (open). Where: `src-tauri/src/core/stats.rs:306, src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441`.
+**A gigabit test uses more data than the up-to estimate promises** (fixed). Where: `src-tauri/src/core/stats.rs:306, src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441`.
 
 Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to 616 MB and on gig-60 up to 630 MB of IP traffic, counted until the counters stopped moving after Weir exited (up to 10.7 MB on gig-5 and 9.0 MB on gig-60 crossed after the engine returned, as the socket send buffers drained). Weir's own count was 582 MB on gig-60, already past the two caps together because they are checked once per tick and a fast link overshoots them before the next check; IP and TCP headers and ACKs then add more than WIRE_OVERHEAD allows. Weir counts 99 % of the TCP payload on the wire. Fix in its own pull request: stop the streams at the cap rather than on the next tick, and raise the estimate or lower the caps.
 
@@ -464,8 +462,8 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| gig-5 | data.ceiling | every per-repeat error at most +4 | 7 of 7 runs | expected fail |
-| gig-60 | data.ceiling | every per-repeat error at most +5 | 7 of 7 runs | expected fail |
+| gig-5 | data.ceiling | every per-repeat error at most +4 | 7 of 7 runs | pass |
+| gig-60 | data.ceiling | every per-repeat error at most +5 | 7 of 7 runs | pass |
 
 ### F-4
 

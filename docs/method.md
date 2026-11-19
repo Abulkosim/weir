@@ -6,7 +6,7 @@ How Weir measures a connection. Evidence and sources: [research.md](research.md)
 
 - One number per metric that the link **sustains**, not a peak.
 - Whole test about 12–20 s, 21 s at most.
-- Bounded data: 600 MB ceiling per test, estimate shown before it starts.
+- Bounded data: 1 GB ceiling per test, estimate shown before it starts.
 - A test that fails or is cut short shows no number for that metric, and says why.
 
 ## Server
@@ -40,7 +40,7 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 - **Latency = median.** **Jitter = mean |Δ| of consecutive RTTs** (Cloudflare's formula).
 - Valid with ≥ 10 answered probes. Else latency and jitter show "Not measured"; speed may still be valid.
 
-### 2. Download (5–10 s, ≤ 380 MB)
+### 2. Download (5–10 s, ≤ 570 MB)
 
 - **Streams:** 6 (8 when idle latency > 100 ms). Each stream loops requests.
 - **Request size:** first 256 kB, then `clamp(stream_rate × 1 s, 256 kB, 25 MB)`, so each request takes about 1 s. Random query parameter defeats caches.
@@ -49,7 +49,7 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 - **Stop** at the first of:
   - steady window ≥ 3 s, total ≥ 5 s, and the running mean of the last 6 steady samples moved < 3 %;
   - 10 s total;
-  - 380 MB received.
+  - 570 MB received. Streams take each request's size from what is left of the cap, so together they stop at it instead of overshooting until the next 100 ms reading.
   On stop, all streams are dropped. Only bytes received before the stop instant count.
 - **Result = steady-window mean** = steady bytes × 8 ÷ steady seconds.
 - Also stored: p10, p50, p90 of steady 250 ms samples. When (p90 − p10) ÷ mean > 25 %, the result says "Varied 280–330 Mbps". The maximum is never shown.
@@ -62,7 +62,7 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 - Median per direction, ≥ 5 counted probes, else "Not measured".
 - **Under load = max(download median, upload median).** "Latency 14 ms · 62 ms under load".
 
-### 4. Upload (5–8 s, ≤ 190 MB)
+### 4. Upload (5–8 s, ≤ 350 MB)
 
 - 300 ms pause after download so queues drain.
 - **Streams:** 4 (6 when idle latency > 100 ms). `POST __up`, body `clamp(stream_rate × 0.5 s, 32 kB, 25 MB)` from one static zero buffer. The first request is 32 kB, not download's 256 kB: a whole request lands in the socket send buffer at once, so the byte counter moves only when one completes, and four 256 kB requests take 8 s on a 1 Mbps uplink, past the stall rule (docs/accuracy.md, F-2). Half-second requests leave at least 3 completed requests per stream inside the steady window.
@@ -92,9 +92,9 @@ Not reported in v0.1. Cloudflare's loss test needs a TURN server; ICMP loss misr
 
 ## Data use
 
-- Ceiling: 380 MB down + 190 MB up + 1 MB probes, plus 5 % for headers ≈ **600 MB**.
-- **Estimate before a test:** `E = (min(380, R_d/8 × 7) + min(190, R_u/8 × 6) + 1) × 1.05` MB, where `R` is the median of the last 3 results (Mbps). No history, or a metered link (whose recent results may come from a slower network) → "Uses up to 600 MB". Rounded up to 5 MB below 50 MB, else up to 10 MB, so the estimate never understates.
-  - 100/20 Mbps → about 110 MB. 300/40 → about 310 MB. 1000/100 → about 480 MB.
+- Ceiling: 570 MB down + 350 MB up + 1 MB probes, plus 8 % for IP and TCP headers and the other direction's ACKs ≈ **1 GB**. It was 600 MB until the accuracy lab showed that a 1 Gbps upload hit its 190 MB cap before it had a steady second, and that a far gigabit link was still ramping when its caps ended the test (docs/accuracy.md, F-1 and F-4); it also measured the old 5 % overhead allowance as too small (F-3).
+- **Estimate before a test:** `E = (min(570, R_d/8 × 7) + min(350, R_u/8 × 6) + 1) × 1.08` MB, where `R` is the median of the last 3 results (Mbps). No history, or a metered link (whose recent results may come from a slower network) → "Uses up to 1 GB". Rounded up to 5 MB below 50 MB, else up to 10 MB, so the estimate never understates.
+  - 100/20 Mbps → about 120 MB. 300/40 → about 320 MB. 1000/100 → about 700 MB.
 - After the test: actual bytes counted, "Used 212 MB".
 - Metered, hotspot or Low Data Mode → the Test button asks first: "You're on a hotspot. Test anyway? Uses about 110 MB".
 

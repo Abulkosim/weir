@@ -56,8 +56,13 @@ export function server(provider: string, colo: string | null): string {
   return `${provider}, ${cities[colo] ?? colo}`
 }
 
+/** "250 MB", or "1 GB" and "1.2 GB" from 1000 MB up. */
+export function dataSize(mb: number): string {
+  return mb < 1000 ? `${mb} MB` : `${(mb / 1000).toFixed(1).replace(/\.0$/, '')} GB`
+}
+
 export function estimateText(estimate: { upTo: boolean; mb: number }): string {
-  return estimate.upTo ? `Uses up to ${estimate.mb} MB` : `Uses about ${estimate.mb} MB`
+  return `Uses ${estimate.upTo ? 'up to' : 'about'} ${dataSize(estimate.mb)}`
 }
 
 export const errorCopy: Record<TestError, { title: string; detail: string }> = {

@@ -283,13 +283,26 @@ fn next_size(bytes: u64, elapsed: Duration, target: Duration, (min, max): (u64, 
     ((rate * target.as_secs_f64()) as u64).clamp(min, max)
 }
 
+/// Takes up to `want` bytes from what is left of the phase's cap, so the
+/// streams together stop at the cap instead of on the next tick after it.
+fn reserve(budget: &AtomicU64, want: u64) -> u64 {
+    let left = budget
+        .fetch_update(Ordering::AcqRel, Ordering::Relaxed, |left| {
+            Some(left - want.min(left))
+        })
+        .unwrap_or(0);
+    want.min(left)
+}
+
 fn spawn_streams<C: Connection + 'static>(
     connections: &[Arc<C>],
     plan: &Plan,
     counter: &Arc<AtomicU64>,
+    max_bytes: u64,
     upload: Option<(Instant, Arc<Mutex<Vec<Completed>>>)>,
 ) -> Streams {
     let alive = Arc::new(AtomicUsize::new(connections.len()));
+    let budget = Arc::new(AtomicU64::new(max_bytes));
     let error = Arc::new(Mutex::new(None));
     let handles = connections
         .iter()
@@ -301,7 +314,7 @@ fn spawn_streams<C: Connection + 'static>(
                 alive.clone(),
                 error.clone(),
             );
-            let (plan, upload) = (plan.clone(), upload.clone());
+            let (plan, upload, budget) = (plan.clone(), upload.clone(), budget.clone());
             tokio::spawn(async move {
                 // A whole upload request lands in the socket send buffer at
                 // once, so the byte counter only moves when one completes. Small
@@ -314,14 +327,18 @@ fn spawn_streams<C: Connection + 'static>(
                 let mut size = min;
                 let mut restarts = 0;
                 loop {
+                    let take = reserve(&budget, size);
+                    if take == 0 {
+                        std::future::pending::<()>().await;
+                    }
                     let started = Instant::now();
                     let outcome = match &upload {
                         None => connection
-                            .download(size, counter.clone())
+                            .download(take, counter.clone())
                             .await
                             .map(|bytes| (bytes, None)),
                         Some(_) => connection
-                            .upload(size, counter.clone())
+                            .upload(take, counter.clone())
                             .await
                             .map(|sent| (sent.bytes, Some(sent.duration_ms))),
                     };
@@ -425,6 +442,7 @@ async fn transfer<C: Connection + 'static>(
         connections,
         phases.plan,
         &counter,
+        limits.max_bytes,
         completed.map(|completed| (started, completed)),
     );
     let (prober, probes) = spawn_probes(probe, phases.plan.loaded_every, started);

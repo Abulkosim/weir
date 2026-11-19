@@ -25,7 +25,7 @@ pnpm install --frozen-lockfile
 pnpm tauri dev
 ```
 
-The desktop app runs real tests against Cloudflare. A test can use up to 600 MB, so avoid metered connections while developing. To work on the interface without network requests, use the browser preview:
+The desktop app runs real tests against Cloudflare. A test can use up to 1 GB, so avoid metered connections while developing. To work on the interface without network requests, use the browser preview:
 
 ```sh
 pnpm dev

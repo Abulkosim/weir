@@ -253,7 +253,7 @@ test('physics, data ceiling, latency and engine errors are judged', () => {
   const fiber = PROFILES.find(entry => entry.id === 'fiber-300')!
   const index = profiles.findIndex(entry => entry.id === 'fiber-300')
   profiles[index] = result(fiber, [
-    { down: 320, up: 280, truthDown: 320, truthUp: 280, idle: 10, truthIdle: 10, ipMb: 650 },
+    { down: 320, up: 280, truthDown: 320, truthUp: 280, idle: 10, truthIdle: 10, ipMb: 1050 },
     { down: 280, up: 0, error: 'tooShort', truthDown: 280, truthUp: 280 },
     { down: 280, up: 280, truthDown: 280, idle: 14, truthIdle: 10, loaded: 80, pingLoaded: 40 },
   ])

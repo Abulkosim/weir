@@ -83,7 +83,7 @@
       ]
     },
     "estimate": {
-      "mb": 600,
+      "mb": 1000,
       "upTo": true
     },
     "failure": {

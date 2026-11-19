@@ -122,7 +122,7 @@ export type Diagnosis = z.infer<typeof diagnosisSchema>
 export type Share = z.infer<typeof shareSchema>
 export type PlanComparison = z.infer<typeof planSchema>
 
-export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 600 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, plan: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null, outageSinceMs: null }
+export const emptyView: View = { revision: 0, testing: null, last: null, failure: null, estimate: { upTo: true, mb: 1000 }, network: { online: true, metered: null, offlineSinceMs: null }, meaning: null, plan: null, historyCount: 0, notice: null, settings: { ...defaultSettings }, checking: false, diagnosis: null, outageSinceMs: null }
 
 /** Under-load latency: the worse of the download and upload medians. */
 export function loadedMs(report: Report): number | null {

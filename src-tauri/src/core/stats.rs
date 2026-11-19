@@ -435,10 +435,10 @@ pub fn upload_mbps(
     (rate > 0.0).then_some((rate, end))
 }
 
-pub const DOWNLOAD_CAP_MB: f64 = 380.0;
-pub const UPLOAD_CAP_MB: f64 = 190.0;
+pub const DOWNLOAD_CAP_MB: f64 = 570.0;
+pub const UPLOAD_CAP_MB: f64 = 350.0;
 const PROBES_MB: f64 = 1.0;
-const WIRE_OVERHEAD: f64 = 1.05;
+const WIRE_OVERHEAD: f64 = 1.08;
 const DOWNLOAD_SECONDS: f64 = 7.0;
 const UPLOAD_SECONDS: f64 = 6.0;
 
@@ -467,7 +467,7 @@ pub fn data_estimate(recent: &[(f64, f64)]) -> DataEstimate {
             DataEstimate::About(round_up(mb))
         }
         _ => DataEstimate::UpTo(
-            ((DOWNLOAD_CAP_MB + UPLOAD_CAP_MB + PROBES_MB) * WIRE_OVERHEAD / 50.0).round() as u32
+            ((DOWNLOAD_CAP_MB + UPLOAD_CAP_MB + PROBES_MB) * WIRE_OVERHEAD / 50.0).ceil() as u32
                 * 50,
         ),
     }
