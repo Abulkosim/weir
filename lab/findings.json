@@ -448,7 +448,7 @@
         "max": 78,
         "seen": {
           "failed": 1,
-          "runs": 3
+          "runs": 4
         }
       },
       {
@@ -457,8 +457,8 @@
         "min": -5,
         "max": 44,
         "seen": {
-          "failed": 3,
-          "runs": 3
+          "failed": 4,
+          "runs": 4
         }
       },
       {
@@ -467,8 +467,8 @@
         "min": -81,
         "max": 116,
         "seen": {
-          "failed": 2,
-          "runs": 3
+          "failed": 3,
+          "runs": 4
         }
       },
       {
@@ -477,8 +477,8 @@
         "min": -5,
         "max": 94,
         "seen": {
-          "failed": 1,
-          "runs": 3
+          "failed": 2,
+          "runs": 4
         }
       },
       {
@@ -488,7 +488,17 @@
         "max": 34,
         "seen": {
           "failed": 1,
-          "runs": 3
+          "runs": 4
+        }
+      },
+      {
+        "profile": "mobile",
+        "metric": "loaded.upload.bias",
+        "min": -5,
+        "max": 15,
+        "seen": {
+          "failed": 1,
+          "runs": 4
         }
       }
     ]

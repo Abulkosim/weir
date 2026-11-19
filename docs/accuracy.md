@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44265126705) on commit `3fd94e97dc60` (Weir 0.7.3), started 2026-11-18 08:37 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 183 pass, 12 fail, 13 expected fail, 8 unexpected pass, 115 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 182 pass, 12 fail, 13 expected fail, 9 unexpected pass, 115 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -332,6 +332,7 @@ Mobile 30/8, jittery, 0.5% loss. 30/8 Mbps · 50 ms RTT · 0.5 % loss each way �
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
 - loaded.upload: worst 8.3 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
+- loaded.upload.bias: median signed error 4.7 ms over 5 runs against a 143 ms ping (limit ±10.7 ms). unexpected pass ([F-8](#f-8)).
 
 ### lossy-0.1
 
@@ -551,11 +552,12 @@ Expected to fail until fixed, and only like this:
 | dsl-25-bloat | loaded.download.bias | every per-repeat error within -43 to +5 | 1 of 7 runs | unexpected pass |
 | geo-250 | loaded.download.bias | up to 1 runs without Weir's value, every per-repeat error within -72 to +5 | 2 of 7 runs | unexpected pass |
 | geo-250 | loaded.download | up to 1 runs without Weir's value, otherwise passing | 1 of 7 runs | unexpected pass |
-| dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 3 runs | unexpected pass |
-| dsl-25-bloat | loaded.upload.bias | every per-repeat error within -5 to +44 | 3 of 3 runs | unexpected pass |
-| geo-250 | loaded.upload | every per-repeat error within -81 to +116 | 2 of 3 runs | **fail** |
-| geo-250 | loaded.upload.bias | every per-repeat error within -5 to +94 | 1 of 3 runs | **fail** |
-| mobile | loaded.upload | every per-repeat error within -34 to +34 | 1 of 3 runs | unexpected pass |
+| dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 4 runs | unexpected pass |
+| dsl-25-bloat | loaded.upload.bias | every per-repeat error within -5 to +44 | 4 of 4 runs | unexpected pass |
+| geo-250 | loaded.upload | every per-repeat error within -81 to +116 | 3 of 4 runs | **fail** |
+| geo-250 | loaded.upload.bias | every per-repeat error within -5 to +94 | 2 of 4 runs | **fail** |
+| mobile | loaded.upload | every per-repeat error within -34 to +34 | 1 of 4 runs | unexpected pass |
+| mobile | loaded.upload.bias | every per-repeat error within -5 to +15 | 1 of 4 runs | unexpected pass |
 
 ### F-9
 
