@@ -65,9 +65,9 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 ### 4. Upload (5–8 s, ≤ 190 MB)
 
 - 300 ms pause after download so queues drain.
-- **Streams:** 4 (6 when idle latency > 100 ms). `POST __up`, body `clamp(stream_rate × 0.5 s, 256 kB, 25 MB)` from one static zero buffer. Half-second requests leave at least 3 completed requests per stream inside the steady window.
+- **Streams:** 4 (6 when idle latency > 100 ms). `POST __up`, body `clamp(stream_rate × 0.5 s, 32 kB, 25 MB)` from one static zero buffer. The first request is 32 kB, not download's 256 kB: a whole request lands in the socket send buffer at once, so the byte counter moves only when one completes, and four 256 kB requests take 8 s on a 1 Mbps uplink, past the stall rule (docs/accuracy.md, F-2). Half-second requests leave at least 3 completed requests per stream inside the steady window.
 - **Live gauge:** bytes written to the sockets, 1 s moving average.
-- **Result:** bytes written to the socket overstate delivery (send buffers hold MBs), so the result comes from completed requests. Per stream, requests that started inside the steady window: Σ bytes ÷ Σ (response TTFB − server time). Total = sum over streams. `cf-meta-upload-bytes` cross-checks the count.
+- **Result:** bytes written to the socket overstate delivery (send buffers hold MBs), so the result comes from completed requests. Each request's bytes are spread over its transfer time (response TTFB − server time). Result = bytes carried inside the steady window ÷ the window's wall time. The window ends where the first stream's last completed transfer ends, so no request is still in flight inside it. The time a stream waits between requests counts: adding per-stream rates instead read above what the link carried (docs/accuracy.md, F-5).
 - Warm-up and stop rules are the same as download, applied to the socket counter, which is good enough to see the plateau. Fewer than 3 completed requests per stream inside the steady window → the result falls back to the counter mean and is marked "rough".
 - Download failed → upload is skipped.
 

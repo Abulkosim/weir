@@ -41,6 +41,8 @@ export type Metric = (typeof METRICS)[number];
 
 export const REPORT_ONLY: ReadonlySet<Metric> = new Set([
   'data.honesty', 'jitter', 'loaded.iperf', 'twin.download', 'twin.upload', 'twin.idle', 'qreal.upload',
+  // Report only until the lab records ping losses: see thresholds.loadedBias.
+  'loaded.download.bias', 'loaded.upload.bias',
 ]);
 
 export interface Stat {

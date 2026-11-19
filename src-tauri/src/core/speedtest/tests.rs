@@ -10,6 +10,8 @@ struct Fake {
     bloat_ms: f64,
     stall_after: Option<Duration>,
     refuse_upload: bool,
+    /// Count each upload body as written at once, like a socket send buffer.
+    buffered_upload: bool,
     offline: bool,
     active: Arc<AtomicUsize>,
     connections: Arc<AtomicUsize>,
@@ -24,6 +26,7 @@ impl Default for Fake {
             bloat_ms: 45.0,
             stall_after: None,
             refuse_upload: false,
+            buffered_upload: false,
             offline: false,
             active: Arc::new(AtomicUsize::new(0)),
             connections: Arc::new(AtomicUsize::new(0)),
@@ -39,9 +42,11 @@ struct FakeConnection {
 impl FakeConnection {
     async fn pace(&self, bytes: u64, mbps: f64, counter: &AtomicU64) {
         let first = *self.first.lock().unwrap().get_or_insert_with(Instant::now);
+        // 50 ms of data per step, so the ramp below moves on slow links too.
+        let step = ((mbps * 1e6 / 8.0 * 0.05) as u64).clamp(1_024, 64 * 1024);
         let mut sent = 0;
         while sent < bytes {
-            let chunk = (bytes - sent).min(64 * 1024);
+            let chunk = (bytes - sent).min(step);
             let t = first.elapsed();
             if self.fake.stall_after.is_some_and(|after| t >= after) {
                 pending::<()>().await;
@@ -95,7 +100,13 @@ impl Connection for FakeConnection {
         }
         let _active = Active::new(&self.fake.active);
         let started = Instant::now();
-        self.pace(bytes, self.fake.up_mbps, &counter).await;
+        if self.fake.buffered_upload {
+            counter.fetch_add(bytes, Ordering::Relaxed);
+            self.pace(bytes, self.fake.up_mbps, &AtomicU64::new(0))
+                .await;
+        } else {
+            self.pace(bytes, self.fake.up_mbps, &counter).await;
+        }
         sleep(Duration::from_secs_f64(self.fake.rtt_ms / 1_000.0)).await;
         Ok(Sent {
             bytes,
@@ -128,6 +139,38 @@ impl Backend for Fake {
 
 fn close(actual: f64, expected: f64, tolerance: f64) -> bool {
     (actual - expected).abs() <= expected * tolerance
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_1_mbps_upload_that_fills_the_send_buffer_is_not_stalled() {
+    let fake = Fake {
+        down_mbps: 0.8,
+        up_mbps: 0.25,
+        rtt_ms: 40.0,
+        buffered_upload: true,
+        ..Fake::default()
+    };
+    let report = run(&fake, &Plan::default(), &Control::default(), |_| {})
+        .await
+        .unwrap();
+    assert_eq!(report.upload_error, None);
+    let upload = report.upload.unwrap();
+    assert!(close(upload.mbps, 1.0, 0.15), "{}", upload.mbps);
+    assert!(!upload.rough);
+
+    let first_request_as_download = Plan {
+        min_upload_request: 256_000,
+        ..Plan::default()
+    };
+    let report = run(
+        &fake,
+        &first_request_as_download,
+        &Control::default(),
+        |_| {},
+    )
+    .await
+    .unwrap();
+    assert_eq!(report.upload_error, Some(TestError::Stalled));
 }
 
 #[tokio::test(start_paused = true)]

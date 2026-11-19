@@ -233,7 +233,8 @@ interface WeirOutput {
 
 function windowPing(pings: PingSample[], window: Window | null): number | null {
   if (!window || window.startUnixMs === null) return null;
-  return round(median(within(pings, window.startUnixMs, window.endUnixMs)));
+  const end = window.phaseEndMs === undefined ? window.endUnixMs : window.phaseStartUnixMs + window.phaseEndMs;
+  return round(median(within(pings, window.startUnixMs, end)));
 }
 
 const DSACK_SENT = ['TcpExtTCPDSACKOldSent', 'TcpExtTCPDSACKOfoSent'] as const;

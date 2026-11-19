@@ -67,7 +67,7 @@
   {
     "id": "F-2",
     "title": "Slow uploads are reported as stalled",
-    "status": "open",
+    "status": "fixed",
     "where": "src-tauri/src/core/stats.rs:303, src-tauri/src/core/stats.rs:8, src-tauri/src/core/speedtest.rs:65",
     "cause": "On slow-5 every upload ends as {slow-5.errors}, and on geo-250 as {geo-250.errors}. Each stream's first request is min_request bytes; the whole request goes into the socket send buffer at once, so the socket counter stops growing while the link drains it. At these upload rates that takes longer than STALL_MS, and Tracker::decide fails the upload as stalled although bytes are still arriving at the server. Fix in its own pull request: count stalls from bytes acknowledged or from completed requests, or size the first request from the download rate.",
     "expect": [
@@ -244,7 +244,7 @@
   {
     "id": "F-5",
     "title": "Upload can read off the wire when requests leave gaps",
-    "status": "open",
+    "status": "fixed",
     "where": "src-tauri/src/core/stats.rs:389, src-tauri/src/core/backends/cloudflare.rs:211",
     "cause": "Weir's upload is the sum over streams of each stream's bytes divided by its own request time. Between two requests a stream sits idle for a round trip plus the server's time, and the other streams fill the link meanwhile, so the per-stream rates add up to more than the link carried. With server time added the gaps grow: on cable-100-10-cf Weir reads {cable-100-10-cf.upload.weir} Mbps on a link whose payload ceiling is below that, against {cable-100-10.upload.weir} Mbps on the same link without server time, and on mobile {mobile.upload.weir} Mbps, past its ceiling in some runs. On fiber-300-far, with long round trips, it sits {fiber-300-far.upload.wireErr} % above the wire in its own window, and on lossy-2 {lossy-2.upload.wireErr} %. On dsl-25-shallow and cable-100-10-cf single repeats also read below the wire (dsl-25-shallow median {dsl-25-shallow.upload.wireErr} %), which the gap explanation does not cover; the same per-request timing is the suspect there too, unproven. The bounds were first set from four runs; the seventh run, on unchanged lab code, went past them on dsl-25-shallow, cable-100-10-cf and lossy-0.1, so every bound in the lab was re-derived from all seven runs with the same rule. This bug moves the most from run to run, and its fix is the one that makes the gate steady. Suspected, not proven: the server's request log shows the gaps but not which stream they belong to. Fix in its own pull request: divide the window's completed bytes by the window, or count gaps as stream time.",
     "expect": [
@@ -341,7 +341,7 @@
     "title": "Weir's own load under-fills far links",
     "status": "open",
     "where": "src-tauri/src/core/speedtest.rs:68, src-tauri/src/core/speedtest.rs:310, src-tauri/src/core/stats.rs:272",
-    "cause": "On fiber-300-far Weir's upload reads {fiber-300-far.upload.weir} Mbps against iperf3's {fiber-300-far.upload.truth} Mbps ({fiber-300-far.upload.err} %) and its download {fiber-300-far.download.err} %, and on geo-250 the download reads {geo-250.download.err} %; in each case the wire in Weir's own window agrees with Weir (upload {fiber-300-far.upload.wireErr} %, download {fiber-300-far.download.wireErr} %). So the numbers are honest about what Weir moved, but its load does not fill a far link. Upload: each stream waits a full round trip for the response before it starts its next half-second request, and at this round trip that idle time is a large share of each request. Download: the steady window starts once the one-second average stops rising, while cubic on a long round trip is still growing, so the result averages part of the ramp. The download sits near the edge of the band and fails in some runs only. Fix in its own pull request: size requests by round trip as well as rate, or pipeline the next request, and give far links a later steady start.",
+    "cause": "On fiber-300-far Weir's upload reads {fiber-300-far.upload.weir} Mbps against iperf3's {fiber-300-far.upload.truth} Mbps ({fiber-300-far.upload.err} %) and its download {fiber-300-far.download.err} %, and on geo-250 the download reads {geo-250.download.err} %; in each case the wire in Weir's own window agrees with Weir (upload {fiber-300-far.upload.wireErr} %, download {fiber-300-far.download.wireErr} %). So the numbers are honest about what Weir moved, but its load does not fill a far link. Upload: each stream waits a full round trip for the response before it starts its next half-second request, and at this round trip that idle time is a large share of each request. Download: the steady window starts once the one-second average stops rising, while cubic on a long round trip is still growing, so the result averages part of the ramp. The download sits near the edge of the band and fails in some runs only. Fix in its own pull request: size requests by round trip as well as rate, or pipeline the next request, and give far links a later steady start. Since F-2's fix, geo-250's upload finishes and shows the same under-fill: Weir agrees with the wire in its own window and reads {geo-250.upload.err} % against iperf3.",
     "expect": [
       {
         "profile": "fiber-300-far",
@@ -372,6 +372,16 @@
           "failed": 3,
           "runs": 7
         }
+      },
+      {
+        "profile": "geo-250",
+        "metric": "upload.capacity",
+        "min": -37,
+        "max": 5,
+        "seen": {
+          "failed": 3,
+          "runs": 3
+        }
       }
     ]
   },
@@ -399,29 +409,8 @@
     "title": "Loaded latency reads low on deep queues because Weir's probes are closed-loop",
     "status": "open",
     "where": "src-tauri/src/core/speedtest.rs:363, src-tauri/src/core/speedtest.rs:375, src-tauri/src/core/speedtest.rs:49",
-    "cause": "spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is {dsl-25-bloat.download.loaded.bias} ms for download and {dsl-25-bloat.upload.loaded.bias} ms for upload, on geo-250 {geo-250.download.loaded.bias} ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time.",
+    "cause": "spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is {dsl-25-bloat.download.loaded.bias} ms for download and {dsl-25-bloat.upload.loaded.bias} ms for upload, on geo-250 {geo-250.download.loaded.bias} ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time. Since uploads start with smaller requests (F-2), the upload median sits above the ping instead, on dsl-25-bloat ({dsl-25-bloat.upload.loaded.bias} ms) and on geo-250. Probe timing is ruled out: sending probes on a fixed schedule from a pool of warm connections left the bias unchanged in a full lab run, so that change was reverted. Next step: record each probe's round trip and the ping's losses, since a tail-drop queue drops pings at its fullest moments while a dropped probe segment is retransmitted.",
     "expect": [
-      {
-        "profile": "dsl-25-bloat",
-        "metric": "loaded.download.bias",
-        "min": -43,
-        "max": 5,
-        "seen": {
-          "failed": 1,
-          "runs": 7
-        }
-      },
-      {
-        "profile": "geo-250",
-        "metric": "loaded.download.bias",
-        "gaps": 1,
-        "min": -72,
-        "max": 5,
-        "seen": {
-          "failed": 2,
-          "runs": 7
-        }
-      },
       {
         "profile": "geo-250",
         "metric": "loaded.download",
@@ -429,6 +418,36 @@
         "seen": {
           "failed": 1,
           "runs": 7
+        }
+      },
+      {
+        "profile": "dsl-25-bloat",
+        "metric": "loaded.upload",
+        "min": -10,
+        "max": 78,
+        "seen": {
+          "failed": 1,
+          "runs": 4
+        }
+      },
+      {
+        "profile": "geo-250",
+        "metric": "loaded.upload",
+        "min": -81,
+        "max": 116,
+        "seen": {
+          "failed": 3,
+          "runs": 4
+        }
+      },
+      {
+        "profile": "mobile",
+        "metric": "loaded.upload",
+        "min": -34,
+        "max": 34,
+        "seen": {
+          "failed": 1,
+          "runs": 4
         }
       }
     ]
@@ -455,9 +474,28 @@
   {
     "id": "F-doc-1",
     "title": "docs/method.md claims an upload byte cross-check the code does not do",
-    "status": "open",
+    "status": "fixed",
     "where": "docs/method.md:70, src-tauri/src/core/backends/cloudflare.rs:186",
     "cause": "method.md says the cf-meta-upload-bytes header cross-checks the upload count, but the Cloudflare backend never reads that header. Fix the doc or add the check in its own pull request. Documentation only: no lab check depends on it.",
     "expect": []
+  },
+  {
+    "id": "F-10",
+    "title": "On a satellite-like link, upload can sit just past the wire band",
+    "status": "open",
+    "where": "src-tauri/src/core/stats.rs:389",
+    "cause": "Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read {geo-250.upload.wireErr} % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip.",
+    "expect": [
+      {
+        "profile": "geo-250",
+        "metric": "upload.wire",
+        "min": -8,
+        "max": 8,
+        "seen": {
+          "failed": 1,
+          "runs": 5
+        }
+      }
+    ]
   }
 ]

@@ -384,27 +384,55 @@ pub struct Completed {
     pub duration_ms: f64,
 }
 
-/// Upload rate from completed requests that started in the steady window.
-/// `None` when any stream finished fewer than three such requests.
-pub fn upload_mbps(requests: &[Completed], streams: usize, steady_start_ms: u64) -> Option<f64> {
-    let mut total = 0.0;
+/// Upload rate from completed requests: the bytes they carried inside the
+/// steady window over the window's wall time. Each request's bytes are spread
+/// evenly over its transfer, from its start for `duration_ms`. The window ends
+/// where the first stream's last completed transfer ends, so no stream has a
+/// request in flight inside it, and the time a stream sits between requests
+/// counts as time. `(mbps, window end ms)`, or `None` when any stream started
+/// fewer than three requests in the window.
+pub fn upload_mbps(
+    requests: &[Completed],
+    streams: usize,
+    steady_start_ms: u64,
+) -> Option<(f64, f64)> {
+    let start = steady_start_ms as f64;
+    let span = |request: &Completed| {
+        let begin = request.started_ms as f64;
+        (begin, begin + request.duration_ms)
+    };
+    let done: Vec<&Completed> = requests
+        .iter()
+        .filter(|request| request.duration_ms > 0.0 && request.stream < streams)
+        .collect();
+    let mut end = f64::INFINITY;
     for stream in 0..streams {
-        let mine: Vec<&Completed> = requests
-            .iter()
-            .filter(|request| {
-                request.stream == stream
-                    && request.started_ms >= steady_start_ms
-                    && request.duration_ms > 0.0
-            })
-            .collect();
-        if mine.len() < 3 {
+        let mine = || done.iter().filter(|request| request.stream == stream);
+        if mine()
+            .filter(|request| request.started_ms >= steady_start_ms)
+            .count()
+            < 3
+        {
             return None;
         }
-        let bytes: u64 = mine.iter().map(|request| request.bytes).sum();
-        let ms: f64 = mine.iter().map(|request| request.duration_ms).sum();
-        total += mbps(bytes as f64, ms);
+        let last = mine()
+            .map(|request| span(request).1)
+            .fold(f64::MIN, f64::max);
+        end = end.min(last);
     }
-    (total > 0.0).then_some(total)
+    if !end.is_finite() || end <= start {
+        return None;
+    }
+    let bytes: f64 = done
+        .iter()
+        .map(|request| {
+            let (begin, finish) = span(request);
+            let inside = (finish.min(end) - begin.max(start)).max(0.0);
+            request.bytes as f64 * inside / request.duration_ms
+        })
+        .sum();
+    let rate = mbps(bytes, end - start);
+    (rate > 0.0).then_some((rate, end))
 }
 
 pub const DOWNLOAD_CAP_MB: f64 = 380.0;

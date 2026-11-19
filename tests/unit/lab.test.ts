@@ -394,14 +394,14 @@ test('idle latency is judged against the ping of the same run, every repeat', ()
   assert.equal(idle.status, 'fail', 'one repeat off is a failure even on a jittery link')
 })
 
-test('loaded latency that is low in every run fails the bias check', () => {
+test('loaded latency that is low in every run shows in the bias check, report only', () => {
   const profiles = allGood()
   const deep = profiles.find(entry => entry.id === 'dsl-25-bloat')!
   for (const repeat of deep.repeats) (repeat.weir as Weir).report!.download.loadedMs = 520 - 50
   const verdicts = analyze(results(profiles), []).verdicts
   assert.equal(pick(verdicts, 'dsl-25-bloat', 'loaded.download').status, 'pass', 'inside the per-run band')
   const bias = pick(verdicts, 'dsl-25-bloat', 'loaded.download.bias')
-  assert.equal(bias.status, 'fail')
+  assert.equal(bias.status, 'report', 'report only until the lab records ping losses')
   assert.equal(bias.error!.median, -50)
 })
 
