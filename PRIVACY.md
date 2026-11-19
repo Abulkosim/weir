@@ -46,7 +46,7 @@ Cloudflare's replies include your IP address, approximate location, and network 
 
 ## Data use
 
-A test downloads up to 380 MB and uploads up to 190 MB, about 600 MB at most with overhead. Faster connections use more. Weir shows an estimate before every test and the data used while it runs. See [docs/method.md](docs/method.md#data-use).
+A test downloads up to 570 MB and uploads up to 350 MB, about 1 GB at most with overhead. Faster connections use more. Weir shows an estimate before every test and the data used while it runs. See [docs/method.md](docs/method.md#data-use).
 
 On a hotspot, a cellular link, Low Data Mode (macOS), or a connection Windows marks as metered, roaming, or over its data limit, Weir asks before testing: "You're on a hotspot. Test anyway?" ([`network.rs`](src-tauri/src/core/network.rs)). Weir has no scheduled or background tests.
 

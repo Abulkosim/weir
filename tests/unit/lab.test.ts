@@ -253,7 +253,7 @@ test('physics, data ceiling, latency and engine errors are judged', () => {
   const fiber = PROFILES.find(entry => entry.id === 'fiber-300')!
   const index = profiles.findIndex(entry => entry.id === 'fiber-300')
   profiles[index] = result(fiber, [
-    { down: 320, up: 280, truthDown: 320, truthUp: 280, idle: 10, truthIdle: 10, ipMb: 650 },
+    { down: 320, up: 280, truthDown: 320, truthUp: 280, idle: 10, truthIdle: 10, ipMb: 1050 },
     { down: 280, up: 0, error: 'tooShort', truthDown: 280, truthUp: 280 },
     { down: 280, up: 280, truthDown: 280, idle: 14, truthIdle: 10, loaded: 80, pingLoaded: 40 },
   ])
@@ -336,7 +336,7 @@ test('committed findings are bounded, narrow and still catch the regressions the
       assert.ok(pair.seen.failed >= 1 && pair.seen.failed <= pair.seen.runs, `${finding.id} ${pair.profile} ${pair.metric} failed when it was added`)
     }
   }
-  const physics = findings.flatMap(finding => finding.expect.filter(pair => pair.metric === 'upload.physics' && !pair.missing))
+  const physics = findings.filter(finding => finding.status === 'open').flatMap(finding => finding.expect.filter(pair => pair.metric === 'upload.physics' && !pair.missing))
   assert.ok(physics.length <= 4, 'upload.physics stays gated on most links')
   const profiles = allGood()
   const cable = PROFILES.find(entry => entry.id === 'cable-100-10-cf')!

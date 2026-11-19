@@ -57,8 +57,8 @@ export const THRESHOLDS = {
     reason: 'Weir must show bufferbloat that is physically there: at least 80 % of the rise a concurrent ping sees on the deep buffer, and clearly more than on the shallow one.',
   },
   dataCeiling: {
-    mb: 600,
-    reason: 'Before a first result the app promises a test uses up to 600 MB (data_estimate UpTo). Counted as IP-layer bytes on the client interface over the whole run.',
+    mb: 1000,
+    reason: 'Before a first result the app promises a test uses up to 1 GB (data_estimate UpTo; 600 MB until F-1, F-3 and F-4 were fixed). Counted as IP-layer bytes on the client interface over the whole run.',
   },
   baseline: {
     minMbps: 1500,

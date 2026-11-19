@@ -304,13 +304,13 @@ fn upload_spreads_a_request_across_the_window_edge() {
 
 #[test]
 fn data_estimate_follows_recent_results_and_rounds_up() {
-    assert_eq!(data_estimate(&[]), DataEstimate::UpTo(600));
-    assert_eq!(data_estimate(&[(100.0, 20.0)]), DataEstimate::About(110));
-    assert_eq!(data_estimate(&[(300.0, 40.0)]), DataEstimate::About(310));
-    assert_eq!(data_estimate(&[(1_000.0, 100.0)]), DataEstimate::About(480));
+    assert_eq!(data_estimate(&[]), DataEstimate::UpTo(1_000));
+    assert_eq!(data_estimate(&[(100.0, 20.0)]), DataEstimate::About(120));
+    assert_eq!(data_estimate(&[(300.0, 40.0)]), DataEstimate::About(320));
+    assert_eq!(data_estimate(&[(1_000.0, 100.0)]), DataEstimate::About(700));
     assert_eq!(data_estimate(&[(10.0, 2.0)]), DataEstimate::About(15));
     assert_eq!(
         data_estimate(&[(900.0, 90.0), (100.0, 20.0), (110.0, 22.0), (90.0, 18.0)]),
-        DataEstimate::About(110)
+        DataEstimate::About(120)
     );
 }

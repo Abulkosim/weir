@@ -173,6 +173,35 @@ async fn a_1_mbps_upload_that_fills_the_send_buffer_is_not_stalled() {
     assert_eq!(report.upload_error, Some(TestError::Stalled));
 }
 
+#[test]
+fn streams_share_what_is_left_of_the_cap() {
+    let budget = AtomicU64::new(100);
+    assert_eq!(reserve(&budget, 60), 60);
+    assert_eq!(reserve(&budget, 60), 40);
+    assert_eq!(reserve(&budget, 10), 0);
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_capped_test_stops_at_its_caps() {
+    let plan = Plan {
+        download: Limits {
+            max_bytes: 100 * MB,
+            ..Plan::default().download
+        },
+        upload: Limits {
+            max_bytes: 15 * MB,
+            ..Plan::default().upload
+        },
+        ..Plan::default()
+    };
+    let report = run(&Fake::default(), &plan, &Control::default(), |_| {})
+        .await
+        .unwrap();
+    assert!(report.download.capped);
+    assert!(report.upload.as_ref().unwrap().capped);
+    assert_eq!(report.bytes_used, 115 * MB);
+}
+
 #[tokio::test(start_paused = true)]
 async fn full_test_reports_every_metric() {
     let fake = Fake::default();

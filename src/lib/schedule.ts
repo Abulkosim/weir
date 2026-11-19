@@ -1,4 +1,4 @@
-import { clock } from './format.ts'
+import { clock, dataSize } from './format.ts'
 import type { Schedule, View } from './model.ts'
 
 export const scheduleOptions: { value: Schedule; label: string }[] = [
@@ -16,7 +16,7 @@ export function monthlyText(schedule: Schedule, { upTo, mb }: View['estimate']):
   if (every === null) return null
   const gb = mb * (30 * 24 / every) / 1000
   const amount = gb < 10 ? gb.toFixed(1).replace(/\.0$/, '') : String(Math.round(gb))
-  return `${upTo ? 'Up to' : 'About'} ${mb} MB a test, ${amount} GB a month`
+  return `${upTo ? 'Up to' : 'About'} ${dataSize(mb)} a test, ${amount} GB a month`
 }
 
 /** When the next scheduled test is due, as the scheduler in Rust decides it. */

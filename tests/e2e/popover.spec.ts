@@ -13,7 +13,7 @@ for (const theme of themes) {
     test('never tested offers the first test with its data cost', async ({ page }, info) => {
       await page.goto(`/?demo=1&state=never&theme=${theme}`)
       await expect(page.getByRole('heading', { name: 'Not tested yet' })).toBeVisible()
-      await expect(page.getByText('Uses up to 600 MB')).toBeVisible()
+      await expect(page.getByText('Uses up to 1 GB')).toBeVisible()
       await expect(page.getByRole('button', { name: 'Test', exact: true })).toBeEnabled()
       await shoot(page, 'never', info.outputPath(`never-${theme}.png`))
     })
@@ -54,11 +54,11 @@ for (const theme of themes) {
   test(`metered connection asks before testing in ${theme}`, async ({ page }, info) => {
     await page.clock.install()
     await page.goto(`/?demo=1&state=metered&theme=${theme}`)
-    await expect(page.getByText('Hotspot · Uses up to 600 MB')).toBeVisible()
+    await expect(page.getByText('Hotspot · Uses up to 1 GB')).toBeVisible()
     await page.getByRole('button', { name: 'Test again' }).click()
     const dialog = page.getByRole('alertdialog')
     await expect(dialog).toContainText('You’re on a hotspot. Test anyway?')
-    await expect(dialog).toContainText('Uses up to 600 MB of your data.')
+    await expect(dialog).toContainText('Uses up to 1 GB of your data.')
     await expect(page.getByRole('button', { name: 'Not now' })).toBeFocused()
     await shoot(page, 'metered', info.outputPath(`metered-${theme}.png`))
     await page.keyboard.press('Escape')

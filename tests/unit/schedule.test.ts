@@ -10,7 +10,7 @@ test('monthly data follows the schedule and the per-test estimate', () => {
   assert.equal(monthlyText('every6Hours', { upTo: false, mb: 250 }), 'About 250 MB a test, 30 GB a month')
   assert.equal(monthlyText('daily', { upTo: false, mb: 250 }), 'About 250 MB a test, 7.5 GB a month')
   assert.equal(monthlyText('daily', { upTo: false, mb: 100 }), 'About 100 MB a test, 3 GB a month')
-  assert.equal(monthlyText('daily', { upTo: true, mb: 600 }), 'Up to 600 MB a test, 18 GB a month')
+  assert.equal(monthlyText('daily', { upTo: true, mb: 1000 }), 'Up to 1 GB a test, 30 GB a month')
 })
 
 test('next test is due an interval after the last one', () => {

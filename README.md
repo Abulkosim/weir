@@ -19,7 +19,7 @@ Interface preview with sample data.
 - **One click, about 20 seconds.** Download, upload, latency at rest and under load, and jitter, against Cloudflare. The server and the time are always shown; a failed or cut-short test shows no number.
 - **What it means.** "Good for 4K video and calls", or the problem: "Calls may stutter: latency jumps to 180 ms under load".
 - **Is it you or the internet?** One check reads your Wi-Fi, router, DNS and Cloudflare and answers in a sentence: "Your Wi-Fi is fine. The problem is past your router."
-- **Careful with your data.** The data a test will use is shown before it starts and capped at 600 MB. On a hotspot or metered connection Weir asks first. No accounts, ads or tracking; history stays on your computer.
+- **Careful with your data.** The data a test will use is shown before it starts and capped at 1 GB. On a hotspot or metered connection Weir asks first. No accounts, ads or tracking; history stays on your computer.
 
 ## Install
 

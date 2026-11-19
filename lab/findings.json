@@ -2,7 +2,7 @@
   {
     "id": "F-1",
     "title": "A gigabit upload hits the data cap before the steady window is long enough",
-    "status": "open",
+    "status": "fixed",
     "where": "src-tauri/src/core/stats.rs:354, src-tauri/src/core/stats.rs:306, src-tauri/src/core/speedtest.rs:60",
     "cause": "On gig-5 every upload ends as {gig-5.errors}. The socket counter, which includes send-buffer fill, reaches UPLOAD_CAP_MB well under two seconds into the phase, so the steady window that starts at one second is shorter than the one second a capped result needs, and Tracker::result returns TooShort. The user sees a failed upload on a link that carries {gig-5.download.weir} Mbps down without trouble. Fix in its own pull request: let a capped upload keep going on time once the cap is near, or size the cap from the download result.",
     "expect": [
@@ -188,7 +188,7 @@
   {
     "id": "F-3",
     "title": "A gigabit test uses more data than the up-to estimate promises",
-    "status": "open",
+    "status": "fixed",
     "where": "src-tauri/src/core/stats.rs:306, src-tauri/src/core/stats.rs:413, src-tauri/src/core/stats.rs:441",
     "cause": "Before a first result the app says a test uses up to the dataCeiling threshold. On gig-5 the client interface carried up to {gig-5.data.mb} MB and on gig-60 up to {gig-60.data.mb} MB of IP traffic, counted until the counters stopped moving after Weir exited (up to {gig-5.tail.mb} MB on gig-5 and {gig-60.tail.mb} MB on gig-60 crossed after the engine returned, as the socket send buffers drained). Weir's own count was {gig-60.bytesUsed.mb} MB on gig-60, already past the two caps together because they are checked once per tick and a fast link overshoots them before the next check; IP and TCP headers and ACKs then add more than WIRE_OVERHEAD allows. Weir counts {gig-60.honesty.pct} % of the TCP payload on the wire. Fix in its own pull request: stop the streams at the cap rather than on the next tick, and raise the estimate or lower the caps.",
     "expect": [
@@ -449,6 +449,16 @@
           "failed": 1,
           "runs": 4
         }
+      },
+      {
+        "profile": "cable-100-10-cf",
+        "metric": "loaded.upload",
+        "min": -30,
+        "max": 15,
+        "seen": {
+          "failed": 1,
+          "runs": 9
+        }
       }
     ]
   },
@@ -481,19 +491,28 @@
   },
   {
     "id": "F-10",
-    "title": "On a satellite-like link, upload can sit just past the wire band",
+    "title": "Upload can sit just past the wire band when requests are long against the window",
     "status": "open",
     "where": "src-tauri/src/core/stats.rs:389",
-    "cause": "Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read {geo-250.upload.wireErr} % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip.",
+    "cause": "Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read {geo-250.upload.wireErr} % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window. On geo-250 most uploads take the rough fallback instead: at its round trip each request takes most of a second, so streams rarely finish the three requests per stream the exact result needs, a rule from the per-stream method that the wall-time method no longer needs. Fix in its own pull request: require a window long enough instead of three requests per stream, and spread each request's bytes over its span minus the idle round trip.",
     "expect": [
       {
         "profile": "geo-250",
         "metric": "upload.wire",
-        "min": -8,
-        "max": 8,
+        "min": -11,
+        "max": 11,
+        "seen": {
+          "failed": 2,
+          "runs": 6
+        }
+      },
+      {
+        "profile": "gig-5",
+        "metric": "upload.physics",
+        "max": 4,
         "seen": {
           "failed": 1,
-          "runs": 5
+          "runs": 1
         }
       }
     ]
