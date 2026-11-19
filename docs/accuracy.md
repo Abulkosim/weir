@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44520639970) on commit `a04b843f0450` (Weir 0.7.3), started 2026-11-19 12:45 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 174 pass, 3 fail, 2 expected fail, 7 unexpected pass, 145 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 173 pass, 2 fail, 3 expected fail, 8 unexpected pass, 145 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -263,7 +263,7 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 22.0 Mbps (21.9–22.7) | 23.9 Mbps (23.9–23.9) | 22.1 Mbps (22.0–22.5) | 22.2 Mbps (22.2–22.2) | −0.1 % (−0.9 to +0.7) wire, −7.8 % (−8.0 to −6.0) iperf3 | unexpected pass ([F-7](#f-7)) |
-| Upload | 2.4 Mbps (1.8–2.4) | 2.9 Mbps (2.9–2.9) | 2.3 Mbps (2.0–2.5) | 2.6 Mbps | +5.4 % (−3.7 to +11.0) wire, −20.9 % (−30.7 to −12.5) iperf3 | **fail** |
+| Upload | 2.4 Mbps (1.8–2.4) | 2.9 Mbps (2.9–2.9) | 2.3 Mbps (2.0–2.5) | 2.6 Mbps | +5.4 % (−3.7 to +11.0) wire, −20.9 % (−30.7 to −12.5) iperf3 | expected fail ([F-10](#f-10)) |
 | Idle latency | – | 250.0 ms ping | 250.6 ms (250.5–250.8) | 250.4 ms | +0.6 ms (+0.5 to +0.8) | pass |
 | Loaded latency, download | 412 ms (405–427) ping | – | 402 ms (378–412) | – | −3.2 ms (−48.7 to −0.0) | unexpected pass ([F-8](#f-8)) |
 | Loaded latency, upload | 363 ms (342–369) ping | – | 406 ms (367–417) | – | +43.4 ms (+25.0 to +47.8) | unexpected pass ([F-8](#f-8)) |
@@ -272,8 +272,9 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
 - download.wire: worst 0.9 % against the wire in Weir's own steady window (limit 3 %). unexpected pass ([F-7](#f-7)).
-- upload.wire: worst 11.0 % against the wire in Weir's own steady window (limit 5 %). Suspect: weir-math. **fail**.
+- upload.wire: worst 11.0 % against the wire in Weir's own steady window (limit 5 %). Suspect: weir-math. expected fail ([F-10](#f-10)).
 - upload.capacity: median -20.9 %, worst 30.7 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.9 %. Suspect: weir-math. **fail**.
+- upload.physics: highest 2.5 Mbps; the link can carry 2.9 Mbps. unexpected pass ([F-10](#f-10)).
 - loaded.download: worst 48.7 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
 - loaded.upload: worst 47.8 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
 
@@ -441,9 +442,9 @@ Expected to fail until fixed, and only like this:
 | slow-5 | loaded.upload | only for want of any Weir result | 7 of 7 runs | pass |
 | slow-5 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | report only |
 | geo-250 | validity | only upload stalled | 7 of 7 runs | pass |
-| geo-250 | upload.wire | only for want of any Weir result | 7 of 7 runs | **fail** |
+| geo-250 | upload.wire | only for want of any Weir result | 7 of 7 runs | expected fail |
 | geo-250 | upload.capacity | only for want of any Weir result | 7 of 7 runs | **fail** |
-| geo-250 | upload.physics | only for want of any Weir result | 7 of 7 runs | pass |
+| geo-250 | upload.physics | only for want of any Weir result | 7 of 7 runs | unexpected pass |
 | geo-250 | loaded.upload | only for want of any Weir result | 7 of 7 runs | unexpected pass |
 | geo-250 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | report only |
 
@@ -530,7 +531,7 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| geo-250 | loaded.download | up to 1 runs without Weir's value, otherwise passing | 1 of 7 runs | unexpected pass |
+| geo-250 | loaded.download | up to 1 runs without Weir's value, every per-repeat error within -125 to +40 | 2 of 8 runs | unexpected pass |
 | dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 4 runs | unexpected pass |
 | geo-250 | loaded.upload | every per-repeat error within -81 to +116 | 3 of 4 runs | unexpected pass |
 | mobile | loaded.upload | every per-repeat error within -34 to +34 | 1 of 4 runs | unexpected pass |
@@ -556,16 +557,16 @@ method.md says the cf-meta-upload-bytes header cross-checks the upload count, bu
 
 ### F-10
 
-**Upload can sit just past the wire band when requests are long against the window** (fixed). Where: `src-tauri/src/core/stats.rs:389`.
+**Upload can sit just past the wire band when requests are long against the window** (open). Where: `src-tauri/src/core/stats.rs:389`.
 
-Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read 5.4 % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window. On geo-250 most uploads take the rough fallback instead: at its round trip each request takes most of a second, so streams rarely finish the three requests per stream the exact result needs, a rule from the per-stream method that the wall-time method no longer needs. Fix in its own pull request: require a window long enough instead of three requests per stream, and spread each request's bytes over its span minus the idle round trip.
+Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read 5.4 % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window. On geo-250 most uploads take the rough fallback instead: at its round trip each request takes most of a second, so streams rarely finish the three requests per stream the exact result needs, a rule from the per-stream method that the wall-time method no longer needs. Fix in its own pull request: require a window long enough instead of three requests per stream, and spread each request's bytes over its span minus the idle round trip. Since requests last 16 round trips and the result needs only a one-second window, geo-250's uploads no longer fall back to the rough mean, but one repeat still read past the wire and the link's ceiling: the spreading half of the fix is still to do.
 
 Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| geo-250 | upload.wire | every per-repeat error within -11 to +11 | 2 of 6 runs | **fail** |
-| gig-5 | upload.physics | every per-repeat error at most +4 | 1 of 1 runs | pass |
+| geo-250 | upload.wire | every per-repeat error within -11 to +11 | 3 of 7 runs | expected fail |
+| geo-250 | upload.physics | every per-repeat error at most +6 | 1 of 1 runs | unexpected pass |
 
 ## Claim check: Cloudflare's own test
 
