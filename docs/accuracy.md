@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44520639970) on commit `a04b843f0450` (Weir 0.7.3), started 2026-11-19 12:45 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 173 pass, 2 fail, 3 expected fail, 8 unexpected pass, 145 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 172 pass, 2 fail, 3 expected fail, 9 unexpected pass, 145 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -77,7 +77,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | [fiber-300-far](#fiber-300-far) | −4.4 % (−7.1 to −3.5) | −20.8 % (−22.3 to −14.3) | +0.6 ms (+0.6 to +0.7) | +1.4 ms (−2.2 to +3.3) / +7.1 ms (−1.6 to +9.4) | 242 MB (235–251) | **fail** (upload.capacity) |
 | [mobile](#mobile) | −9.9 % (−12.7 to +5.7) | −2.2 % (−4.0 to −0.8) | −0.0 ms (−1.6 to +0.7) | −0.8 ms (−4.6 to +3.0) / −0.6 ms (−16.6 to +5.0) | 20 MB (16–26) | unexpected pass (loaded.upload) |
 | [lossy-0.1](#lossy-01) | +1.5 % (−4.7 to +23.4) | −0.2 % (−0.4 to −0.1) | +0.3 ms (+0.3 to +0.4) | +0.2 ms (+0.2 to +0.3) / −0.4 ms (−2.8 to +1.7) | 180 MB (142–208) | pass |
-| [lossy-1](#lossy-1) | −2.5 % (−6.0 to +22.0) | −11.3 % (−19.8 to +7.1) | +0.3 ms (+0.3 to +0.4) | +0.1 ms (+0.1 to +0.2) / +0.2 ms (+0.1 to +0.2) | 28 MB (26–33) | pass |
+| [lossy-1](#lossy-1) | −2.5 % (−6.0 to +22.0) | −11.3 % (−19.8 to +7.1) | +0.3 ms (+0.3 to +0.4) | +0.1 ms (+0.1 to +0.2) / +0.2 ms (+0.1 to +0.2) | 28 MB (26–33) | unexpected pass (upload.capacity) |
 | [lossy-2](#lossy-2) | +8.6 % (−5.6 to +22.8) | −10.4 % (−19.2 to +10.1) | +0.4 ms (+0.3 to +0.4) | +0.3 ms (+0.2 to +0.3) / +1.8 ms (+0.2 to +5.7) | 11 MB (9–11) | pass |
 | [wifi-jitter](#wifi-jitter) | −1.1 % (−5.5 to +1.7) | −0.8 % (−7.1 to +5.1) | −0.6 ms (−1.3 to +0.2) | +0.1 ms (−0.4 to +0.6) / +0.4 ms (−0.2 to +0.9) | 90 MB (80–102) | pass |
 
@@ -343,7 +343,7 @@ Cable 100/20, 1% loss. 100/20 Mbps · 40 ms RTT · 1 % loss each way · 50 ms bu
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 19.0 Mbps (18.1–20.8) | 18.8 Mbps (17.0–20.0) | 19.0 Mbps (18.2–20.7) | 9.6 Mbps (6.6–16.8) | +0.0 % (−0.3 to +0.2) wire, −2.5 % (−6.0 to +22.0) iperf3 | pass |
-| Upload | 11.5 Mbps (10.2–12.3) | 12.7 Mbps (11.5–13.5) | 11.6 Mbps (10.2–12.3) | 4.8 Mbps (3.9–6.6) | +0.1 % (−0.2 to +0.7) wire, −11.3 % (−19.8 to +7.1) iperf3 | pass |
+| Upload | 11.5 Mbps (10.2–12.3) | 12.7 Mbps (11.5–13.5) | 11.6 Mbps (10.2–12.3) | 4.8 Mbps (3.9–6.6) | +0.1 % (−0.2 to +0.7) wire, −11.3 % (−19.8 to +7.1) iperf3 | unexpected pass ([F-11](#f-11)) |
 | Idle latency | – | 40.1 ms ping | 40.4 ms (40.4–40.5) | 40.3 ms (40.2–40.3) | +0.3 ms (+0.3 to +0.4) | pass |
 | Loaded latency, download | 40 ms ping | – | 40 ms (40–40) | – | +0.1 ms (+0.1 to +0.2) | pass |
 | Loaded latency, upload | 40 ms ping | – | 40 ms (40–40) | – | +0.2 ms (+0.1 to +0.2) | pass |
@@ -351,6 +351,7 @@ Cable 100/20, 1% loss. 100/20 Mbps · 40 ms RTT · 1 % loss each way · 50 ms bu
 | Data used | 28 MB (26–33) on the wire | – | counts 99 % of the payload | – | – | pass |
 
 - Validity: 5 of 5 runs finished with a download and an upload. pass.
+- upload.capacity: median -11.3 %, worst 19.8 % against iperf3 (median within ±20 %, worst within 35 %); truth noise 16.2 %. unexpected pass ([F-11](#f-11)).
 
 ### lossy-2
 
@@ -566,7 +567,19 @@ Expected to fail until fixed, and only like this:
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
 | geo-250 | upload.wire | every per-repeat error within -11 to +11 | 3 of 7 runs | expected fail |
-| geo-250 | upload.physics | every per-repeat error at most +6 | 1 of 1 runs | unexpected pass |
+| geo-250 | upload.physics | every per-repeat error at most +6 | 1 of 2 runs | unexpected pass |
+
+### F-11
+
+**On a lossy uplink Weir's load sometimes moves more than iperf3's** (open). Where: `lab/run.ts:159`.
+
+On lossy-1 Weir's upload agrees with the wire in every repeat (0.1 % median), but in some repeats Weir's load carried well over what iperf3's carried in the same repeat (-11.3 % median against iperf3). Loss-limited TCP recovers differently from repeat to repeat, and Weir's requests restart their transfers where iperf3's streams run for the whole step, so the capacity truth here is as noisy as the reading. The suspect is the judge, not Weir's math. Fix or rule out in the lab: compare against the best iperf3 repeat on lossy links, or run iperf3 with requests of Weir's size.
+
+Expected to fail until fixed, and only like this:
+
+| Link | Check | Bound | Failed when set | This run |
+|---|---|---|---|---|
+| lossy-1 | upload.capacity | every per-repeat error within -35 to +47 | 1 of 5 runs | unexpected pass |
 
 ## Claim check: Cloudflare's own test
 

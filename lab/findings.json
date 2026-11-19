@@ -514,7 +514,26 @@
         "max": 6,
         "seen": {
           "failed": 1,
-          "runs": 1
+          "runs": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "F-11",
+    "title": "On a lossy uplink Weir's load sometimes moves more than iperf3's",
+    "status": "open",
+    "where": "lab/run.ts:159",
+    "cause": "On lossy-1 Weir's upload agrees with the wire in every repeat ({lossy-1.upload.wireErr} % median), but in some repeats Weir's load carried well over what iperf3's carried in the same repeat ({lossy-1.upload.err} % median against iperf3). Loss-limited TCP recovers differently from repeat to repeat, and Weir's requests restart their transfers where iperf3's streams run for the whole step, so the capacity truth here is as noisy as the reading. The suspect is the judge, not Weir's math. Fix or rule out in the lab: compare against the best iperf3 repeat on lossy links, or run iperf3 with requests of Weir's size.",
+    "expect": [
+      {
+        "profile": "lossy-1",
+        "metric": "upload.capacity",
+        "min": -35,
+        "max": 47,
+        "seen": {
+          "failed": 1,
+          "runs": 5
         }
       }
     ]
