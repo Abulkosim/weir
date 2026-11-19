@@ -286,12 +286,14 @@ fn next_size(bytes: u64, elapsed: Duration, target: Duration, (min, max): (u64, 
 /// Takes up to `want` bytes from what is left of the phase's cap, so the
 /// streams together stop at the cap instead of on the next tick after it.
 fn reserve(budget: &AtomicU64, want: u64) -> u64 {
-    let left = budget
-        .fetch_update(Ordering::AcqRel, Ordering::Relaxed, |left| {
-            Some(left - want.min(left))
-        })
-        .unwrap_or(0);
-    want.min(left)
+    let mut left = budget.load(Ordering::Relaxed);
+    loop {
+        let take = want.min(left);
+        match budget.compare_exchange_weak(left, left - take, Ordering::AcqRel, Ordering::Relaxed) {
+            Ok(_) => return take,
+            Err(now) => left = now,
+        }
+    }
 }
 
 fn spawn_streams<C: Connection + 'static>(
