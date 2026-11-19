@@ -412,27 +412,6 @@
     "cause": "spawn_probes waits for each probe before it schedules the next, so once the round trip under load passes loaded_every the probes run back to back and each one starts as the last one returns. The concurrent ping is open-loop and samples the queue evenly. On a deep queue the two see different moments of cubic's sawtooth, and Weir's median sits below the ping's: on dsl-25-bloat the median signed error over repeats is {dsl-25-bloat.download.loaded.bias} ms for download and {dsl-25-bloat.upload.loaded.bias} ms for upload, on geo-250 {geo-250.download.loaded.bias} ms. Every run stays inside the per-run loaded band, so only the bias check shows it. On geo-250 one repeat in one of the seven runs gave no download loaded latency at all: with probes this slow fewer than the five a result needs landed in the steady window. Fix in its own pull request: send probes on a fixed schedule without waiting for the previous one, or weight them by time. Since uploads start with smaller requests (F-2), the upload median sits above the ping instead, on dsl-25-bloat ({dsl-25-bloat.upload.loaded.bias} ms) and on geo-250. Probe timing is ruled out: sending probes on a fixed schedule from a pool of warm connections left the bias unchanged in a full lab run, so that change was reverted. Next step: record each probe's round trip and the ping's losses, since a tail-drop queue drops pings at its fullest moments while a dropped probe segment is retransmitted.",
     "expect": [
       {
-        "profile": "dsl-25-bloat",
-        "metric": "loaded.download.bias",
-        "min": -43,
-        "max": 5,
-        "seen": {
-          "failed": 1,
-          "runs": 7
-        }
-      },
-      {
-        "profile": "geo-250",
-        "metric": "loaded.download.bias",
-        "gaps": 1,
-        "min": -72,
-        "max": 5,
-        "seen": {
-          "failed": 2,
-          "runs": 7
-        }
-      },
-      {
         "profile": "geo-250",
         "metric": "loaded.download",
         "gaps": 1,
@@ -452,16 +431,6 @@
         }
       },
       {
-        "profile": "dsl-25-bloat",
-        "metric": "loaded.upload.bias",
-        "min": -5,
-        "max": 44,
-        "seen": {
-          "failed": 4,
-          "runs": 4
-        }
-      },
-      {
         "profile": "geo-250",
         "metric": "loaded.upload",
         "min": -81,
@@ -472,30 +441,10 @@
         }
       },
       {
-        "profile": "geo-250",
-        "metric": "loaded.upload.bias",
-        "min": -5,
-        "max": 94,
-        "seen": {
-          "failed": 2,
-          "runs": 4
-        }
-      },
-      {
         "profile": "mobile",
         "metric": "loaded.upload",
         "min": -34,
         "max": 34,
-        "seen": {
-          "failed": 1,
-          "runs": 4
-        }
-      },
-      {
-        "profile": "mobile",
-        "metric": "loaded.upload.bias",
-        "min": -5,
-        "max": 15,
         "seen": {
           "failed": 1,
           "runs": 4
@@ -529,5 +478,24 @@
     "where": "docs/method.md:70, src-tauri/src/core/backends/cloudflare.rs:186",
     "cause": "method.md says the cf-meta-upload-bytes header cross-checks the upload count, but the Cloudflare backend never reads that header. Fix the doc or add the check in its own pull request. Documentation only: no lab check depends on it.",
     "expect": []
+  },
+  {
+    "id": "F-10",
+    "title": "On a satellite-like link, upload can sit just past the wire band",
+    "status": "open",
+    "where": "src-tauri/src/core/stats.rs:389",
+    "cause": "Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read {geo-250.upload.wireErr} % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip.",
+    "expect": [
+      {
+        "profile": "geo-250",
+        "metric": "upload.wire",
+        "min": -8,
+        "max": 8,
+        "seen": {
+          "failed": 1,
+          "runs": 5
+        }
+      }
+    ]
   }
 ]

@@ -49,7 +49,7 @@ export const THRESHOLDS = {
   loadedBias: {
     absMs: 5,
     pct: 7.5,
-    reason: 'The median of the signed per-run errors, against the median ping. Half the per-run band: sampling noise averages out over repeats, a sampling bias does not. Catches Weir under-reporting bufferbloat while every run stays inside its own band.',
+    reason: 'The median of the signed per-run errors, against the median ping. Half the per-run band: sampling noise averages out over repeats, a sampling bias does not. Catches Weir under-reporting bufferbloat while every run stays inside its own band. Report only since the run after the F-2 fix: across six runs the bias on deep-buffer links moved by more than its own limit between runs and changed sign, which points at the ping as much as at Weir, since a full tail-drop queue drops pings at its fullest moments. It gates again once the lab records ping losses.',
   },
   bloat: {
     fraction: 0.8,
