@@ -263,7 +263,12 @@ fn upload_uses_completed_requests_per_stream() {
     let (rate, _) = upload_mbps(&requests, 2, 1_000).unwrap();
     assert!(close(rate, 40.0, 0.001), "{rate}");
     assert_eq!(upload_mbps(&requests, 3, 1_000), None);
-    assert_eq!(upload_mbps(&requests, 2, 2_500), None);
+    let (late, _) = upload_mbps(&requests, 2, 2_500).unwrap();
+    assert!(
+        close(late, 40.0, 0.001),
+        "a window of 1.5 s is enough: {late}"
+    );
+    assert_eq!(upload_mbps(&requests, 2, 3_200), None, "0.8 s is not");
 }
 
 #[test]

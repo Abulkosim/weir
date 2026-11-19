@@ -74,13 +74,15 @@ async fn probe_subtracts_server_time_and_identifies_the_app() {
         .and(header_regex("user-agent", r"^Weir/\d+\.\d+\.\d+ "))
         .respond_with(identifying(
             ResponseTemplate::new(200)
-                .insert_header("server-timing", "cfSpeedEdge;dur=3, cfSpeedWorker;dur=37")
-                .set_delay(Duration::from_millis(80)),
+                .insert_header("server-timing", "cfSpeedEdge;dur=3, cfSpeedWorker;dur=237")
+                .set_delay(Duration::from_millis(300)),
         ))
         .mount(&mock)
         .await;
     let rtt = backend.connect().unwrap().probe().await.unwrap();
-    assert!((40.0..70.0).contains(&rtt), "{rtt}");
+    // 300 ms minus 240 ms of server time. A busy CI runner adds tens of ms to
+    // the first request; without the subtraction it reads at least 300.
+    assert!((60.0..200.0).contains(&rtt), "{rtt}");
 }
 
 #[tokio::test]
