@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44459307561) on commit `37d9a39249b6` (Weir 0.7.3), started 2026-11-19 04:46 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 168 pass, 5 fail, 8 expected fail, 4 unexpected pass, 1 inconclusive, 145 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 167 pass, 5 fail, 8 expected fail, 5 unexpected pass, 1 inconclusive, 145 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -71,7 +71,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | [dsl-25-bloat](#dsl-25-bloat) | −0.2 % (−0.2 to −0.1) | +0.6 % (−0.0 to +0.6) | +0.5 ms (+0.5 to +0.7) | −9.8 ms (−17.8 to −8.3) / +43.8 ms (+36.5 to +57.9) | 22 MB (22–22) | expected fail (loaded.upload) |
 | [dsl-25-shallow](#dsl-25-shallow) | −0.1 % (−0.7 to +0.2) | −1.6 % (−1.9 to −1.4) | +0.4 ms (+0.4 to +0.4) | +0.6 ms (−0.6 to +1.6) / +1.4 ms (+1.1 to +1.4) | 21 MB (21–21) | pass |
 | [cable-100-10](#cable-100-10) | +0.1 % (−0.1 to +0.1) | −0.6 % (−0.7 to −0.4) | +0.6 ms (+0.4 to +0.6) | −0.4 ms (−2.6 to +0.6) / +3.0 ms (−2.7 to +3.0) | 73 MB (71–74) | pass |
-| [cable-100-10-cf](#cable-100-10-cf) | −0.1 % (−0.2 to −0.0) | −0.8 % (−1.0 to −0.4) | +0.6 ms (+0.5 to +0.7) | +5.1 ms (+2.0 to +6.5) / +1.1 ms (−3.9 to +2.8) | 71 MB (71–72) | pass |
+| [cable-100-10-cf](#cable-100-10-cf) | −0.1 % (−0.2 to −0.0) | −0.8 % (−1.0 to −0.4) | +0.6 ms (+0.5 to +0.7) | +5.1 ms (+2.0 to +6.5) / +1.1 ms (−3.9 to +2.8) | 71 MB (71–72) | unexpected pass (loaded.upload) |
 | [qreal-up](#qreal-up) | – | – | +0.6 ms (+0.5 to +0.7) | +2.1 ms (+0.9 to +2.5) / +2.2 ms (+0.9 to +2.7) | 73 MB (72–73) | pass |
 | [geo-250](#geo-250) | – | −13.6 % (−19.3 to −7.1) | +0.2 ms (+0.2 to +0.2) | +4.4 ms (−37.7 to +7.4) / +58.0 ms (+45.9 to +69.7) | 24 MB (21–24) | expected fail (download.wire) |
 | [fiber-300-far](#fiber-300-far) | −4.9 % (−5.1 to −3.7) | −21.5 % (−25.6 to −10.6) | +0.2 ms (+0.2 to +0.2) | −1.5 ms (−1.6 to −0.5) / +5.6 ms (−7.6 to +14.4) | 246 MB (225–250) | unexpected pass (download.capacity) |
@@ -123,7 +123,7 @@ Gigabit fibre, near. 1000/1000 Mbps · 5 ms RTT · 10 ms buffer.
 - Validity: Weir did not finish every run: upload tooShort ×3 in 3 runs. **fail**.
 - upload.wire: no Weir result to compare with the wire. Suspect: weir-math. **fail**.
 - upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. **fail**.
-- upload.physics: no Weir result. Suspect: weir-math. **fail**.
+- upload.physics: no Weir result; outside F-10's expected failure (every per-repeat error at most +4). Suspect: weir-math. **fail** ([F-10](#f-10)).
 - loaded.upload: no loaded latency to compare. Suspect: weir-math. **fail**.
 
 ### gig-60
@@ -232,11 +232,12 @@ Cable 100/10, 30 ms server time. 100/10 Mbps · 20 ms RTT · 100 ms buffer · 30
 | Upload | 9.5 Mbps (9.5–9.6) | 9.6 Mbps (9.5–9.6) | 9.5 Mbps (9.5–9.5) | 9.5 Mbps | −0.5 % (−0.7 to +0.2) wire, −0.8 % (−1.0 to −0.4) iperf3 | pass |
 | Idle latency | – | 20.1 ms ping | 20.7 ms (20.6–20.8) | 20.4 ms (20.3–20.4) | +0.6 ms (+0.5 to +0.7) | pass |
 | Loaded latency, download | 101 ms (97–101) ping | – | 106 ms (99–108) | – | +5.1 ms (+2.0 to +6.5) | pass |
-| Loaded latency, upload | 94 ms (92–98) ping | – | 95 ms (94–96) | – | +1.1 ms (−3.9 to +2.8) | pass |
+| Loaded latency, upload | 94 ms (92–98) ping | – | 95 ms (94–96) | – | +1.1 ms (−3.9 to +2.8) | unexpected pass ([F-8](#f-8)) |
 | Jitter | – | 0.03 ms (0.02–0.07) ping | 0.12 ms (0.10–0.12) | – | – | report only |
 | Data used | 71 MB (71–72) on the wire | – | counts 98 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
+- loaded.upload: worst 3.9 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
 
 ### qreal-up
 
@@ -539,6 +540,7 @@ Expected to fail until fixed, and only like this:
 | dsl-25-bloat | loaded.upload | every per-repeat error within -10 to +78 | 1 of 4 runs | expected fail |
 | geo-250 | loaded.upload | every per-repeat error within -81 to +116 | 3 of 4 runs | expected fail |
 | mobile | loaded.upload | every per-repeat error within -34 to +34 | 1 of 4 runs | unexpected pass |
+| cable-100-10-cf | loaded.upload | every per-repeat error within -30 to +15 | 1 of 9 runs | unexpected pass |
 
 ### F-9
 
@@ -560,15 +562,16 @@ method.md says the cf-meta-upload-bytes header cross-checks the upload count, bu
 
 ### F-10
 
-**On a satellite-like link, upload can sit just past the wire band** (open). Where: `src-tauri/src/core/stats.rs:389`.
+**Upload can sit just past the wire band when requests are long against the window** (open). Where: `src-tauri/src/core/stats.rs:389`.
 
-Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read 0.0 % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip.
+Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read 0.0 % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window.
 
 Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
 | geo-250 | upload.wire | every per-repeat error within -8 to +8 | 1 of 5 runs | unexpected pass |
+| gig-5 | upload.physics | every per-repeat error at most +4 | 1 of 1 runs | **fail** |
 
 ## Claim check: Cloudflare's own test
 

@@ -449,6 +449,16 @@
           "failed": 1,
           "runs": 4
         }
+      },
+      {
+        "profile": "cable-100-10-cf",
+        "metric": "loaded.upload",
+        "min": -30,
+        "max": 15,
+        "seen": {
+          "failed": 1,
+          "runs": 9
+        }
       }
     ]
   },
@@ -481,10 +491,10 @@
   },
   {
     "id": "F-10",
-    "title": "On a satellite-like link, upload can sit just past the wire band",
+    "title": "Upload can sit just past the wire band when requests are long against the window",
     "status": "open",
     "where": "src-tauri/src/core/stats.rs:389",
-    "cause": "Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read {geo-250.upload.wireErr} % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip.",
+    "cause": "Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read {geo-250.upload.wireErr} % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window.",
     "expect": [
       {
         "profile": "geo-250",
@@ -494,6 +504,15 @@
         "seen": {
           "failed": 1,
           "runs": 5
+        }
+      },
+      {
+        "profile": "gig-5",
+        "metric": "upload.physics",
+        "max": 4,
+        "seen": {
+          "failed": 1,
+          "runs": 1
         }
       }
     ]

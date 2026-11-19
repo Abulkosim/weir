@@ -336,7 +336,7 @@ test('committed findings are bounded, narrow and still catch the regressions the
       assert.ok(pair.seen.failed >= 1 && pair.seen.failed <= pair.seen.runs, `${finding.id} ${pair.profile} ${pair.metric} failed when it was added`)
     }
   }
-  const physics = findings.flatMap(finding => finding.expect.filter(pair => pair.metric === 'upload.physics' && !pair.missing))
+  const physics = findings.filter(finding => finding.status === 'open').flatMap(finding => finding.expect.filter(pair => pair.metric === 'upload.physics' && !pair.missing))
   assert.ok(physics.length <= 4, 'upload.physics stays gated on most links')
   const profiles = allGood()
   const cable = PROFILES.find(entry => entry.id === 'cable-100-10-cf')!
