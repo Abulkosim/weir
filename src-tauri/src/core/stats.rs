@@ -6,6 +6,7 @@ const MIN_STEADY_START_MS: u64 = 1_000;
 const MAX_STEADY_START_MS: u64 = 4_000;
 const RISE_TOLERANCE: f64 = 1.03;
 const STALL_MS: u64 = 3_000;
+const MIN_UPLOAD_WINDOW_MS: f64 = 1_000.0;
 const CONVERGE_SAMPLES: usize = 6;
 const CONVERGE_SPREAD: f64 = 0.03;
 const VARIED_SPREAD: f64 = 0.25;
@@ -389,8 +390,8 @@ pub struct Completed {
 /// evenly over its transfer, from its start for `duration_ms`. The window ends
 /// where the first stream's last completed transfer ends, so no stream has a
 /// request in flight inside it, and the time a stream sits between requests
-/// counts as time. `(mbps, window end ms)`, or `None` when any stream started
-/// fewer than three requests in the window.
+/// counts as time. `(mbps, window end ms)`, or `None` when the window is
+/// under a second.
 pub fn upload_mbps(
     requests: &[Completed],
     streams: usize,
@@ -407,20 +408,14 @@ pub fn upload_mbps(
         .collect();
     let mut end = f64::INFINITY;
     for stream in 0..streams {
-        let mine = || done.iter().filter(|request| request.stream == stream);
-        if mine()
-            .filter(|request| request.started_ms >= steady_start_ms)
-            .count()
-            < 3
-        {
-            return None;
-        }
-        let last = mine()
+        let last = done
+            .iter()
+            .filter(|request| request.stream == stream)
             .map(|request| span(request).1)
             .fold(f64::MIN, f64::max);
         end = end.min(last);
     }
-    if !end.is_finite() || end <= start {
+    if !end.is_finite() || end < start + MIN_UPLOAD_WINDOW_MS {
         return None;
     }
     let bytes: f64 = done

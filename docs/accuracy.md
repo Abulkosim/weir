@@ -4,7 +4,7 @@
 
 Generated from [run](https://github.com/Abulkosim/weir/actions/runs/44459307561) on commit `37d9a39249b6` (Weir 0.7.3), started 2026-11-19 04:46 UTC.
 
-Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 167 pass, 5 fail, 8 expected fail, 5 unexpected pass, 1 inconclusive, 145 report only.
+Gate at run time: **passing**. Re-judged with the findings and rules in this commit: **failing** (they differ: see Findings). 169 pass, 7 fail, 6 expected fail, 3 unexpected pass, 1 inconclusive, 145 report only.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/accuracy-dark.svg">
@@ -74,7 +74,7 @@ Pre-registered before the first run. A failure is a finding, not a reason to mov
 | [cable-100-10-cf](#cable-100-10-cf) | −0.1 % (−0.2 to −0.0) | −0.8 % (−1.0 to −0.4) | +0.6 ms (+0.5 to +0.7) | +5.1 ms (+2.0 to +6.5) / +1.1 ms (−3.9 to +2.8) | 71 MB (71–72) | unexpected pass (loaded.upload) |
 | [qreal-up](#qreal-up) | – | – | +0.6 ms (+0.5 to +0.7) | +2.1 ms (+0.9 to +2.5) / +2.2 ms (+0.9 to +2.7) | 73 MB (72–73) | pass |
 | [geo-250](#geo-250) | – | −13.6 % (−19.3 to −7.1) | +0.2 ms (+0.2 to +0.2) | +4.4 ms (−37.7 to +7.4) / +58.0 ms (+45.9 to +69.7) | 24 MB (21–24) | expected fail (download.wire) |
-| [fiber-300-far](#fiber-300-far) | −4.9 % (−5.1 to −3.7) | −21.5 % (−25.6 to −10.6) | +0.2 ms (+0.2 to +0.2) | −1.5 ms (−1.6 to −0.5) / +5.6 ms (−7.6 to +14.4) | 246 MB (225–250) | unexpected pass (download.capacity) |
+| [fiber-300-far](#fiber-300-far) | −4.9 % (−5.1 to −3.7) | −21.5 % (−25.6 to −10.6) | +0.2 ms (+0.2 to +0.2) | −1.5 ms (−1.6 to −0.5) / +5.6 ms (−7.6 to +14.4) | 246 MB (225–250) | **fail** (upload.capacity) |
 | [mobile](#mobile) | −0.2 % (−10.7 to +10.8) | −2.6 % (−6.3 to −1.2) | +1.5 ms (−3.2 to +3.9) | −3.0 ms (−4.4 to +3.3) / −1.8 ms (−9.0 to +9.4) | 26 MB (18–32) | unexpected pass (loaded.upload) |
 | [lossy-0.1](#lossy-01) | +3.3 % (−6.8 to +24.2) | −0.1 % (−0.3 to +0.0) | +0.3 ms (+0.2 to +0.3) | +0.2 ms (+0.1 to +0.3) / +0.6 ms (−1.0 to +2.7) | 166 MB (150–190) | pass |
 | [lossy-1](#lossy-1) | −0.1 % (−7.5 to +13.9) | +7.8 % (−8.2 to +11.6) | +0.3 ms (+0.2 to +0.3) | +0.2 ms (+0.2 to +0.2) / +0.1 ms (+0.1 to +0.1) | 31 MB (28–36) | pass |
@@ -123,7 +123,7 @@ Gigabit fibre, near. 1000/1000 Mbps · 5 ms RTT · 10 ms buffer.
 - Validity: Weir did not finish every run: upload tooShort ×3 in 3 runs. **fail**.
 - upload.wire: no Weir result to compare with the wire. Suspect: weir-math. **fail**.
 - upload.capacity: too few runs with both Weir and iperf3. Suspect: weir-math. **fail**.
-- upload.physics: no Weir result; outside F-10's expected failure (every per-repeat error at most +4). Suspect: weir-math. **fail** ([F-10](#f-10)).
+- upload.physics: no Weir result. Suspect: weir-math. **fail**.
 - loaded.upload: no loaded latency to compare. Suspect: weir-math. **fail**.
 
 ### gig-60
@@ -267,7 +267,7 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
 | Download | 21.7 Mbps (21.4–21.9) | 24.0 Mbps | 21.5 Mbps (20.5–21.9) | 22.3 Mbps (22.3–22.3) | −0.8 % (−4.2 to +0.2) wire, – iperf3 | expected fail ([F-7](#f-7)) |
-| Upload | 2.5 Mbps (2.4–2.6) | 2.9 Mbps (2.9–2.9) | 2.5 Mbps (2.3–2.7) | 2.6 Mbps (2.6–2.6) | +0.0 % (−1.9 to +2.5) wire, −13.6 % (−19.3 to −7.1) iperf3 | unexpected pass ([F-10](#f-10)) |
+| Upload | 2.5 Mbps (2.4–2.6) | 2.9 Mbps (2.9–2.9) | 2.5 Mbps (2.3–2.7) | 2.6 Mbps (2.6–2.6) | +0.0 % (−1.9 to +2.5) wire, −13.6 % (−19.3 to −7.1) iperf3 | **fail** |
 | Idle latency | – | 250.0 ms ping | 250.2 ms (250.2–250.2) | 250.1 ms | +0.2 ms (+0.2 to +0.2) | pass |
 | Loaded latency, download | 435 ms (429–444) ping | – | 433 ms (406–442) | – | +4.4 ms (−37.7 to +7.4) | unexpected pass ([F-8](#f-8)) |
 | Loaded latency, upload | 352 ms (338–411) ping | – | 408 ms (398–468) | – | +58.0 ms (+45.9 to +69.7) | expected fail ([F-8](#f-8)) |
@@ -276,9 +276,8 @@ Satellite-like, 250 ms. 25/3 Mbps · 250 ms RTT · 300 ms buffer.
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
 - download.wire: worst 4.2 % against the wire in Weir's own steady window (limit 3 %). Suspect: weir-math. expected fail ([F-7](#f-7)).
-- download.capacity: 2 iperf3 runs were saturated or disagreed with their own totals. Suspect: judge. **inconclusive** ([F-6](#f-6)).
-- upload.wire: worst 2.5 % against the wire in Weir's own steady window (limit 5 %). unexpected pass ([F-10](#f-10)).
-- upload.capacity: median -13.6 %, worst 19.3 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.7 %. Suspect: weir-load. expected fail ([F-6](#f-6)).
+- download.capacity: 2 iperf3 runs were saturated or disagreed with their own totals. Suspect: judge. **inconclusive**.
+- upload.capacity: median -13.6 %, worst 19.3 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.7 %. Suspect: weir-load. **fail**.
 - loaded.download: worst 37.7 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). unexpected pass ([F-8](#f-8)).
 - loaded.upload: worst 69.7 ms from a concurrent ping in Weir's window (limit max(10 ms, 15 %)). Suspect: weir-math. expected fail ([F-8](#f-8)).
 
@@ -290,8 +289,8 @@ Fibre 300/100, 120 ms away. 300/100 Mbps · 120 ms RTT · 50 ms buffer.
 
 | | Wire | iperf3 | Weir | Twin | Weir error | Status |
 |---|---|---|---|---|---|---|
-| Download | 272.6 Mbps (271.7–274.3) | 286.9 Mbps (286.7–288.2) | 273.5 Mbps (272.8–276.0) | 105.4 Mbps (104.3–108.7) | +0.6 % (+0.1 to +0.7) wire, −4.9 % (−5.1 to −3.7) iperf3 | unexpected pass ([F-6](#f-6)) |
-| Upload | 74.9 Mbps (71.7–86.7) | 95.6 Mbps (95.5–96.0) | 74.9 Mbps (71.1–85.8) | 58.1 Mbps (34.4–58.4) | −0.9 % (−1.0 to +0.0) wire, −21.5 % (−25.6 to −10.6) iperf3 | expected fail ([F-6](#f-6)) |
+| Download | 272.6 Mbps (271.7–274.3) | 286.9 Mbps (286.7–288.2) | 273.5 Mbps (272.8–276.0) | 105.4 Mbps (104.3–108.7) | +0.6 % (+0.1 to +0.7) wire, −4.9 % (−5.1 to −3.7) iperf3 | pass |
+| Upload | 74.9 Mbps (71.7–86.7) | 95.6 Mbps (95.5–96.0) | 74.9 Mbps (71.1–85.8) | 58.1 Mbps (34.4–58.4) | −0.9 % (−1.0 to +0.0) wire, −21.5 % (−25.6 to −10.6) iperf3 | **fail** |
 | Idle latency | – | 120.0 ms ping | 120.2 ms (120.2–120.2) | 120.1 ms (120.1–120.2) | +0.2 ms (+0.2 to +0.2) | pass |
 | Loaded latency, download | 139 ms (139–147) ping | – | 138 ms (137–146) | – | −1.5 ms (−1.6 to −0.5) | pass |
 | Loaded latency, upload | 121 ms (120–136) ping | – | 128 ms (126–135) | – | +5.6 ms (−7.6 to +14.4) | pass |
@@ -299,8 +298,7 @@ Fibre 300/100, 120 ms away. 300/100 Mbps · 120 ms RTT · 50 ms buffer.
 | Data used | 246 MB (225–250) on the wire | – | counts 96 % of the payload | – | – | pass |
 
 - Validity: 3 of 3 runs finished with a download and an upload. pass.
-- download.capacity: median -4.9 %, worst 5.1 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.5 %. unexpected pass ([F-6](#f-6)).
-- upload.capacity: median -21.5 %, worst 25.6 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.6 %. Suspect: weir-load. expected fail ([F-6](#f-6)).
+- upload.capacity: median -21.5 %, worst 25.6 % against iperf3 (median -10 % to +5 %, worst within 20 %); truth noise 0.6 %. Suspect: weir-load. **fail**.
 
 ### mobile
 
@@ -447,8 +445,8 @@ Expected to fail until fixed, and only like this:
 | slow-5 | loaded.upload | only for want of any Weir result | 7 of 7 runs | pass |
 | slow-5 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | report only |
 | geo-250 | validity | only upload stalled | 7 of 7 runs | pass |
-| geo-250 | upload.wire | only for want of any Weir result | 7 of 7 runs | unexpected pass |
-| geo-250 | upload.capacity | only for want of any Weir result | 7 of 7 runs | expected fail |
+| geo-250 | upload.wire | only for want of any Weir result | 7 of 7 runs | pass |
+| geo-250 | upload.capacity | only for want of any Weir result | 7 of 7 runs | **fail** |
 | geo-250 | upload.physics | only for want of any Weir result | 7 of 7 runs | pass |
 | geo-250 | loaded.upload | only for want of any Weir result | 7 of 7 runs | expected fail |
 | geo-250 | loaded.upload.bias | only for want of any Weir result | 7 of 7 runs | report only |
@@ -501,7 +499,7 @@ Expected to fail until fixed, and only like this:
 
 ### F-6
 
-**Weir's own load under-fills far links** (open). Where: `src-tauri/src/core/speedtest.rs:68, src-tauri/src/core/speedtest.rs:310, src-tauri/src/core/stats.rs:272`.
+**Weir's own load under-fills far links** (fixed). Where: `src-tauri/src/core/speedtest.rs:68, src-tauri/src/core/speedtest.rs:310, src-tauri/src/core/stats.rs:272`.
 
 On fiber-300-far Weir's upload reads 74.9 Mbps against iperf3's 95.6 Mbps (-21.5 %) and its download -4.9 %, and on geo-250 the download reads n/a %; in each case the wire in Weir's own window agrees with Weir (upload -0.9 %, download 0.6 %). So the numbers are honest about what Weir moved, but its load does not fill a far link. Upload: each stream waits a full round trip for the response before it starts its next half-second request, and at this round trip that idle time is a large share of each request. Download: the steady window starts once the one-second average stops rising, while cubic on a long round trip is still growing, so the result averages part of the ramp. The download sits near the edge of the band and fails in some runs only. Fix in its own pull request: size requests by round trip as well as rate, or pipeline the next request, and give far links a later steady start. Since F-2's fix, geo-250's upload finishes and shows the same under-fill: Weir agrees with the wire in its own window and reads -13.6 % against iperf3.
 
@@ -509,10 +507,10 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| fiber-300-far | upload.capacity | every per-repeat error within -29 to +5 | 7 of 7 runs | expected fail |
-| fiber-300-far | download.capacity | every per-repeat error within -21 to +5 | 1 of 7 runs | unexpected pass |
+| fiber-300-far | upload.capacity | every per-repeat error within -29 to +5 | 7 of 7 runs | **fail** |
+| fiber-300-far | download.capacity | every per-repeat error within -21 to +5 | 1 of 7 runs | pass |
 | geo-250 | download.capacity | every per-repeat error within -20 to +5 | 3 of 7 runs | **inconclusive** |
-| geo-250 | upload.capacity | every per-repeat error within -37 to +5 | 3 of 3 runs | expected fail |
+| geo-250 | upload.capacity | every per-repeat error within -37 to +5 | 3 of 3 runs | **fail** |
 
 ### F-7
 
@@ -562,7 +560,7 @@ method.md says the cf-meta-upload-bytes header cross-checks the upload count, bu
 
 ### F-10
 
-**Upload can sit just past the wire band when requests are long against the window** (open). Where: `src-tauri/src/core/stats.rs:389`.
+**Upload can sit just past the wire band when requests are long against the window** (fixed). Where: `src-tauri/src/core/stats.rs:389`.
 
 Weir spreads each upload request's bytes from its start until its response arrives, a span one round trip longer than the time the bytes spend on the wire. On most links that is a small share of a request, but on geo-250 the round trip is a large share, so the window edges can misplace part of a request: one repeat read 0.0 % against the wire (median), with the worst just past the band. Suspected, not proven, and too small to change what a user sees. Fix or rule out in its own pull request: spread bytes over the span minus the idle round trip. The same edge effect shows on gig-5 now that its upload finishes: the capped phase leaves a steady window of under two seconds against half-second requests, and one repeat read just past the link's ceiling while the other two fell back to the rough counter mean because no stream finished three requests in the window. On geo-250 most uploads take the rough fallback instead: at its round trip each request takes most of a second, so streams rarely finish the three requests per stream the exact result needs, a rule from the per-stream method that the wall-time method no longer needs. Fix in its own pull request: require a window long enough instead of three requests per stream, and spread each request's bytes over its span minus the idle round trip.
 
@@ -570,7 +568,7 @@ Expected to fail until fixed, and only like this:
 
 | Link | Check | Bound | Failed when set | This run |
 |---|---|---|---|---|
-| geo-250 | upload.wire | every per-repeat error within -11 to +11 | 2 of 6 runs | unexpected pass |
+| geo-250 | upload.wire | every per-repeat error within -11 to +11 | 2 of 6 runs | pass |
 | gig-5 | upload.physics | every per-repeat error at most +4 | 1 of 1 runs | **fail** |
 
 ## Claim check: Cloudflare's own test

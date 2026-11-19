@@ -40,6 +40,10 @@ pub struct Plan {
     pub max_request: u64,
     pub download_request: Duration,
     pub upload_request: Duration,
+    /// Requests last at least this many idle round trips, up to
+    /// `max_request_time`, so the wait between them stays a small share.
+    pub request_rtts: f64,
+    pub max_request_time: Duration,
 }
 
 impl Default for Plan {
@@ -68,6 +72,8 @@ impl Default for Plan {
             max_request: 25 * MB,
             download_request: Duration::from_secs(1),
             upload_request: Duration::from_millis(500),
+            request_rtts: 16.0,
+            max_request_time: Duration::from_secs(2),
         }
     }
 }
@@ -277,6 +283,21 @@ impl Drop for Streams {
     }
 }
 
+/// How long each request should take: the plan's time for the direction, or
+/// longer on a far link. A stream waits a round trip between requests, and at
+/// 120 ms that is a fifth of a half-second request (F-6 in docs/accuracy.md).
+fn request_time(plan: &Plan, upload: bool, rtt_ms: Option<f64>) -> Duration {
+    let base = if upload {
+        plan.upload_request
+    } else {
+        plan.download_request
+    };
+    let far = rtt_ms.map_or(Duration::ZERO, |ms| {
+        Duration::from_millis((ms * plan.request_rtts).max(0.0).round() as u64)
+    });
+    base.max(far.min(plan.max_request_time))
+}
+
 /// Size the next request so it takes about `target` at this stream's rate.
 fn next_size(bytes: u64, elapsed: Duration, target: Duration, (min, max): (u64, u64)) -> u64 {
     let rate = bytes as f64 / elapsed.as_secs_f64().max(0.001);
@@ -301,8 +322,10 @@ fn spawn_streams<C: Connection + 'static>(
     plan: &Plan,
     counter: &Arc<AtomicU64>,
     max_bytes: u64,
+    rtt_ms: Option<f64>,
     upload: Option<(Instant, Arc<Mutex<Vec<Completed>>>)>,
 ) -> Streams {
+    let target = request_time(plan, upload.is_some(), rtt_ms);
     let alive = Arc::new(AtomicUsize::new(connections.len()));
     let budget = Arc::new(AtomicU64::new(max_bytes));
     let error = Arc::new(Mutex::new(None));
@@ -359,11 +382,6 @@ fn spawn_streams<C: Connection + 'static>(
                                     });
                                 }
                             }
-                            let target = if upload.is_some() {
-                                plan.upload_request
-                            } else {
-                                plan.download_request
-                            };
                             size = next_size(
                                 bytes,
                                 started.elapsed(),
@@ -445,6 +463,7 @@ async fn transfer<C: Connection + 'static>(
         phases.plan,
         &counter,
         limits.max_bytes,
+        phases.latency_ms,
         completed.map(|completed| (started, completed)),
     );
     let (prober, probes) = spawn_probes(probe, phases.plan.loaded_every, started);

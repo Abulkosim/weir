@@ -174,6 +174,28 @@ async fn a_1_mbps_upload_that_fills_the_send_buffer_is_not_stalled() {
 }
 
 #[test]
+fn far_links_get_longer_requests() {
+    let plan = Plan::default();
+    assert_eq!(request_time(&plan, true, None), Duration::from_millis(500));
+    assert_eq!(
+        request_time(&plan, true, Some(15.0)),
+        Duration::from_millis(500)
+    );
+    assert_eq!(
+        request_time(&plan, true, Some(120.0)),
+        Duration::from_millis(1_920)
+    );
+    assert_eq!(
+        request_time(&plan, false, Some(40.0)),
+        Duration::from_secs(1)
+    );
+    assert_eq!(
+        request_time(&plan, false, Some(250.0)),
+        Duration::from_secs(2)
+    );
+}
+
+#[test]
 fn streams_share_what_is_left_of_the_cap() {
     let budget = AtomicU64::new(100);
     assert_eq!(reserve(&budget, 60), 60);

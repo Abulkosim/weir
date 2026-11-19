@@ -43,7 +43,7 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 ### 2. Download (5–10 s, ≤ 570 MB)
 
 - **Streams:** 6 (8 when idle latency > 100 ms). Each stream loops requests.
-- **Request size:** first 256 kB, then `clamp(stream_rate × 1 s, 256 kB, 25 MB)`, so each request takes about 1 s. Random query parameter defeats caches.
+- **Request size:** first 256 kB, then `clamp(stream_rate × T, 256 kB, 25 MB)`, so each request takes about T = `clamp(16 × idle latency, 1 s, 2 s)`. A stream waits a round trip between requests; at 120 ms that would be a fifth of a short request, so far links get longer ones. Random query parameter defeats caches.
 - **Sampling:** one atomic byte counter for all streams, read about every 100 ms on a monotonic clock. Readings are interpolated onto 250 ms bins, so timer jitter doesn't skew samples. The UI gets a 1 s moving average at 10 Hz.
 - **Warm-up discard:** the steady window starts at the first 250 ms sample where the 1 s moving average stops rising (< 3 % above its previous maximum for 2 samples in a row), no earlier than 1 s and no later than 4 s. Starting at 4 s marks the result "ramped slowly".
 - **Stop** at the first of:
@@ -65,10 +65,10 @@ Cloudflare's speed test endpoints, the same ones speed.cloudflare.com uses:
 ### 4. Upload (5–8 s, ≤ 350 MB)
 
 - 300 ms pause after download so queues drain.
-- **Streams:** 4 (6 when idle latency > 100 ms). `POST __up`, body `clamp(stream_rate × 0.5 s, 32 kB, 25 MB)` from one static zero buffer. The first request is 32 kB, not download's 256 kB: a whole request lands in the socket send buffer at once, so the byte counter moves only when one completes, and four 256 kB requests take 8 s on a 1 Mbps uplink, past the stall rule (docs/accuracy.md, F-2). Half-second requests leave at least 3 completed requests per stream inside the steady window.
+- **Streams:** 4 (6 when idle latency > 100 ms). `POST __up`, body `clamp(stream_rate × T, 32 kB, 25 MB)` with T = `clamp(16 × idle latency, 0.5 s, 2 s)` from one static zero buffer. The first request is 32 kB, not download's 256 kB: a whole request lands in the socket send buffer at once, so the byte counter moves only when one completes, and four 256 kB requests take 8 s on a 1 Mbps uplink, past the stall rule (docs/accuracy.md, F-2). The result needs a steady window of at least 1 s that every stream has finished a request in.
 - **Live gauge:** bytes written to the sockets, 1 s moving average.
 - **Result:** bytes written to the socket overstate delivery (send buffers hold MBs), so the result comes from completed requests. Each request's bytes are spread over its transfer time (response TTFB − server time). Result = bytes carried inside the steady window ÷ the window's wall time. The window ends where the first stream's last completed transfer ends, so no request is still in flight inside it. The time a stream waits between requests counts: adding per-stream rates instead read above what the link carried (docs/accuracy.md, F-5).
-- Warm-up and stop rules are the same as download, applied to the socket counter, which is good enough to see the plateau. Fewer than 3 completed requests per stream inside the steady window → the result falls back to the counter mean and is marked "rough".
+- Warm-up and stop rules are the same as download, applied to the socket counter, which is good enough to see the plateau. A steady window under 1 s, or a stream with no finished request in it → the result falls back to the counter mean and is marked "rough".
 - Download failed → upload is skipped.
 
 ## Validity
