@@ -16,10 +16,11 @@ import {
   wireMbps, type CpuTimes, type PingSample, type WireSample,
 } from './parse.ts';
 import { expectedFar, order, selection, SHARDS, streams, type Profile, type Step } from './profiles.ts';
-import type {
-  Baseline, Failed, ProfileResult, Repeat, Runner, ShardFile, Truth, Twin, Weir, WeirReport, Window,
+import {
+  slim, type Baseline, type Failed, type ProfileResult, type Repeat, type Results, type Runner, type ShardFile, type Truth, type Twin, type Weir,
+  type WeirReport, type Window,
 } from './schema.ts';
-import { validity } from './analyze.ts';
+import { retestable, validity, type Finding } from './analyze.ts';
 
 const SATURATED = 0.95;
 const CPU_SAMPLE_MS = 250;
@@ -546,6 +547,18 @@ async function main() {
     save();
     for (const entry of profiles) {
       file.profiles.push(await runProfile(entry));
+      save();
+    }
+    const findings = JSON.parse(readFileSync(new URL('./findings.json', import.meta.url), 'utf8')) as Finding[];
+    const judged: Results = {
+      schema: 1, commit: 'shard', weirVersion: '', runUrl: '', startedAt: file.startedAt, runner: file.runner,
+      shards: [file.result], profiles: file.profiles,
+    };
+    for (const id of retestable(slim(judged), findings, profiles)) {
+      const entry = profiles.find((item) => item.id === id)!;
+      const index = file.profiles.findIndex((item) => item.id === id);
+      log(`retest ${id}: it failed a gated check`);
+      file.profiles[index] = { ...file.profiles[index]!, retry: await runProfile(entry) };
       save();
     }
   } finally {
