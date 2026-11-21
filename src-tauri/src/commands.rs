@@ -89,7 +89,7 @@ async fn save_as(
 }
 
 fn today() -> String {
-    jiff::Zoned::now().strftime("%Y-%m-%d").to_string()
+    jiff::ZonedDateTime::now().strftime("%Y-%m-%d").to_string()
 }
 
 #[tauri::command]
