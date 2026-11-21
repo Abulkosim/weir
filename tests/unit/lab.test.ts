@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { analyze, applyFindings, fill, gate, placeholders, validity, withinBound, type Finding, type Verdict } from '../../lab/analyze.ts'
+import { analyze, applyFindings, fill, gate, placeholders, retestable, validity, withinBound, type Finding, type Verdict } from '../../lab/analyze.ts'
 import { netemArgs, offloads, parseNstat, parseQdiscStats, parseSoftnet, reorderDelta, shape, tbfLimit, teardown, topologyUp, unshape } from '../../lab/net.ts'
 import { cpuMax, cpuPeak, iperfBlock, parseIperf, parsePing, parseProcStat, wireMbps, type WireSample } from '../../lab/parse.ts'
 import { ceilingMbps, expectedFar, FAR_MS, forShard, order, PROFILES, selection, SHARDS, streams, type Profile } from '../../lab/profiles.ts'
@@ -344,6 +344,32 @@ test('committed findings are bounded, narrow and still catch the regressions the
   const doubled = analyze(results(profiles), findings).verdicts
   assert.equal(pick(doubled, cable.id, 'upload.physics').status, 'fail', 'dropping the server-time subtraction fails the gate')
   assert.equal(pick(doubled, cable.id, 'upload.wire').status, 'fail')
+})
+
+test('a link that fails is retested, and a check fails only if it fails both times', () => {
+  const fiber = PROFILES.find(entry => entry.id === 'fiber-300')!
+  const low = goodRuns(fiber).map(run => ({ ...run, down: run.down * 0.6, wireDown: run.down * 0.6, truthDown: run.down }))
+  const profiles = allGood()
+  const index = profiles.findIndex(entry => entry.id === fiber.id)
+  profiles[index] = result(fiber, low)
+  assert.deepEqual(retestable(results(profiles), [], PROFILES), [fiber.id])
+  assert.deepEqual(retestable(results(allGood()), [], PROFILES), [])
+
+  profiles[index] = { ...result(fiber, low), retry: result(fiber, goodRuns(fiber)) }
+  let analysis = analyze(results(profiles), [])
+  const capacity = pick(analysis.verdicts, fiber.id, 'download.capacity')
+  assert.equal(capacity.status, 'pass')
+  assert.match(capacity.detail, /retest; the first attempt failed/)
+  assert.ok(analysis.ok)
+
+  profiles[index] = { ...result(fiber, low), retry: result(fiber, low) }
+  analysis = analyze(results(profiles), [])
+  assert.equal(pick(analysis.verdicts, fiber.id, 'download.capacity').status, 'fail')
+  assert.match(pick(analysis.verdicts, fiber.id, 'download.capacity').detail, /^failed twice/)
+  assert.ok(!analysis.ok)
+
+  const slimmed = slim(results(profiles)).profiles[index]!
+  assert.ok(slimmed.retry, 'slim keeps the retest')
 })
 
 test('the gate warns on one unjudged link, fails on two, and closes findings that keep passing', () => {

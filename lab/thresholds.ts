@@ -70,6 +70,10 @@ export const THRESHOLDS = {
     maxLinks: 1,
     reason: 'Inconclusive and invalid-input verdicts mean the lab could not judge a link, not that Weir is wrong, so they warn. One such link per run is lab noise (the eighth run: one fiber-300-far iperf3 run read 1.016 of the ceiling); two or more mean the lab itself is off, and the gate fails.',
   },
+  retest: {
+    attempts: 2,
+    reason: "A link with a gated failure runs once more at the end of its shard, and a check fails the gate only if it fails both times. Added before the v0.8.0 release: two runs on the same engine code as a passing run failed on four different checks between them (slow-5 upload against the wire, dsl-25-bloat loaded download, fiber-300-far download capacity, gig-5 upload physics), each just past its limit and each passing in the other run. A real regression fails every attempt; findings bounds still judge each attempt.",
+  },
   noise: {
     fractionOfBand: 0.5,
     reason: 'When the truth itself moves by more than half the band between repeats, a pass or fail would be luck. The result is inconclusive and the fix is in the lab.',
