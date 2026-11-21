@@ -144,6 +144,8 @@ export interface ProfileResult {
   offloads: 'off' | 'gso-on';
   validity: Validity;
   repeats: Repeat[];
+  /** The link run once more after a gated failure (THRESHOLDS.retest). */
+  retry?: ProfileResult;
 }
 
 export interface Baseline {
@@ -214,15 +216,14 @@ export const failed = (value: unknown): value is Failed =>
 
 /** Drops per-tick traces and request logs, for the committed docs/accuracy.json. */
 export function slim(results: Results): Results {
-  return {
-    ...results,
-    profiles: results.profiles.map((entry) => ({
-      ...entry,
-      repeats: entry.repeats.map((repeat) => {
-        if (failed(repeat.weir)) return repeat;
-        const { trace: _trace, uploadRequests: _requests, ...weir } = repeat.weir;
-        return { ...repeat, weir };
-      }),
-    })),
-  };
+  const slimmed = (entry: ProfileResult): ProfileResult => ({
+    ...entry,
+    repeats: entry.repeats.map((repeat) => {
+      if (failed(repeat.weir)) return repeat;
+      const { trace: _trace, uploadRequests: _requests, ...weir } = repeat.weir;
+      return { ...repeat, weir };
+    }),
+    ...(entry.retry ? { retry: slimmed(entry.retry) } : {}),
+  });
+  return { ...results, profiles: results.profiles.map(slimmed) };
 }

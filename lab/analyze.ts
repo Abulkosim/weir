@@ -616,15 +616,38 @@ const rateReason = (rate: NonNullable<Validity['rate']>) => `rate: iperf3/ceilin
 
 /** Results with each link's rate check recomputed by the current rule. */
 export function revalidate(results: Results): Results {
-  return {
-    ...results,
-    profiles: results.profiles.map((entry) => {
-      const truths = entry.repeats.map(truthOf).filter((truth): truth is Truth => !!truth);
-      const rate = rateCheck(entry.shape, truths);
-      const reasons = [...entry.validity.reasons.filter((reason) => !reason.startsWith('rate:')), ...(rate && !rate.ok ? [rateReason(rate)] : [])];
-      return { ...entry, validity: { ...entry.validity, rate, reasons, ok: reasons.length === 0 } };
-    }),
+  const recheck = (entry: ProfileResult): ProfileResult => {
+    const truths = entry.repeats.map(truthOf).filter((truth): truth is Truth => !!truth);
+    const rate = rateCheck(entry.shape, truths);
+    const reasons = [...entry.validity.reasons.filter((reason) => !reason.startsWith('rate:')), ...(rate && !rate.ok ? [rateReason(rate)] : [])];
+    return { ...entry, validity: { ...entry.validity, rate, reasons, ok: reasons.length === 0 }, ...(entry.retry ? { retry: recheck(entry.retry) } : {}) };
   };
+  return { ...results, profiles: results.profiles.map(recheck) };
+}
+
+/**
+ * A link's verdicts after its retest: each check that failed on the first attempt takes the retest's
+ * verdict, so it fails the gate only if it failed both times. Checks that did not fail keep the first.
+ */
+function retested(first: Verdict[], retry: Verdict[], findings: Finding[]): Verdict[] {
+  const fails = (item: Verdict) => applyFindings([item], findings)[0]!.status === 'fail';
+  return first.map((item) => {
+    if (!fails(item)) return item;
+    const again = retry.find((other) => other.metric === item.metric);
+    if (!again) return item;
+    return fails(again)
+      ? { ...again, detail: `failed twice; retest: ${again.detail}; first attempt: ${item.detail}` }
+      : { ...again, detail: `${again.detail} (retest; the first attempt failed: ${item.detail})` };
+  });
+}
+
+/** Links with a gated failure, which the lab runs once more (THRESHOLDS.retest). */
+export function retestable(results: Results, findings: Finding[], expected: Profile[]): string[] {
+  const ids = new Set(expected.map((entry) => entry.id));
+  const failing = analyze(results, findings, expected).verdicts
+    .filter((item) => item.status === 'fail' && item.metric !== 'coverage' && ids.has(item.profile))
+    .map((item) => item.profile);
+  return [...new Set(failing)];
 }
 
 export function analyze(input: Results, findings: Finding[], expected: Profile[] = PROFILES): Analysis {
@@ -644,7 +667,8 @@ export function analyze(input: Results, findings: Finding[], expected: Profile[]
     if (entry.repeats.length < definition.repeats) {
       verdicts.push(verdict(definition.id, 'coverage', 'fail', `${entry.repeats.length} of ${definition.repeats} repeats`, { suspect: 'judge' }));
     }
-    verdicts.push(...gatedStatus(profileVerdicts(entry, results.profiles, ceiling), definition.reportOnly, entry.validity));
+    const judged = (attempt: ProfileResult) => gatedStatus(profileVerdicts(attempt, results.profiles, ceiling), definition.reportOnly, attempt.validity);
+    verdicts.push(...(entry.retry ? retested(judged(entry), judged(entry.retry), findings) : judged(entry)));
   }
   const final = applyFindings(verdicts, findings);
   const counts = { pass: 0, fail: 0, xfail: 0, xpass: 0, inconclusive: 0, 'invalid-input': 0, report: 0 } as Record<Status, number>;
