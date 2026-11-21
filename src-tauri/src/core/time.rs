@@ -1,6 +1,6 @@
 use jiff::{
     tz::{Offset, TimeZone},
-    Timestamp, Zoned,
+    Timestamp, ZonedDateTime,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -24,14 +24,14 @@ impl Zone {
         Self::Fixed(Offset::constant(hours))
     }
 
-    pub fn at(self, ms: u64) -> Zoned {
+    pub fn at(self, ms: u64) -> ZonedDateTime {
         let time = i64::try_from(ms)
             .ok()
             .and_then(|ms| Timestamp::from_millisecond(ms).ok())
             .unwrap_or(Timestamp::UNIX_EPOCH);
         match self {
-            Self::Local => time.to_zoned(TimeZone::system()),
-            Self::Fixed(offset) => time.to_zoned(TimeZone::fixed(offset)),
+            Self::Local => time.to_zoned_datetime(TimeZone::system()),
+            Self::Fixed(offset) => time.to_zoned_datetime(TimeZone::fixed(offset)),
         }
     }
 }

@@ -19,7 +19,7 @@ use canvas::{
     Font, Page, Rgb, ACCENT, DANGER, HEIGHT, INK, LINE, MARGIN, SECONDARY, SOFT, TERTIARY, WARNING,
     WIDTH,
 };
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 
 pub const DAYS: u64 = 30;
 const DAY_MS: u64 = 86_400_000;
@@ -130,7 +130,7 @@ pub fn slow_hours(reports: &[&Report], hour_of: impl Fn(u64) -> u32) -> (bool, O
     (true, slow)
 }
 
-fn local(ms: u64, zone: Zone) -> Zoned {
+fn local(ms: u64, zone: Zone) -> ZonedDateTime {
     zone.at(ms)
 }
 
