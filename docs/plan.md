@@ -234,7 +234,8 @@ Pull requests #52–#64.
   Second review (#57, a stale duplicate of #54, reset onto main): Windows LocalAccess no longer reads as offline, so a provider outage there isn't put down as no network; an internet answer from before a Wi-Fi drop no longer closes the outage. 👤 Windows VM: WAN out → "past your router", not "no network".
   Done in #54 and #58; unit, fixture and browser checks green in CI. The real-outage checks are B.2.
 - [ ] 👤 **B.2 Real outages on the owner's Mac and a Windows VM.** The 👤 checks listed under B.1.
-- [ ] **R.1 Release v0.8.0.**
+- [x] **R.1 Release v0.8.0.** **Verify:** the release flow in [releasing.md](releasing.md).
+  Published 2026-11-21 on the owner's go-ahead; see [verification.md](verification.md). The lab failed twice on the version-only release PR, each time on different checks just past their limits; #71 retests a failing link once, and the release PR then passed with no retests.
 
 ## Phase 5 — Later
 
