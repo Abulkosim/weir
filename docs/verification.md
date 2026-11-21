@@ -2,6 +2,21 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.8.0
+
+**[v0.8.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.8.0)** at 2026-11-21 18:27 UTC and marked latest; `latest.json` serves 0.8.0. Published on the owner's go-ahead in chat. Tag `v0.8.0` builds `6ebb9ce`. Where outages broke, the accuracy lab and its engine fixes, up to 1 GB per test.
+
+- Pull requests, each green before merging: #54 and #58 (outage causes), #56 (accuracy lab), #62–#64 (upload over wall time, 1 GB ceiling, longer requests on far links), #65 (plan), #71 (lab retest), #70 (release prep).
+- Locally on Linux: types, 80 unit tests, 14 release script tests, `check-release.mjs`. Rust fmt, Clippy and tests ran in CI only (the machine runs out of memory building them).
+- The accuracy lab on #70 failed twice on the same code as a passing run, on four different checks between the two runs, each just past its limit ([first](https://github.com/Abulkosim/weir/actions/runs/44789850071)). #71 runs a failing link once more and fails a check only if it fails both times; gig-5's upload physics went under F-10. #70 then [passed the lab](https://github.com/Abulkosim/weir/actions/runs/44916660764) with no retests.
+- [Tag build](https://github.com/Abulkosim/weir/actions/runs/44920359134) green on every job.
+- The [updater test in the tag build](https://github.com/Abulkosim/weir/actions/runs/44920359134/job/136897015741) passed (`signed_release_installs_into_a_disposable_app`). Its archive checksum `25cb4323be9a6a53f55822088fcf7f2bb055978755ef4d98d435cefbe8315ea2` matches `SHA256SUMS.txt`.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`.
+- DMG SHA-256 `7d40a7fb1dcdbab8a4db911eb56b4e1d2a1323696d2005236b7ba0f9ec18a1fb`.
+- The draft was dated 2026-11-20; the GitHub notes and the changelog now say 2026-11-21. `latest.json` is checksummed and attested, so its notes keep the draft's date.
+- Homebrew tap bumped by hand (`weir 0.8.0`, `507c2c0`); release DMG URL answers 200. `brew style` not run (no Homebrew on this machine).
+- Pending: 👤 update the installed app in-app (or `brew upgrade --cask --greedy`); 👤 real outages on the Mac and a Windows VM (B.2); 👤 Windows VM check; 👤 real-network check (1.6); 👤 tap deploy key; 👤 branch protection.
+
 ## v0.7.3
 
 **[v0.7.3 is published](https://github.com/Abulkosim/weir/releases/tag/v0.7.3)** at 2026-11-10 20:34 UTC and marked latest; `latest.json` serves 0.7.3. Published on standing approval. Tag `v0.7.3` builds `acfcee2`. Sweep patch.
