@@ -13,7 +13,8 @@ What was actually checked, newest release on top. Date, command, platform and ou
 - All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`.
 - DMG SHA-256 `16da8ccd34dcd9f378f73040c0e0636b9291c010df64458e68da3b6b41b8cbb2`.
 - Homebrew tap bumped by hand (`weir 0.8.1`, `332bcd5`); release DMG URL answers 200. `brew style` not run (no Homebrew on this machine).
-- Pending: 👤 update the installed app in-app (or `brew upgrade --cask --greedy`); 👤 real outages on the Mac and a Windows VM (B.2); 👤 Windows VM check; 👤 real-network check (1.6); 👤 tap deploy key; 👤 branch protection.
+- 2026-11-22: the owner reports Weir works after the update to 0.8.1, with no problems reported.
+- Pending: 👤 real outages on the Mac and a Windows VM (B.2); 👤 Windows VM check; 👤 real-network check (1.6); 👤 tap deploy key; 👤 branch protection.
 
 ## v0.8.0
 
