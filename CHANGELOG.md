@@ -2,6 +2,7 @@
 
 | Version | Date (UTC) | Changes |
 | --- | --- | --- |
+| [v0.8.1](changelogs/v0.8.1.md) | 2026-11-22 | Library updates. |
 | [v0.8.0](changelogs/v0.8.0.md) | 2026-11-21 | Where outages broke, more accurate uploads, up to 1 GB per test. |
 | [v0.7.3](changelogs/v0.7.3.md) | 2026-11-10 | Safer files, honest data estimate on hotspots, steadier Windows popover, keyboard focus. |
 | [v0.7.2](changelogs/v0.7.2.md) | 2026-11-10 | Two parser fixes and library updates. |
