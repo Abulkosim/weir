@@ -2,6 +2,19 @@
 
 What was actually checked, newest release on top. Date, command, platform and outcome. No IP addresses, cities or Wi-Fi names.
 
+## v0.8.1
+
+**[v0.8.1 is published](https://github.com/Abulkosim/weir/releases/tag/v0.8.1)** at 2026-11-22 07:00 UTC and marked latest; `latest.json` serves 0.8.1. Published on the owner's go-ahead in chat. Tag `v0.8.1` builds `192d472`. Dependency patch.
+
+- Pull requests, each green before merging: #69 (actions), #66 (Tauri CLI), #68 (jiff 1.0: `Zoned` and `Timestamp::to_zoned` were renamed to `ZonedDateTime` and `to_zoned_datetime`; nothing else in the break touches Weir), #74 (Tauri 2.12.7, jiff 1.0.1 and others; replaced #67 and #73), #75 (release prep). #68 and #75 passed the accuracy lab with no retests.
+- Locally on Linux: types, 80 unit tests, `check-release.mjs`. Rust fmt, Clippy and tests ran in CI only.
+- [Tag build](https://github.com/Abulkosim/weir/actions/runs/44995556314) green on every job.
+- The [updater test in the tag build](https://github.com/Abulkosim/weir/actions/runs/44995556314/job/137126709765) passed. Its archive checksum `1b0b3fd5209e075d3308eab75fe27c8c2f22beb7a09d55de2f14cf256baeb1ac` matches `SHA256SUMS.txt`.
+- All eight checksummed files matched; `gh attestation verify` passed for the DMG, Mac archive, EXE, MSI, `latest.json` and `SHA256SUMS.txt`.
+- DMG SHA-256 `16da8ccd34dcd9f378f73040c0e0636b9291c010df64458e68da3b6b41b8cbb2`.
+- Homebrew tap bumped by hand (`weir 0.8.1`, `332bcd5`); release DMG URL answers 200. `brew style` not run (no Homebrew on this machine).
+- Pending: 👤 update the installed app in-app (or `brew upgrade --cask --greedy`); 👤 real outages on the Mac and a Windows VM (B.2); 👤 Windows VM check; 👤 real-network check (1.6); 👤 tap deploy key; 👤 branch protection.
+
 ## v0.8.0
 
 **[v0.8.0 is published](https://github.com/Abulkosim/weir/releases/tag/v0.8.0)** at 2026-11-21 18:27 UTC and marked latest; `latest.json` serves 0.8.0. Published on the owner's go-ahead in chat. Tag `v0.8.0` builds `6ebb9ce`. Where outages broke, the accuracy lab and its engine fixes, up to 1 GB per test.
